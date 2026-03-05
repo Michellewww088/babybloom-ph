@@ -1,5 +1,6 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Colors from '../../constants/Colors';
 
 const MILESTONE_AGES = [
   { ageKey: 'months_2',  items: ['Smiles at people 😊', 'Tracks objects 👀'] },
@@ -59,10 +60,10 @@ const s = StyleSheet.create({
   actionEmoji: { fontSize: 28, marginBottom: 6 },
   actionLabel: { fontSize: 12, fontWeight: '600', color: '#374151', textAlign: 'center' },
   card:        { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  age:         { fontSize: 15, fontWeight: '700', color: '#F472B6', marginBottom: 10 },
+  age:         { fontSize: 15, fontWeight: '700', color: Colors.primaryPink, marginBottom: 10 },
   itemRow:     { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   checkbox:    { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#D1D5DB' },
   itemText:    { fontSize: 14, color: '#374151', flex: 1 },
-  addBtn:      { backgroundColor: '#F472B6', borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 },
+  addBtn:      { backgroundColor: Colors.primaryPink, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 },
   addBtnText:  { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

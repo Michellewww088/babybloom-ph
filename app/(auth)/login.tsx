@@ -3,45 +3,40 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { sendPhoneOTP } from '../../src/lib/supabase';
 import { router } from 'expo-router';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import i18n from '../../src/i18n';
-
-type LoginTab = 'phone' | 'email';
+import Colors from '../../constants/Colors';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<LoginTab>('phone');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [email, setEmail] = useState('');
 
-  // ── Format phone input (strip non-digits, limit 10) ─────────────────
+  // ── Phone formatting ─────────────────────────────────────────────────
   function handlePhoneChange(text: string) {
-    const digits = text.replace(/\D/g, '').slice(0, 10);
-    setPhone(digits);
+    setPhone(text.replace(/\D/g, '').slice(0, 10));
   }
 
-  function formatPhoneDisplay(digits: string) {
-    if (!digits) return '';
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+  function formatDisplay(d: string) {
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
+    return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
   }
 
-  function isValidPHPhone(digits: string) {
-    // Philippine mobile: 10 digits starting with 9
-    return /^9\d{9}$/.test(digits);
+  function isValid(d: string) {
+    // Spec: starts with 09 or just 9 (we store without leading 0), 10 digits
+    return /^9\d{9}$/.test(d);
   }
 
   // ── Send OTP ─────────────────────────────────────────────────────────
   async function handleSendOTP() {
-    if (!isValidPHPhone(phone)) {
-      Alert.alert('', t('auth.invalid_phone'));
-      return;
-    }
+    if (!isValid(phone)) { Alert.alert('', t('auth.invalid_phone')); return; }
     setLoading(true);
     try {
       const e164 = await sendPhoneOTP(phone);
@@ -53,190 +48,196 @@ export default function LoginScreen() {
     }
   }
 
-  // ── Language switcher ────────────────────────────────────────────────
-  function switchLang(code: LanguageCode) {
-    i18n.changeLanguage(code);
-  }
-
   return (
-    <ScrollView style={s.container} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+    <LinearGradient
+      colors={[Colors.primaryPink, Colors.gold]}
+      style={s.gradient}
+    >
+      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
 
-      {/* Language switcher */}
-      <View style={s.langRow}>
-        {SUPPORTED_LANGUAGES.map(({ code, nativeLabel }) => (
-          <TouchableOpacity
-            key={code}
-            onPress={() => switchLang(code as LanguageCode)}
-            style={[s.langBtn, i18n.language === code && s.langBtnActive]}
-          >
-            <Text style={[s.langText, i18n.language === code && s.langTextActive]}>
-              {nativeLabel}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        {/* Language toggle — top right */}
+        <View style={s.langRow}>
+          {SUPPORTED_LANGUAGES.map(({ code, nativeLabel }) => (
+            <TouchableOpacity
+              key={code}
+              onPress={() => i18n.changeLanguage(code as LanguageCode)}
+              style={[s.langBtn, i18n.language === code && s.langBtnActive]}
+            >
+              <Text style={[s.langText, i18n.language === code && s.langTextActive]}>
+                {nativeLabel}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      {/* Logo */}
-      <View style={s.logoArea}>
-        <Text style={s.logo}>🌸 BabyBloom PH</Text>
-        <Text style={s.logoSub}>{t('auth.login_subtitle')}</Text>
-      </View>
+        {/* Logo + trilingual tagline */}
+        <View style={s.logoArea}>
+          <Text style={s.logo}>🌸</Text>
+          <Text style={s.appName}>BabyBloom PH</Text>
+          <Text style={s.taglineEN}>Your Baby's Health Companion</Text>
+          <Text style={s.taglineFIL}>Ang Kasamahan ng Kalusugan ng Iyong Sanggol</Text>
+          <Text style={s.taglineZH}>您宝宝的健康伴侣</Text>
+        </View>
 
-      {/* Tab: Phone / Email */}
-      <View style={s.tabRow}>
-        <TouchableOpacity
-          style={[s.tabBtn, tab === 'phone' && s.tabBtnActive]}
-          onPress={() => setTab('phone')}
-        >
-          <Text style={[s.tabText, tab === 'phone' && s.tabTextActive]}>📱 Phone</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[s.tabBtn, tab === 'email' && s.tabBtnActive]}
-          onPress={() => setTab('email')}
-        >
-          <Text style={[s.tabText, tab === 'email' && s.tabTextActive]}>📧 Email</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Card */}
+        <View style={s.card}>
 
-      {/* Phone input */}
-      {tab === 'phone' && (
-        <View style={s.inputSection}>
-          <Text style={s.label}>{t('auth.phone_label')}</Text>
+          {/* 1 — Mobile OTP (primary) */}
+          <Text style={s.inputLabel}>{t('auth.phone_label')}</Text>
           <View style={s.phoneRow}>
-            {/* Country code badge */}
-            <View style={s.countryCode}>
-              <Text style={s.flagEmoji}>🇵🇭</Text>
-              <Text style={s.countryCodeText}>+63</Text>
+            <View style={s.countryBadge}>
+              <Text style={s.flagText}>🇵🇭</Text>
+              <Text style={s.countryText}>+63</Text>
             </View>
             <TextInput
               style={s.phoneInput}
               placeholder={t('auth.phone_placeholder')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={Colors.lightGray}
               keyboardType="phone-pad"
-              value={formatPhoneDisplay(phone)}
+              value={formatDisplay(phone)}
               onChangeText={handlePhoneChange}
-              maxLength={12} // formatted: "9XX XXX XXXX"
+              maxLength={12}
               returnKeyType="send"
               onSubmitEditing={handleSendOTP}
             />
           </View>
-          {/* Validation hint */}
-          {phone.length > 0 && !isValidPHPhone(phone) && (
-            <Text style={s.hint}>{t('auth.invalid_phone')}</Text>
+          {phone.length > 0 && !isValid(phone) && (
+            <Text style={s.validationHint}>{t('auth.invalid_phone')}</Text>
           )}
 
           <TouchableOpacity
-            style={[s.primaryBtn, (!isValidPHPhone(phone) || loading) && s.primaryBtnDisabled]}
+            style={[s.otpBtn, (!isValid(phone) || loading) && s.btnDisabled]}
             onPress={handleSendOTP}
-            disabled={!isValidPHPhone(phone) || loading}
+            disabled={!isValid(phone) || loading}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.primaryBtnText}>{t('auth.send_otp')}</Text>
+              : <Text style={s.otpBtnText}>📱 {t('auth.send_otp')}</Text>
             }
           </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={s.divider}>
+            <View style={s.divLine} /><Text style={s.divText}>{t('auth.or_divider')}</Text><View style={s.divLine} />
+          </View>
+
+          {/* 2 — Facebook */}
+          <SocialButton
+            label={t('auth.continue_facebook')}
+            bg="#1877F2" textColor="#fff"
+            icon="🇫" onPress={() => {}} />
+
+          {/* 3 — Google */}
+          <SocialButton
+            label={t('auth.continue_google')}
+            bg="#fff" textColor={Colors.dark}
+            icon="G" bordered onPress={() => {}} />
+
+          {/* 4 — Email */}
+          {!showEmailInput ? (
+            <SocialButton
+              label={t('auth.continue_email')}
+              bg="transparent" textColor={Colors.primaryPink}
+              icon="✉️" bordered onPress={() => setShowEmailInput(true)} />
+          ) : (
+            <View style={s.emailSection}>
+              <TextInput
+                style={s.emailInput}
+                placeholder={t('auth.email_placeholder')}
+                placeholderTextColor={Colors.lightGray}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                autoFocus
+              />
+              <TouchableOpacity style={s.emailContinueBtn}>
+                <Text style={s.emailContinueText}>{t('auth.continue_email')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* 5 — Apple (iOS only) */}
+          {Platform.OS === 'ios' && (
+            <SocialButton
+              label={t('auth.continue_apple')}
+              bg="#000" textColor="#fff"
+              icon="🍎" onPress={() => {}} />
+          )}
+
+          {/* Terms */}
+          <Text style={s.terms}>{t('auth.terms')}</Text>
         </View>
-      )}
 
-      {/* Email input */}
-      {tab === 'email' && (
-        <View style={s.inputSection}>
-          <Text style={s.label}>{t('auth.email_label')}</Text>
-          <TextInput
-            style={s.emailInput}
-            placeholder={t('auth.email_placeholder')}
-            placeholderTextColor="#9CA3AF"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-            returnKeyType="send"
-          />
-          <TouchableOpacity style={s.primaryBtn}>
-            <Text style={s.primaryBtnText}>{t('auth.continue_email')}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Divider */}
-      <View style={s.dividerRow}>
-        <View style={s.dividerLine} />
-        <Text style={s.dividerText}>{t('auth.or_divider')}</Text>
-        <View style={s.dividerLine} />
-      </View>
-
-      {/* Social logins */}
-      <View style={s.socialCol}>
-        <SocialBtn emoji="🔵" label={t('auth.continue_facebook')} color="#1877F2" />
-        <SocialBtn emoji="🔍" label={t('auth.continue_google')}   color="#EA4335" />
-        {Platform.OS === 'ios' && (
-          <SocialBtn emoji="🍎" label={t('auth.continue_apple')}  color="#000000" />
-        )}
-      </View>
-
-      {/* Terms */}
-      <Text style={s.terms}>{t('auth.terms')}</Text>
-
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
-function SocialBtn({ emoji, label, color }: { emoji: string; label: string; color: string }) {
+function SocialButton({
+  label, bg, textColor, icon, bordered, onPress,
+}: {
+  label: string; bg: string; textColor: string;
+  icon: string; bordered?: boolean; onPress: () => void;
+}) {
   return (
-    <TouchableOpacity style={[s.socialBtn, { borderColor: color + '40' }]}>
-      <Text style={s.socialEmoji}>{emoji}</Text>
-      <Text style={[s.socialLabel, { color }]}>{label}</Text>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        s.socialBtn,
+        { backgroundColor: bg },
+        bordered && { borderWidth: 1.5, borderColor: Colors.border },
+      ]}
+    >
+      <Text style={s.socialIcon}>{icon}</Text>
+      <Text style={[s.socialLabel, { color: textColor }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
-const PINK = '#F472B6';
-
 const s = StyleSheet.create({
-  container:        { flex: 1, backgroundColor: '#FDF2F8' },
-  content:          { padding: 24, paddingTop: 60, paddingBottom: 40 },
+  gradient:       { flex: 1 },
+  content:        { padding: 24, paddingTop: 56, paddingBottom: 40 },
 
-  langRow:          { flexDirection: 'row', justifyContent: 'flex-end', gap: 6, marginBottom: 24 },
-  langBtn:          { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB' },
-  langBtnActive:    { backgroundColor: PINK, borderColor: PINK },
-  langText:         { fontSize: 13, color: '#6B7280', fontWeight: '600' },
-  langTextActive:   { color: '#fff' },
+  langRow:        { flexDirection: 'row', justifyContent: 'flex-end', gap: 6, marginBottom: 28 },
+  langBtn:        { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.25)' },
+  langBtnActive:  { backgroundColor: '#fff' },
+  langText:       { fontSize: 13, color: '#fff', fontWeight: '600' },
+  langTextActive: { color: Colors.primaryPink },
 
-  logoArea:         { alignItems: 'center', marginBottom: 32 },
-  logo:             { fontSize: 32, fontWeight: '800', color: '#BE185D', marginBottom: 6 },
-  logoSub:          { fontSize: 14, color: '#9CA3AF', textAlign: 'center' },
+  logoArea:       { alignItems: 'center', marginBottom: 28 },
+  logo:           { fontSize: 52, marginBottom: 4 },
+  appName:        { fontSize: 30, fontWeight: '900', color: '#fff', letterSpacing: 0.5, marginBottom: 10 },
+  taglineEN:      { fontSize: 14, color: 'rgba(255,255,255,0.95)', fontWeight: '600' },
+  taglineFIL:     { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2, textAlign: 'center' },
+  taglineZH:      { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
 
-  tabRow:           { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 12, padding: 4, marginBottom: 20, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  tabBtn:           { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 9 },
-  tabBtnActive:     { backgroundColor: PINK },
-  tabText:          { fontSize: 14, fontWeight: '600', color: '#9CA3AF' },
-  tabTextActive:    { color: '#fff' },
+  card:           { backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
 
-  inputSection:     { marginBottom: 8 },
-  label:            { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  inputLabel:     { fontSize: 14, fontWeight: '700', color: Colors.dark, marginBottom: 8 },
+  phoneRow:       { flexDirection: 'row', gap: 8, marginBottom: 6 },
+  countryBadge:   { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.softPink, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 13 },
+  flagText:       { fontSize: 18 },
+  countryText:    { fontSize: 16, fontWeight: '700', color: Colors.primaryPink },
+  phoneInput:     { flex: 1, borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 18, letterSpacing: 1, color: Colors.dark },
+  validationHint: { fontSize: 12, color: '#EF4444', marginBottom: 6 },
 
-  phoneRow:         { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  countryCode:      { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 14 },
-  flagEmoji:        { fontSize: 20 },
-  countryCodeText:  { fontSize: 16, fontWeight: '700', color: '#1F2937' },
-  phoneInput:       { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 14, fontSize: 18, letterSpacing: 1, color: '#1F2937' },
+  otpBtn:         { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 8, marginBottom: 16 },
+  btnDisabled:    { opacity: 0.45 },
+  otpBtnText:     { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  emailInput:       { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 14, fontSize: 16, color: '#1F2937', marginBottom: 8 },
+  divider:        { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
+  divLine:        { flex: 1, height: 1, backgroundColor: Colors.border },
+  divText:        { fontSize: 13, color: Colors.lightGray },
 
-  hint:             { fontSize: 12, color: '#EF4444', marginBottom: 8 },
+  socialBtn:      { flexDirection: 'row', alignItems: 'center', borderRadius: 14, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 10 },
+  socialIcon:     { fontSize: 18, width: 26 },
+  socialLabel:    { fontSize: 15, fontWeight: '600', flex: 1, textAlign: 'center' },
 
-  primaryBtn:       { backgroundColor: PINK, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  primaryBtnDisabled:{ opacity: 0.5 },
-  primaryBtnText:   { color: '#fff', fontSize: 16, fontWeight: '700' },
+  emailSection:   { marginBottom: 10 },
+  emailInput:     { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: Colors.dark, marginBottom: 8 },
+  emailContinueBtn: { backgroundColor: Colors.softPink, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  emailContinueText: { color: Colors.primaryPink, fontSize: 15, fontWeight: '700' },
 
-  dividerRow:       { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 20 },
-  dividerLine:      { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
-  dividerText:      { fontSize: 14, color: '#9CA3AF' },
-
-  socialCol:        { gap: 12 },
-  socialBtn:        { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderWidth: 1.5, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16 },
-  socialEmoji:      { fontSize: 22 },
-  socialLabel:      { fontSize: 15, fontWeight: '600', flex: 1, textAlign: 'center' },
-
-  terms:            { fontSize: 12, color: '#9CA3AF', textAlign: 'center', marginTop: 24, lineHeight: 16 },
+  terms:          { fontSize: 11, color: Colors.lightGray, textAlign: 'center', marginTop: 16, lineHeight: 16 },
 });

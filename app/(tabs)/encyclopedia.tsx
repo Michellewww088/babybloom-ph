@@ -1,5 +1,6 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Colors from '../../constants/Colors';
 
 const AGE_STAGES = [
   { key: 'pregnancy', emoji: '🤰' },
@@ -82,5 +83,5 @@ const s = StyleSheet.create({
   featuredTitle:{ fontSize: 15, fontWeight: '700', color: '#1F2937', marginBottom: 8, lineHeight: 20 },
   featuredBody: { fontSize: 13, color: '#6B7280', lineHeight: 18, marginBottom: 12 },
   readBtn:      { alignSelf: 'flex-start' },
-  readBtnText:  { color: '#F472B6', fontWeight: '700', fontSize: 14 },
+  readBtnText:  { color: Colors.primaryPink, fontWeight: '700', fontSize: 14 },
 });

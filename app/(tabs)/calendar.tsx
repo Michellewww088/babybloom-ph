@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Colors from '../../constants/Colors';
 
 const CATEGORIES = [
   { key: 'vaccine',    emoji: '💉', color: '#EF4444' },
@@ -51,6 +52,6 @@ const s = StyleSheet.create({
   calendarPlaceholder: { backgroundColor: '#fff', borderRadius: 16, height: 220, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
   placeholderEmoji:    { fontSize: 48, marginBottom: 12 },
   placeholderText:     { color: '#9CA3AF', fontSize: 14 },
-  addBtn:              { backgroundColor: '#F472B6', borderRadius: 14, padding: 16, alignItems: 'center' },
+  addBtn:              { backgroundColor: Colors.primaryPink, borderRadius: 14, padding: 16, alignItems: 'center' },
   addBtnText:          { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

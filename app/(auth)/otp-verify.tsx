@@ -3,54 +3,76 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ActivityIndicator, Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
-import { verifyPhoneOTP } from '../../src/lib/supabase';
+import { verifyPhoneOTP, supabase } from '../../src/lib/supabase';
+import Colors from '../../constants/Colors';
 
-const OTP_LENGTH = 6;
-const RESEND_SECONDS = 60;
+const OTP_LENGTH      = 6;
+const RESEND_SECONDS  = 60;
+const MAX_ATTEMPTS    = 3;
+const LOCKOUT_MINUTES = 15;
 
 export default function OTPVerifyScreen() {
   const { t } = useTranslation();
   const { phone } = useLocalSearchParams<{ phone: string }>();
 
-  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [loading, setLoading] = useState(false);
+  const [otp, setOtp]             = useState<string[]>(Array(OTP_LENGTH).fill(''));
+  const [loading, setLoading]     = useState(false);
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
+  const [attempts, setAttempts]   = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
+  const [lockCountdown, setLockCountdown] = useState(0);
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
-  // ── Countdown timer ─────────────────────────────────────────────────
+  // ── 60s resend countdown ─────────────────────────────────────────────
   useEffect(() => {
     if (countdown === 0) return;
-    const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setCountdown((c) => c - 1), 1000);
+    return () => clearInterval(t);
   }, [countdown]);
 
-  // ── OTP box input handler ───────────────────────────────────────────
+  // ── Lockout countdown ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!lockedUntil) return;
+    const tick = setInterval(() => {
+      const secsLeft = Math.ceil((lockedUntil.getTime() - Date.now()) / 1000);
+      if (secsLeft <= 0) {
+        setLockedUntil(null);
+        setAttempts(0);
+        setLockCountdown(0);
+        setOtp(Array(OTP_LENGTH).fill(''));
+        clearInterval(tick);
+      } else {
+        setLockCountdown(secsLeft);
+      }
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [lockedUntil]);
+
+  // ── Format masked phone for subtitle (e.g. +63 9XX XXX X789) ─────────
+  function maskPhone(e164: string) {
+    const local = e164.replace('+63', '');              // 10 digits
+    const masked = local.slice(0, 1) + 'XX XXX X' + local.slice(-3);
+    return `+63 ${masked}`;
+  }
+
+  // ── Digit input ──────────────────────────────────────────────────────
   function handleDigit(text: string, index: number) {
+    if (lockedUntil) return;
     const digit = text.replace(/\D/g, '').slice(-1);
-    const newOtp = [...otp];
-    newOtp[index] = digit;
-    setOtp(newOtp);
-
-    // Auto-advance
-    if (digit && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-verify when all filled
-    if (digit && index === OTP_LENGTH - 1 && newOtp.every(Boolean)) {
-      verify(newOtp.join(''));
-    }
+    const next = [...otp];
+    next[index] = digit;
+    setOtp(next);
+    if (digit && index < OTP_LENGTH - 1) inputRefs.current[index + 1]?.focus();
+    if (digit && index === OTP_LENGTH - 1 && next.every(Boolean)) verify(next.join(''));
   }
 
   function handleKeyPress(key: string, index: number) {
-    if (key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+    if (key === 'Backspace' && !otp[index] && index > 0) inputRefs.current[index - 1]?.focus();
   }
 
-  // ── Paste handler (paste full 6-digit code) ─────────────────────────
   function handlePaste(text: string) {
     const digits = text.replace(/\D/g, '').slice(0, OTP_LENGTH).split('');
     const padded = [...digits, ...Array(OTP_LENGTH - digits.length).fill('')];
@@ -58,107 +80,182 @@ export default function OTPVerifyScreen() {
     if (digits.length === OTP_LENGTH) verify(digits.join(''));
   }
 
-  // ── Verify ──────────────────────────────────────────────────────────
+  // ── Verify ───────────────────────────────────────────────────────────
   async function verify(code: string) {
-    if (code.length < OTP_LENGTH) return;
+    if (code.length < OTP_LENGTH || lockedUntil) return;
     setLoading(true);
     try {
-      await verifyPhoneOTP(phone!, code);
-      router.replace('/(tabs)');
-    } catch (err: any) {
-      Alert.alert('', t('auth.invalid_otp'));
-      setOtp(Array(OTP_LENGTH).fill(''));
-      inputRefs.current[0]?.focus();
+      const { session } = await verifyPhoneOTP(phone!, code);
+
+      // Check if this is a new user (no profile in user_profiles yet)
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('id, onboarding_completed')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!profile || !profile.onboarding_completed) {
+          router.replace('/(auth)/onboarding');
+        } else {
+          router.replace('/(tabs)');
+        }
+      }
+    } catch {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+
+      if (newAttempts >= MAX_ATTEMPTS) {
+        const until = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+        setLockedUntil(until);
+        Alert.alert(
+          'Too many attempts',
+          `Locked for ${LOCKOUT_MINUTES} minutes. Please try again later.`
+        );
+      } else {
+        Alert.alert('', t('auth.invalid_otp'));
+        setOtp(Array(OTP_LENGTH).fill(''));
+        inputRefs.current[0]?.focus();
+      }
     } finally {
       setLoading(false);
     }
   }
 
+  function handleResend() {
+    setCountdown(RESEND_SECONDS);
+    setAttempts(0);
+    setOtp(Array(OTP_LENGTH).fill(''));
+    // In production: re-call sendPhoneOTP(phone) here
+  }
+
+  const isLocked = !!lockedUntil;
+  const minutesLeft = Math.ceil(lockCountdown / 60);
+  const secondsLeft = lockCountdown % 60;
+
   return (
-    <View style={s.container}>
-      {/* Back button */}
-      <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-        <Text style={s.backText}>← Back</Text>
-      </TouchableOpacity>
+    <LinearGradient colors={[Colors.primaryPink, Colors.gold]} style={s.gradient}>
+      <View style={s.container}>
 
-      <Text style={s.title}>{t('auth.otp_title')}</Text>
-      <Text style={s.subtitle}>
-        {t('auth.otp_subtitle', { phone: phone?.replace('+63', '') })}
-      </Text>
+        {/* Back */}
+        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+          <Text style={s.backText}>← {t('onboarding.back')}</Text>
+        </TouchableOpacity>
 
-      {/* OTP Boxes */}
-      <View style={s.otpRow}>
-        {otp.map((digit, i) => (
-          <TextInput
-            key={i}
-            ref={(ref) => { inputRefs.current[i] = ref; }}
-            style={[s.otpBox, digit ? s.otpBoxFilled : null]}
-            value={digit}
-            onChangeText={(text) => {
-              if (text.length > 1) { handlePaste(text); return; }
-              handleDigit(text, i);
-            }}
-            onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, i)}
-            keyboardType="number-pad"
-            maxLength={1}
-            textAlign="center"
-            selectTextOnFocus
-            caretHidden
-          />
-        ))}
-      </View>
+        {/* Title */}
+        <Text style={s.title}>{t('auth.otp_title')}</Text>
+        <Text style={s.subtitle}>
+          Sent to {maskPhone(phone ?? '')}
+        </Text>
 
-      {/* Verify button */}
-      <TouchableOpacity
-        style={[s.verifyBtn, (otp.some((d) => !d) || loading) && s.verifyBtnDisabled]}
-        onPress={() => verify(otp.join(''))}
-        disabled={otp.some((d) => !d) || loading}
-      >
-        {loading
-          ? <ActivityIndicator color="#fff" />
-          : <Text style={s.verifyBtnText}>{t('auth.verify_otp')}</Text>
-        }
-      </TouchableOpacity>
+        {/* Card */}
+        <View style={s.card}>
 
-      {/* Resend */}
-      <View style={s.resendRow}>
-        {countdown > 0 ? (
-          <Text style={s.countdownText}>
-            {t('auth.resend_countdown', { seconds: countdown })}
-          </Text>
-        ) : (
-          <TouchableOpacity onPress={() => setCountdown(RESEND_SECONDS)}>
-            <Text style={s.resendText}>{t('auth.resend_otp')}</Text>
+          {/* Lockout state */}
+          {isLocked && (
+            <View style={s.lockoutBox}>
+              <Text style={s.lockoutEmoji}>🔒</Text>
+              <Text style={s.lockoutTitle}>Too many wrong attempts</Text>
+              <Text style={s.lockoutTimer}>
+                Try again in {minutesLeft}:{String(secondsLeft).padStart(2, '0')}
+              </Text>
+            </View>
+          )}
+
+          {/* OTP Boxes */}
+          <View style={s.otpRow}>
+            {otp.map((digit, i) => (
+              <TextInput
+                key={i}
+                ref={(r) => { inputRefs.current[i] = r; }}
+                style={[s.otpBox, digit ? s.otpBoxFilled : null, isLocked && s.otpBoxLocked]}
+                value={digit}
+                onChangeText={(text) => {
+                  if (text.length > 1) { handlePaste(text); return; }
+                  handleDigit(text, i);
+                }}
+                onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, i)}
+                keyboardType="number-pad"
+                maxLength={1}
+                textAlign="center"
+                selectTextOnFocus
+                caretHidden
+                editable={!isLocked}
+              />
+            ))}
+          </View>
+
+          {/* Attempt counter */}
+          {attempts > 0 && !isLocked && (
+            <Text style={s.attemptText}>
+              {MAX_ATTEMPTS - attempts} attempt{MAX_ATTEMPTS - attempts !== 1 ? 's' : ''} remaining
+            </Text>
+          )}
+
+          {/* Verify button */}
+          <TouchableOpacity
+            style={[s.verifyBtn, (otp.some(d => !d) || loading || isLocked) && s.btnDisabled]}
+            onPress={() => verify(otp.join(''))}
+            disabled={otp.some(d => !d) || loading || isLocked}
+          >
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={s.verifyBtnText}>{t('auth.verify_otp')}</Text>
+            }
           </TouchableOpacity>
-        )}
-      </View>
 
-      {/* Ate AI disclaimer */}
-      <Text style={s.disclaimer}>{t('ate_ai.disclaimer')}</Text>
-    </View>
+          {/* Resend */}
+          <View style={s.resendRow}>
+            {countdown > 0 && !isLocked ? (
+              <Text style={s.countdownText}>
+                {t('auth.resend_countdown', { seconds: countdown })}
+              </Text>
+            ) : !isLocked ? (
+              <TouchableOpacity onPress={handleResend}>
+                <Text style={s.resendText}>{t('auth.resend_otp')}</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+        </View>
+
+        {/* Disclaimer */}
+        <Text style={s.disclaimer}>{t('ate_ai.disclaimer')}</Text>
+      </View>
+    </LinearGradient>
   );
 }
 
-const PINK = '#F472B6';
-
 const s = StyleSheet.create({
-  container:        { flex: 1, backgroundColor: '#FDF2F8', padding: 24, paddingTop: 60 },
-  backBtn:          { marginBottom: 32 },
-  backText:         { fontSize: 16, color: '#6B7280', fontWeight: '600' },
-  title:            { fontSize: 28, fontWeight: '800', color: '#BE185D', marginBottom: 8 },
-  subtitle:         { fontSize: 15, color: '#6B7280', marginBottom: 36, lineHeight: 22 },
+  gradient:      { flex: 1 },
+  container:     { flex: 1, padding: 24, paddingTop: 56 },
 
-  otpRow:           { flexDirection: 'row', gap: 10, justifyContent: 'center', marginBottom: 28 },
-  otpBox:           { width: 50, height: 60, borderWidth: 2, borderColor: '#E5E7EB', borderRadius: 14, fontSize: 26, fontWeight: '700', color: '#1F2937', backgroundColor: '#fff' },
-  otpBoxFilled:     { borderColor: PINK, backgroundColor: '#FDF2F8' },
+  backBtn:       { marginBottom: 28 },
+  backText:      { fontSize: 16, color: 'rgba(255,255,255,0.9)', fontWeight: '600' },
+  title:         { fontSize: 28, fontWeight: '900', color: '#fff', marginBottom: 6 },
+  subtitle:      { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginBottom: 28 },
 
-  verifyBtn:        { backgroundColor: PINK, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 16 },
-  verifyBtnDisabled:{ opacity: 0.5 },
-  verifyBtnText:    { color: '#fff', fontSize: 16, fontWeight: '700' },
+  card:          { backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
 
-  resendRow:        { alignItems: 'center', marginBottom: 32 },
-  countdownText:    { fontSize: 14, color: '#9CA3AF' },
-  resendText:       { fontSize: 14, color: PINK, fontWeight: '700' },
+  lockoutBox:    { alignItems: 'center', paddingVertical: 16, marginBottom: 16, backgroundColor: Colors.softPink, borderRadius: 14 },
+  lockoutEmoji:  { fontSize: 32, marginBottom: 6 },
+  lockoutTitle:  { fontSize: 15, fontWeight: '700', color: Colors.primaryPink, marginBottom: 4 },
+  lockoutTimer:  { fontSize: 20, fontWeight: '800', color: Colors.dark },
 
-  disclaimer:       { fontSize: 12, color: '#9CA3AF', textAlign: 'center', lineHeight: 16, position: 'absolute', bottom: 30, left: 24, right: 24 },
+  otpRow:        { flexDirection: 'row', gap: 8, justifyContent: 'center', marginBottom: 8 },
+  otpBox:        { width: 46, height: 56, borderWidth: 2, borderColor: Colors.border, borderRadius: 14, fontSize: 24, fontWeight: '800', color: Colors.dark, backgroundColor: '#fff' },
+  otpBoxFilled:  { borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },
+  otpBoxLocked:  { opacity: 0.4 },
+
+  attemptText:   { fontSize: 12, color: '#EF4444', textAlign: 'center', marginBottom: 8 },
+
+  verifyBtn:     { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 12, marginBottom: 12 },
+  btnDisabled:   { opacity: 0.45 },
+  verifyBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
+  resendRow:     { alignItems: 'center', minHeight: 24 },
+  countdownText: { fontSize: 13, color: Colors.lightGray },
+  resendText:    { fontSize: 14, color: Colors.primaryPink, fontWeight: '700' },
+
+  disclaimer:    { fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginTop: 28, lineHeight: 16, paddingHorizontal: 8 },
 });

@@ -1,8 +1,9 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import Colors from '../../constants/Colors';
 
-const PINK  = '#F472B6';
-const GRAY  = '#9CA3AF';
+const PINK  = Colors.primaryPink;   // #E63B6F — spec brand color
+const GRAY  = Colors.lightGray;     // #9CA3AF
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -50,5 +51,5 @@ export default function TabLayout() {
 
 function TabIcon({ emoji, color }: { emoji: string; color: string }) {
   const { Text } = require('react-native');
-  return <Text style={{ fontSize: 22, opacity: color === '#F472B6' ? 1 : 0.5 }}>{emoji}</Text>;
+  return <Text style={{ fontSize: 22, opacity: color === Colors.primaryPink ? 1 : 0.5 }}>{emoji}</Text>;
 }
