@@ -1,71 +1,54 @@
-import React from 'react';
-import { SymbolView } from 'expo-symbols';
-import { Link, Tabs } from 'expo-router';
-import { Platform, Pressable } from 'react-native';
+import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+const PINK  = '#F472B6';
+const GRAY  = '#9CA3AF';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+  const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        tabBarActiveTintColor: PINK,
+        tabBarInactiveTintColor: GRAY,
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#F3F4F6',
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 4,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        headerStyle: { backgroundColor: '#FFFFFF' },
+        headerTitleStyle: { color: '#1F2937', fontWeight: '700' },
+        headerShadowVisible: false,
+      }}
+    >
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: 'chevron.left.forwardslash.chevron.right',
-                android: 'code',
-                web: 'code',
-              }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable style={{ marginRight: 15 }}>
-                {({ pressed }) => (
-                  <SymbolView
-                    name={{ ios: 'info.circle', android: 'info', web: 'info' }}
-                    size={25}
-                    tintColor={Colors[colorScheme].text}
-                    style={{ opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-        }}
+        options={{ title: t('tabs.home'), tabBarIcon: ({ color }) => <TabIcon emoji="🏠" color={color} /> }}
       />
       <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: 'chevron.left.forwardslash.chevron.right',
-                android: 'code',
-                web: 'code',
-              }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-        }}
+        name="calendar"
+        options={{ title: t('tabs.calendar'), tabBarIcon: ({ color }) => <TabIcon emoji="📅" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="vaccines"
+        options={{ title: t('tabs.vaccines'), tabBarIcon: ({ color }) => <TabIcon emoji="💉" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="encyclopedia"
+        options={{ title: t('tabs.encyclopedia'), tabBarIcon: ({ color }) => <TabIcon emoji="📚" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="milestones"
+        options={{ title: t('tabs.milestones'), tabBarIcon: ({ color }) => <TabIcon emoji="⭐" color={color} /> }}
       />
     </Tabs>
   );
+}
+
+function TabIcon({ emoji, color }: { emoji: string; color: string }) {
+  const { Text } = require('react-native');
+  return <Text style={{ fontSize: 22, opacity: color === '#F472B6' ? 1 : 0.5 }}>{emoji}</Text>;
 }
