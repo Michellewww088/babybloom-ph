@@ -152,6 +152,7 @@
     "birthday": "Birthday",
     "birthday_placeholder": "YYYY-MM-DD",
     "birth_time": "Birth Time (optional)",
+    "birth_time_placeholder": "e.g. 3:45 PM",
     "blood_type": "Blood Type",
     "birth_details": "Birth Details",
     "birth_type": "Birth Type",

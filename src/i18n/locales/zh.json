@@ -152,6 +152,7 @@
     "birthday": "生日",
     "birthday_placeholder": "YYYY-MM-DD",
     "birth_time": "出生时间（可选）",
+    "birth_time_placeholder": "例如 3:45 PM",
     "blood_type": "血型",
     "birth_details": "出生详情",
     "birth_type": "分娩方式",

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type Sex       = 'boy' | 'girl' | 'other';
+export type Sex       = 'male' | 'female' | 'unspecified';
 export type BirthType = 'vaginal' | 'cesarean';
 export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'Unknown';
 
@@ -98,16 +98,68 @@ export function getChildDisplayName(child: Child): string {
   return child.nickname || child.firstName || 'Baby';
 }
 
-/** Age string: "3 months" or "1 year 2 months" */
+/**
+ * Compact age for switcher chips: "3mo", "1y 2mo"
+ */
 export function getChildAge(birthday: string): string {
   const birth = new Date(birthday);
   const now   = new Date();
   let months  = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
   if (now.getDate() < birth.getDate()) months -= 1;
-  if (months < 0) return 'newborn';
-  if (months === 0) return 'newborn';
+  if (months <= 0) return 'newborn';
   if (months < 12) return `${months}mo`;
   const years = Math.floor(months / 12);
   const rem   = months % 12;
   return rem ? `${years}y ${rem}mo` : `${years}y`;
+}
+
+/**
+ * Verbose age per docs/02-profile.md spec:
+ * Under 2 years → "X months, Y days"
+ * 2 years+ → "X years, Y months"
+ */
+export function getChildAgeVerbose(birthday: string): string {
+  const birth = new Date(birthday);
+  const now   = new Date();
+
+  // Calculate total days difference
+  const diffMs   = now.getTime() - birth.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return 'Newborn';
+
+  let months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+  if (now.getDate() < birth.getDate()) months -= 1;
+  if (months < 0) months = 0;
+
+  if (months < 24) {
+    // Show months + days
+    const monthStart = new Date(birth);
+    monthStart.setMonth(monthStart.getMonth() + months);
+    const remDays = Math.floor((now.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24));
+    if (months === 0) return `${remDays} day${remDays !== 1 ? 's' : ''}`;
+    return remDays > 0
+      ? `${months} month${months !== 1 ? 's' : ''}, ${remDays} day${remDays !== 1 ? 's' : ''}`
+      : `${months} month${months !== 1 ? 's' : ''}`;
+  }
+
+  // 2 years+ → years + months
+  const years = Math.floor(months / 12);
+  const remMonths = months % 12;
+  return remMonths > 0
+    ? `${years} year${years !== 1 ? 's' : ''}, ${remMonths} month${remMonths !== 1 ? 's' : ''}`
+    : `${years} year${years !== 1 ? 's' : ''}`;
+}
+
+/**
+ * Corrected age for preterm babies.
+ * If gestationalAge < 37 weeks, corrected = actual - (40 - gestationalAge) weeks.
+ */
+export function getCorrectedAge(birthday: string, gestationalAgeWeeks?: number): string {
+  if (!gestationalAgeWeeks || gestationalAgeWeeks >= 37) {
+    return getChildAgeVerbose(birthday);
+  }
+  const correctionDays = (40 - gestationalAgeWeeks) * 7;
+  const adjustedBirthday = new Date(birthday);
+  adjustedBirthday.setDate(adjustedBirthday.getDate() + correctionDays);
+  return getChildAgeVerbose(adjustedBirthday.toISOString().split('T')[0]);
 }

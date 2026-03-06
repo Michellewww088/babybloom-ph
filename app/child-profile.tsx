@@ -16,7 +16,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 
 import Colors from '../constants/Colors';
 import { useChildStore, Child, Sex, BirthType, BloodType } from '../store/childStore';
-import { supabase } from '../src/lib/supabase';
+import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -42,6 +42,33 @@ function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
 
+/** Convert "HH:MM" (24h) → "h:mm AM/PM" */
+function formatTime12h(hhmm: string): string {
+  if (!hhmm) return '';
+  const [hStr, mStr] = hhmm.split(':');
+  let h = parseInt(hStr, 10);
+  const m = mStr ?? '00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+/** Convert a Date → "HH:MM" (24h) string */
+function dateToHHMM(d: Date): string {
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+/** Parse "HH:MM" → Date object (today's date, at that time) */
+function hhmmToDate(hhmm: string): Date {
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h ?? 0, m ?? 0, 0, 0);
+  return d;
+}
+
 // ── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ChildProfileScreen() {
@@ -62,9 +89,9 @@ export default function ChildProfileScreen() {
   const [lastName,       setLastName]       = useState(existing?.lastName ?? '');
   const [nickname,       setNickname]       = useState(existing?.nickname ?? '');
 
-  const [sex,            setSex]            = useState<Sex>(existing?.sex ?? 'girl');
+  const [sex,            setSex]            = useState<Sex>(existing?.sex ?? 'female');
   const [birthday,       setBirthday]       = useState(existing?.birthday ?? '');
-  const [birthTime,      setBirthTime]      = useState(existing?.birthTime ?? '');
+  const [birthTime,      setBirthTime]      = useState(existing?.birthTime ?? ''); // "HH:MM" 24h
   const [bloodType,      setBloodType]      = useState<BloodType | undefined>(existing?.bloodType);
 
   const [birthType,      setBirthType]      = useState<BirthType | undefined>(existing?.birthType);
@@ -81,6 +108,7 @@ export default function ChildProfileScreen() {
   const [mch,            setMch]            = useState(existing?.mchBookletNumber ?? '');
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [saving,         setSaving]         = useState(false);
 
   // ── Image picker ──────────────────────────────────────────────────────────
@@ -120,6 +148,36 @@ export default function ChildProfileScreen() {
     }
   }, [t]);
 
+  // ── Photo upload to Supabase Storage ──────────────────────────────────────
+
+  /** Upload local photo URI to Supabase Storage → return public URL */
+  async function uploadPhoto(localUri: string, childId: string): Promise<string | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id ?? 'anon';
+      const path   = `${userId}/${childId}.jpg`;
+
+      // Fetch the image as a Blob (works on both web and native)
+      const response = await fetch(localUri);
+      const blob     = await response.blob();
+
+      const { error: uploadError } = await supabase.storage
+        .from('children')
+        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('children')
+        .getPublicUrl(path);
+
+      return urlData.publicUrl ?? null;
+    } catch (err) {
+      console.warn('[uploadPhoto] failed:', err);
+      return null; // fall back to no photo rather than crash
+    }
+  }
+
   // ── Allergies ─────────────────────────────────────────────────────────────
 
   const togglePresetAllergy = (allergy: string) => {
@@ -140,11 +198,16 @@ export default function ChildProfileScreen() {
     setAllergies((prev) => prev.filter((a) => a !== allergy));
   };
 
-  // ── Date picker (native) ─────────────────────────────────────────────────
+  // ── Date / Time pickers ──────────────────────────────────────────────────
 
   const onDateChange = (_event: DateTimePickerEvent, date?: Date) => {
     if (Platform.OS !== 'ios') setShowDatePicker(false);
     if (date) setBirthday(date.toISOString().split('T')[0]);
+  };
+
+  const onTimeChange = (_event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS !== 'ios') setShowTimePicker(false);
+    if (date) setBirthTime(dateToHHMM(date));
   };
 
   // ── Validation & Save ────────────────────────────────────────────────────
@@ -179,8 +242,27 @@ export default function ChildProfileScreen() {
 
     setSaving(true);
     try {
+      const childId = existing?.id ?? generateId();
+
+      // ── Photo: upload to Supabase Storage if configured ──────────────────
+      let resolvedPhotoUri = photoUri || undefined;
+      let resolvedPhotoUrl: string | undefined;
+
+      if (isSupabaseConfigured && photoUri && !photoUri.startsWith('http')) {
+        // Local URI → upload to Storage
+        const url = await uploadPhoto(photoUri, childId);
+        if (url) {
+          resolvedPhotoUrl = url;
+          resolvedPhotoUri = url; // store public URL in local store too
+        }
+      } else if (photoUri?.startsWith('http')) {
+        // Already a remote URL (editing existing profile)
+        resolvedPhotoUrl = photoUri;
+        resolvedPhotoUri = photoUri;
+      }
+
       const childData: Child = {
-        id:               existing?.id ?? generateId(),
+        id:               childId,
         firstName:        firstName.trim(),
         middleName:       middleName.trim() || undefined,
         lastName:         lastName.trim(),
@@ -198,38 +280,34 @@ export default function ChildProfileScreen() {
         clinicHospital:   clinic.trim() || undefined,
         philhealthNumber: philhealth.trim() || undefined,
         mchBookletNumber: mch.trim() || undefined,
-        photoUri:         photoUri || undefined,
-        avatarIndex:      photoUri ? undefined : avatarIndex,
+        photoUri:         resolvedPhotoUri,
+        avatarIndex:      resolvedPhotoUri ? undefined : avatarIndex,
         createdAt:        existing?.createdAt ?? new Date().toISOString(),
       };
 
-      // Save to Supabase if configured
-      const supabaseURL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-      const isConfigured = supabaseURL && !supabaseURL.includes('your-project');
-
-      if (isConfigured) {
+      // ── Save to Supabase if configured ───────────────────────────────────
+      if (isSupabaseConfigured) {
         const { data: { user } } = await supabase.auth.getUser();
         const row = {
           id:                 childData.id,
           user_id:            user?.id,
           first_name:         childData.firstName,
-          middle_name:        childData.middleName,
+          middle_name:        childData.middleName ?? null,
           last_name:          childData.lastName,
-          nickname:           childData.nickname,
-          sex:                childData.sex,
+          nickname:           childData.nickname ?? null,
+          sex:                childData.sex,           // 'male' | 'female' | 'unspecified' ✓
           birthday:           childData.birthday,
-          birth_time:         childData.birthTime,
-          blood_type:         childData.bloodType,
-          birth_type:         childData.birthType,
-          birth_weight:       childData.birthWeight,
-          birth_height:       childData.birthHeight,
-          gestational_age:    childData.gestationalAge,
-          allergies:          childData.allergies,
-          pediatrician_name:  childData.pediatricianName,
-          clinic_hospital:    childData.clinicHospital,
-          philhealth_number:  childData.philhealthNumber,
-          mch_booklet_number: childData.mchBookletNumber,
-          avatar_index:       childData.avatarIndex,
+          birth_time:         childData.birthTime ?? null,
+          blood_type:         childData.bloodType ?? null,
+          birth_type:         childData.birthType ?? null,
+          birth_weight_kg:    childData.birthWeight ?? null,
+          birth_height_cm:    childData.birthHeight ?? null,
+          gestational_age_weeks: childData.gestationalAge ?? null,
+          allergies:          childData.allergies ?? null,
+          photo_url:          resolvedPhotoUrl ?? null,
+          pediatrician_name:  childData.pediatricianName ?? null,
+          philhealth_number:  childData.philhealthNumber ?? null,
+          mch_booklet_number: childData.mchBookletNumber ?? null,
           created_at:         childData.createdAt,
         };
         const { error } = isEdit
@@ -398,15 +476,15 @@ export default function ChildProfileScreen() {
           {/* Sex toggle */}
           <Text style={s.fieldLabel}>{t('profile.sex')}</Text>
           <View style={s.toggleRow}>
-            {(['boy', 'girl', 'other'] as Sex[]).map((v) => (
+            {(['male', 'female', 'unspecified'] as Sex[]).map((v) => (
               <TouchableOpacity
                 key={v}
                 style={[s.toggleBtn, sex === v && s.toggleBtnActive]}
                 onPress={() => setSex(v)}
               >
                 <Text style={[s.toggleBtnText, sex === v && s.toggleBtnTextActive]}>
-                  {v === 'boy' ? `💙 ${t('profile.sex_boy')}`
-                   : v === 'girl' ? `💗 ${t('profile.sex_girl')}`
+                  {v === 'male'   ? `💙 ${t('profile.sex_boy')}`
+                   : v === 'female' ? `💗 ${t('profile.sex_girl')}`
                    : `🌈 ${t('profile.sex_other')}`}
                 </Text>
               </TouchableOpacity>
@@ -460,14 +538,51 @@ export default function ChildProfileScreen() {
             </>
           )}
 
-          {/* Birth time */}
-          <Field
-            label={t('profile.birth_time')}
-            value={birthTime}
-            onChangeText={setBirthTime}
-            placeholder="e.g. 3:45 PM"
-            optional
-          />
+          {/* Birth time — proper time picker */}
+          <Text style={[s.fieldLabel, { marginTop: 14 }]}>
+            {t('profile.birth_time')}
+          </Text>
+          {Platform.OS === 'web' ? (
+            // Web: native time input
+            <View style={s.input}>
+              {/* @ts-ignore */}
+              <input
+                type="time"
+                value={birthTime}
+                onChange={(e: any) => setBirthTime(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  width: '100%',
+                  fontSize: 15,
+                  color: birthTime ? Colors.dark : Colors.lightGray,
+                  backgroundColor: 'transparent',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                }}
+              />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={s.input}
+                onPress={() => setShowTimePicker(true)}
+              >
+                <Text style={birthTime ? s.inputText : s.inputPlaceholder}>
+                  {birthTime ? formatTime12h(birthTime) : t('profile.birth_time_placeholder')}
+                </Text>
+              </TouchableOpacity>
+              {showTimePicker && (
+                <DateTimePicker
+                  value={birthTime ? hhmmToDate(birthTime) : new Date()}
+                  mode="time"
+                  is24Hour={false}
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onTimeChange}
+                />
+              )}
+            </>
+          )}
 
           {/* Blood type */}
           <Text style={[s.fieldLabel, { marginTop: 14 }]}>{t('profile.blood_type')}</Text>
