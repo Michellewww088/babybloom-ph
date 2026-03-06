@@ -475,7 +475,7 @@ export default function OnboardingScreen() {
           {step === 4 && status === 'parenting' && (
             <>
               <Text style={s.stepLabel}>STEP 4 OF {visibleSteps}</Text>
-              <Text style={s.question}>Tell us about your first child 🌟</Text>
+              <Text style={s.question}>Tell us about your child 🌟</Text>
               {babyCount && babyCount !== 'single' && (
                 <View style={s.infoBanner}>
                   <Text style={s.infoBannerText}>
