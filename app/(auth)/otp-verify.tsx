@@ -6,7 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
-import { verifyPhoneOTP, supabase } from '../../src/lib/supabase';
+import { verifyEmailOTP, sendEmailOTP, supabase } from '../../src/lib/supabase';
 import Colors from '../../constants/Colors';
 
 const OTP_LENGTH      = 6;
@@ -16,7 +16,7 @@ const LOCKOUT_MINUTES = 15;
 
 export default function OTPVerifyScreen() {
   const { t } = useTranslation();
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const { email } = useLocalSearchParams<{ email: string }>();
 
   const [otp, setOtp]             = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [loading, setLoading]     = useState(false);
@@ -29,8 +29,8 @@ export default function OTPVerifyScreen() {
   // ── 60s resend countdown ─────────────────────────────────────────────
   useEffect(() => {
     if (countdown === 0) return;
-    const t = setInterval(() => setCountdown((c) => c - 1), 1000);
-    return () => clearInterval(t);
+    const id = setInterval(() => setCountdown((c) => c - 1), 1000);
+    return () => clearInterval(id);
   }, [countdown]);
 
   // ── Lockout countdown ────────────────────────────────────────────────
@@ -51,11 +51,12 @@ export default function OTPVerifyScreen() {
     return () => clearInterval(tick);
   }, [lockedUntil]);
 
-  // ── Format masked phone for subtitle (e.g. +63 9XX XXX X789) ─────────
-  function maskPhone(e164: string) {
-    const local = e164.replace('+63', '');              // 10 digits
-    const masked = local.slice(0, 1) + 'XX XXX X' + local.slice(-3);
-    return `+63 ${masked}`;
+  // ── Mask email for subtitle (e.g. j***@example.com) ──────────────────
+  function maskEmail(e: string) {
+    const [local, domain] = e.split('@');
+    if (!local || !domain) return e;
+    const visible = local.slice(0, 2);
+    return `${visible}***@${domain}`;
   }
 
   // ── Digit input ──────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ export default function OTPVerifyScreen() {
     if (code.length < OTP_LENGTH || lockedUntil) return;
     setLoading(true);
     try {
-      const { session } = await verifyPhoneOTP(phone!, code);
+      const { session } = await verifyEmailOTP(email!, code);
 
       // Check if this is a new user (no profile in user_profiles yet)
       if (session?.user) {
@@ -122,11 +123,15 @@ export default function OTPVerifyScreen() {
     }
   }
 
-  function handleResend() {
+  async function handleResend() {
     setCountdown(RESEND_SECONDS);
     setAttempts(0);
     setOtp(Array(OTP_LENGTH).fill(''));
-    // In production: re-call sendPhoneOTP(phone) here
+    try {
+      await sendEmailOTP(email!);
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to resend OTP');
+    }
   }
 
   const isLocked = !!lockedUntil;
@@ -145,7 +150,7 @@ export default function OTPVerifyScreen() {
         {/* Title */}
         <Text style={s.title}>{t('auth.otp_title')}</Text>
         <Text style={s.subtitle}>
-          Sent to {maskPhone(phone ?? '')}
+          Sent to {maskEmail(email ?? '')}
         </Text>
 
         {/* Card */}

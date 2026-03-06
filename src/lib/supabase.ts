@@ -6,9 +6,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://your-project.supabase.co';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? 'your-anon-key';
 
+// True when real credentials are configured (not placeholder values)
+const isSupabaseConfigured =
+  !SUPABASE_URL.includes('your-project') &&
+  !SUPABASE_ANON_KEY.includes('your-anon-key');
+
+// SSR-safe storage adapter: Expo web SSR runs in Node.js where `window` is
+// undefined, so AsyncStorage.getItem() crashes. Guard each method.
+const ssrSafeStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    if (typeof window === 'undefined') return null;
+    return AsyncStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (typeof window === 'undefined') return;
+    return AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key: string): Promise<void> => {
+    if (typeof window === 'undefined') return;
+    return AsyncStorage.removeItem(key);
+  },
+};
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: AsyncStorage,
+    storage: ssrSafeStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
@@ -18,30 +40,31 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 // ── AUTH HELPERS ────────────────────────────────────────────────────────
 
 /**
- * Send OTP to a Philippine mobile number.
- * Formats the number as +63XXXXXXXXXX before sending.
+ * Send a 6-digit OTP to the given email address via Supabase Auth.
+ * Free, built-in — no third-party SMS gateway required.
  */
-export async function sendPhoneOTP(localNumber: string) {
-  // Strip spaces/dashes, ensure starts with 9
-  const cleaned = localNumber.replace(/\D/g, '');
-  const e164 = `+63${cleaned}`;
+export async function sendEmailOTP(emailAddress: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    console.warn('[DEV] Supabase not configured — skipping email OTP send. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in .env.local');
+    return;
+  }
 
   const { error } = await supabase.auth.signInWithOtp({
-    phone: e164,
+    email: emailAddress,
+    options: { shouldCreateUser: true },
   });
 
   if (error) throw error;
-  return e164;
 }
 
 /**
- * Verify the OTP received via SMS.
+ * Verify the 6-digit OTP received via email.
  */
-export async function verifyPhoneOTP(phone: string, token: string) {
+export async function verifyEmailOTP(emailAddress: string, token: string) {
   const { data, error } = await supabase.auth.verifyOtp({
-    phone,
+    email: emailAddress,
     token,
-    type: 'sms',
+    type: 'email',
   });
 
   if (error) throw error;
