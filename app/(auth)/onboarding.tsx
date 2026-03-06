@@ -76,8 +76,18 @@ export default function OnboardingScreen() {
       setSaving(false);
     }
     // Skip → go straight to Dashboard (ChildSwitcher lets them add baby later)
-    // Finish → go to Create Child Profile (required first-run step)
-    router.replace(skipped ? '/(tabs)' : '/child-profile');
+    // Finish → go to Create Child Profile, pre-filling the data we already collected
+    if (skipped) {
+      router.replace('/(tabs)');
+    } else {
+      router.replace({
+        pathname: '/child-profile',
+        params: {
+          prefill_birthday:   dateValue ?? '',
+          prefill_birth_type: birthType ?? '',
+        },
+      });
+    }
   }
 
   // ── Effective step count for progress dots ────────────────────────────

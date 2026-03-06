@@ -1,5 +1,5 @@
 import '../src/i18n';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -19,6 +19,11 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  // Tracks whether we've already done the initial navigation decision.
+  // Prevents background Supabase token-refreshes from re-triggering the
+  // auth guard and redirecting away from screens like /welcome mid-animation.
+  const hasNavigated = useRef(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null));
     const { data: listener } = supabase.auth.onAuthStateChange((_e, s) => setSession(s ?? null));
@@ -30,6 +35,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (session === undefined) return;
+
+    // Only run the routing decision once per app session.
+    // Subsequent auth state changes (token refreshes, etc.) are ignored so
+    // they don't interrupt screens like /welcome that appear mid-flow.
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
 
     // No session → go to login
     if (!session) {

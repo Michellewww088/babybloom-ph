@@ -73,11 +73,23 @@ function hhmmToDate(hhmm: string): Date {
 
 export default function ChildProfileScreen() {
   const { t }    = useTranslation();
-  const params   = useLocalSearchParams<{ id?: string }>();
+  const params   = useLocalSearchParams<{
+    id?:                string;
+    prefill_birthday?:  string;   // ISO date from onboarding step 4
+    prefill_birth_type?: string;  // 'vaginal' | 'cesarean' from onboarding step 2
+  }>();
   const { children, addChild, updateChild } = useChildStore();
 
   const existing = params.id ? children.find((c) => c.id === params.id) : undefined;
   const isEdit   = Boolean(existing);
+
+  // Prefill values passed from onboarding (only used when creating a new profile)
+  const prefillBirthday  = !isEdit ? (params.prefill_birthday ?? '') : '';
+  const prefillBirthType: BirthType | undefined = !isEdit
+    ? (params.prefill_birth_type === 'vaginal' || params.prefill_birth_type === 'cesarean'
+        ? params.prefill_birth_type
+        : undefined)
+    : undefined;
 
   // ── Form state ─────────────────────────────────────────────────────────────
 
@@ -90,11 +102,13 @@ export default function ChildProfileScreen() {
   const [nickname,       setNickname]       = useState(existing?.nickname ?? '');
 
   const [sex,            setSex]            = useState<Sex>(existing?.sex ?? 'female');
-  const [birthday,       setBirthday]       = useState(existing?.birthday ?? '');
+  // Birthday: use existing (edit mode) → prefill from onboarding → empty
+  const [birthday,       setBirthday]       = useState(existing?.birthday ?? prefillBirthday);
   const [birthTime,      setBirthTime]      = useState(existing?.birthTime ?? ''); // "HH:MM" 24h
   const [bloodType,      setBloodType]      = useState<BloodType | undefined>(existing?.bloodType);
 
-  const [birthType,      setBirthType]      = useState<BirthType | undefined>(existing?.birthType);
+  // Birth type: use existing (edit mode) → prefill from onboarding → undefined
+  const [birthType,      setBirthType]      = useState<BirthType | undefined>(existing?.birthType ?? prefillBirthType);
   const [birthWeightStr, setBirthWeightStr] = useState(existing?.birthWeight?.toString() ?? '');
   const [birthHeightStr, setBirthHeightStr] = useState(existing?.birthHeight?.toString() ?? '');
   const [gestAgeStr,     setGestAgeStr]     = useState(existing?.gestationalAge?.toString() ?? '');
@@ -285,35 +299,40 @@ export default function ChildProfileScreen() {
         createdAt:        existing?.createdAt ?? new Date().toISOString(),
       };
 
-      // ── Save to Supabase if configured ───────────────────────────────────
+      // ── Save to Supabase if configured and user is authenticated ─────────
       if (isSupabaseConfigured) {
         const { data: { user } } = await supabase.auth.getUser();
-        const row = {
-          id:                 childData.id,
-          user_id:            user?.id,
-          first_name:         childData.firstName,
-          middle_name:        childData.middleName ?? null,
-          last_name:          childData.lastName,
-          nickname:           childData.nickname ?? null,
-          sex:                childData.sex,           // 'male' | 'female' | 'unspecified' ✓
-          birthday:           childData.birthday,
-          birth_time:         childData.birthTime ?? null,
-          blood_type:         childData.bloodType ?? null,
-          birth_type:         childData.birthType ?? null,
-          birth_weight_kg:    childData.birthWeight ?? null,
-          birth_height_cm:    childData.birthHeight ?? null,
-          gestational_age_weeks: childData.gestationalAge ?? null,
-          allergies:          childData.allergies ?? null,
-          photo_url:          resolvedPhotoUrl ?? null,
-          pediatrician_name:  childData.pediatricianName ?? null,
-          philhealth_number:  childData.philhealthNumber ?? null,
-          mch_booklet_number: childData.mchBookletNumber ?? null,
-          created_at:         childData.createdAt,
-        };
-        const { error } = isEdit
-          ? await supabase.from('children').update(row).eq('id', childData.id)
-          : await supabase.from('children').insert(row);
-        if (error) throw error;
+        // Only write to Supabase when there is a real authenticated user.
+        // In dev-bypass mode (no real session) we still save to the local
+        // Zustand store below, so the app remains fully functional.
+        if (user) {
+          const row = {
+            id:                 childData.id,
+            user_id:            user.id,
+            first_name:         childData.firstName,
+            middle_name:        childData.middleName ?? null,
+            last_name:          childData.lastName,
+            nickname:           childData.nickname ?? null,
+            sex:                childData.sex,           // 'male' | 'female' | 'unspecified' ✓
+            birthday:           childData.birthday,
+            birth_time:         childData.birthTime ?? null,
+            blood_type:         childData.bloodType ?? null,
+            birth_type:         childData.birthType ?? null,
+            birth_weight_kg:    childData.birthWeight ?? null,
+            birth_height_cm:    childData.birthHeight ?? null,
+            gestational_age_weeks: childData.gestationalAge ?? null,
+            allergies:          childData.allergies ?? null,
+            photo_url:          resolvedPhotoUrl ?? null,
+            pediatrician_name:  childData.pediatricianName ?? null,
+            philhealth_number:  childData.philhealthNumber ?? null,
+            mch_booklet_number: childData.mchBookletNumber ?? null,
+            created_at:         childData.createdAt,
+          };
+          const { error } = isEdit
+            ? await supabase.from('children').update(row).eq('id', childData.id)
+            : await supabase.from('children').insert(row);
+          if (error) throw error;
+        }
       }
 
       // Always update local store
