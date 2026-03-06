@@ -24,56 +24,89 @@ const TOTAL_STEPS = 5;
 // ── Kawaii SVG Icons ─────────────────────────────────────────────────────
 
 function IconPregnant() {
+  // Front-facing chibi: round head + giant round belly, baby inside
   return (
-    <Svg width={64} height={64} viewBox="0 0 64 64">
+    <Svg width={72} height={72} viewBox="0 0 72 72">
       {/* Head */}
-      <Circle cx="32" cy="16" r="12" fill="#F5C994" />
-      {/* Hair */}
-      <Path d="M 20 14 Q 22 4 32 4 Q 42 4 44 14" fill="#C8855A" />
-      {/* Body/Belly */}
-      <Ellipse cx="32" cy="44" rx="18" ry="16" fill="#FFD6E4" />
+      <Circle cx="36" cy="12" r="11" fill="#F5C994" />
+      {/* Hair arc */}
+      <Path d="M 25 9 Q 36 1 47 9 Q 43 5 36 5 Q 29 5 25 9Z" fill="#C8855A" />
+      {/* Eyes */}
+      <Circle cx="31" cy="11" r="2.2" fill="#2C1A0E" />
+      <Circle cx="41" cy="11" r="2.2" fill="#2C1A0E" />
+      <Circle cx="32" cy="10" r="0.9" fill="white" />
+      <Circle cx="42" cy="10" r="0.9" fill="white" />
+      {/* Smile */}
+      <Path d="M 31 16 Q 36 20 41 16" stroke="#D47A8F" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* Blush */}
+      <Ellipse cx="25" cy="15" rx="3" ry="1.8" fill="#F4A8C0" opacity="0.6" />
+      <Ellipse cx="47" cy="15" rx="3" ry="1.8" fill="#F4A8C0" opacity="0.6" />
+      {/* Short neck */}
+      <Rect x="32" y="22" width="8" height="8" rx="4" fill="#F5C994" />
+      {/* Short stubby arms */}
+      <Rect x="10" y="24" width="22" height="9" rx="4.5" fill="#F5C994" />
+      <Rect x="40" y="24" width="22" height="9" rx="4.5" fill="#F5C994" />
+      {/* ── BIG ROUND BELLY (the unmistakable feature) ── */}
+      <Circle cx="36" cy="51" r="19" fill="#FFD6E4" />
+      <Circle cx="36" cy="51" r="19" fill="none" stroke="#F4A8C0" strokeWidth="1.5" />
+      {/* Baby silhouette inside */}
+      <Circle cx="36" cy="47" r="9" fill="#FFADC4" opacity="0.4" />
+      <Circle cx="36" cy="41" r="5.5" fill="#FFADC4" opacity="0.5" />
+      {/* Baby tiny eyes */}
+      <Circle cx="33.5" cy="40.5" r="0.9" fill="#D47A8F" opacity="0.5" />
+      <Circle cx="38.5" cy="40.5" r="0.9" fill="#D47A8F" opacity="0.5" />
       {/* Heart on belly */}
-      <Path d="M32 42 C32 39 28 39 28 43 C28 46 32 49 32 49 C32 49 36 46 36 43 C36 39 32 39 32 42Z"
+      <Path d="M36 57 C36 54.5 33 54.5 33 57 C33 59.5 36 61 36 61 C36 61 39 59.5 39 57 C39 54.5 36 54.5 36 57Z"
         fill="#E8637C" />
-      {/* Arms */}
-      <Ellipse cx="14" cy="42" rx="5" ry="9" fill="#F5C994" transform="rotate(-15 14 42)" />
-      <Ellipse cx="50" cy="42" rx="5" ry="9" fill="#F5C994" transform="rotate(15 50 42)" />
-      {/* Cute face */}
-      <Circle cx="28" cy="15" r="2" fill="#2C1A0E" />
-      <Circle cx="36" cy="15" r="2" fill="#2C1A0E" />
-      <Circle cx="29" cy="14" r="0.8" fill="white" />
-      <Circle cx="37" cy="14" r="0.8" fill="white" />
-      <Path d="M 29 19 Q 32 22 35 19" stroke="#D47A8F" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      {/* Rosy cheeks */}
-      <Ellipse cx="23" cy="18" rx="4" ry="2.5" fill="#F4A8C0" opacity="0.55" />
-      <Ellipse cx="41" cy="18" rx="4" ry="2.5" fill="#F4A8C0" opacity="0.55" />
     </Svg>
   );
 }
 
 function IconParent() {
+  // Adult (left) + small baby bundle (right) — clear size difference
   return (
-    <Svg width={64} height={64} viewBox="0 0 64 64">
-      {/* Baby body */}
-      <Ellipse cx="32" cy="46" rx="14" ry="12" fill="#FFE0B2" />
-      {/* Baby head */}
-      <Circle cx="32" cy="26" r="16" fill="#FFE0B2" />
-      {/* Baby ears */}
-      <Circle cx="16" cy="26" r="6" fill="#FFD0A0" />
-      <Circle cx="48" cy="26" r="6" fill="#FFD0A0" />
-      {/* Eyes */}
-      <Circle cx="26" cy="24" r="3" fill="#2C1A0E" />
-      <Circle cx="38" cy="24" r="3" fill="#2C1A0E" />
-      <Circle cx="27" cy="23" r="1.2" fill="white" />
-      <Circle cx="39" cy="23" r="1.2" fill="white" />
-      {/* Rosy cheeks */}
-      <Ellipse cx="20" cy="30" rx="5" ry="3" fill="#F4A8C0" opacity="0.6" />
-      <Ellipse cx="44" cy="30" rx="5" ry="3" fill="#F4A8C0" opacity="0.6" />
-      {/* Smile */}
-      <Path d="M 25 33 Q 32 38 39 33" stroke="#D47A8F" strokeWidth="2" fill="none" strokeLinecap="round" />
+    <Svg width={72} height={72} viewBox="0 0 72 72">
+      {/* ── Adult (left) ── */}
+      {/* Adult head */}
+      <Circle cx="22" cy="11" r="11" fill="#F5C994" />
+      {/* Hair */}
+      <Path d="M 11 9 Q 14 1 22 1 Q 30 1 33 9 Q 29 4 22 4 Q 15 4 11 9Z" fill="#C8855A" />
+      {/* Adult face */}
+      <Circle cx="18" cy="10" r="2" fill="#2C1A0E" />
+      <Circle cx="26" cy="10" r="2" fill="#2C1A0E" />
+      <Circle cx="19" cy="9.2" r="0.8" fill="white" />
+      <Circle cx="27" cy="9.2" r="0.8" fill="white" />
+      <Path d="M 18 15 Q 22 19 26 15" stroke="#D47A8F" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+      <Ellipse cx="14" cy="14" rx="3" ry="1.8" fill="#F4A8C0" opacity="0.5" />
+      <Ellipse cx="30" cy="14" rx="3" ry="1.8" fill="#F4A8C0" opacity="0.5" />
+      {/* Adult body */}
+      <Rect x="15" y="21" width="14" height="30" rx="7" fill="#FFB3C6" />
+      {/* Arm reaching to baby */}
+      <Rect x="29" y="32" width="18" height="9" rx="4.5" fill="#F5C994" />
+      {/* Left arm */}
+      <Rect x="5" y="24" width="10" height="8" rx="4" fill="#F5C994" />
+
+      {/* ── Baby bundle (right, clearly smaller) ── */}
+      {/* Swaddle body */}
+      <Ellipse cx="52" cy="52" rx="11" ry="13" fill="#FFE4EE" />
+      {/* Swaddle wrap line */}
+      <Path d="M 41 48 Q 52 44 63 48" stroke="#F4A8C0" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* Baby head (r=8, clearly smaller than adult r=11) */}
+      <Circle cx="52" cy="36" r="8" fill="#FFE0B2" />
       {/* Baby cap */}
-      <Path d="M 16 20 Q 32 8 48 20" fill="#FFB3C6" />
-      <Circle cx="32" cy="10" r="4" fill="#E8637C" />
+      <Path d="M 44 34 Q 46 27 52 27 Q 58 27 60 34Z" fill="#FFB3C6" />
+      <Circle cx="52" cy="27" r="3" fill="#E8637C" />
+      {/* Baby face */}
+      <Circle cx="49.5" cy="35" r="1.5" fill="#2C1A0E" />
+      <Circle cx="54.5" cy="35" r="1.5" fill="#2C1A0E" />
+      <Circle cx="50.2" cy="34.2" r="0.6" fill="white" />
+      <Circle cx="55.2" cy="34.2" r="0.6" fill="white" />
+      <Path d="M 49.5 39 Q 52 41.5 54.5 39" stroke="#D47A8F" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+      <Ellipse cx="46" cy="37" rx="2.8" ry="1.6" fill="#F4A8C0" opacity="0.55" />
+      <Ellipse cx="58" cy="37" rx="2.8" ry="1.6" fill="#F4A8C0" opacity="0.55" />
+      {/* Heart floating above (between parent and baby) */}
+      <Path d="M38 20 C38 17.5 35 17.5 35 20 C35 22.5 38 24 38 24 C38 24 41 22.5 41 20 C41 17.5 38 17.5 38 20Z"
+        fill="#E8637C" />
     </Svg>
   );
 }
