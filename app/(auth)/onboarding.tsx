@@ -10,6 +10,7 @@ import i18n from '../../src/i18n';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import { supabase } from '../../src/lib/supabase';
 import Colors from '../../constants/Colors';
+import { useOnboardingStore } from '../../store/onboardingStore';
 
 // ── Types ────────────────────────────────────────────────────────────────
 type Status    = 'pregnant' | 'parenting' | null;
@@ -21,6 +22,8 @@ const TOTAL_STEPS = 5;
 
 export default function OnboardingScreen() {
   const { t } = useTranslation();
+
+  const { setData: saveOnboardingData } = useOnboardingStore();
 
   const [step,      setStep]      = useState(1);
   const [saving,    setSaving]    = useState(false);
@@ -59,6 +62,11 @@ export default function OnboardingScreen() {
 
   // ── Save & navigate ───────────────────────────────────────────────────
   async function handleFinish(skipped = false) {
+    // Persist onboarding answers for child-profile pre-fill (only when not skipped)
+    if (!skipped) {
+      saveOnboardingData({ status, birthType, babyCount, date: dateValue, language });
+    }
+
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();

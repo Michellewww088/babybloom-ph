@@ -166,65 +166,68 @@ export default function HomeScreen() {
 // ── Styles ─────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen:  { flex: 1, backgroundColor: '#FDF2F8' },
+  screen:  { flex: 1, backgroundColor: '#FFF0F4' },
   scroll:  { flex: 1 },
-  content: { padding: 20, paddingBottom: 40 },
+  content: { padding: 16, paddingBottom: 40 },
 
   // Greeting row
   greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    marginBottom: 20,
+    gap: 12,
+    marginBottom: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
   avatarThumb: {
-    width: 52, height: 52,
-    borderRadius: 26,
+    width: 56, height: 56,
+    borderRadius: 28,
     overflow: 'hidden',
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: Colors.primaryPink,
   },
-  avatarThumbImg: { width: 52, height: 52, borderRadius: 26 },
+  avatarThumbImg: { width: 56, height: 56, borderRadius: 28 },
   avatarThumbDefault: {
-    width: 52, height: 52,
-    borderRadius: 26,
+    width: 56, height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarThumbEmoji: { fontSize: 26 },
+  avatarThumbEmoji: { fontSize: 28 },
   greetingText:  { flex: 1 },
-  greeting:      { fontSize: 20, fontWeight: '700', color: Colors.dark },
+  greeting:      { fontSize: 18, fontWeight: '700', color: Colors.dark },
   babyName:      { fontSize: 13, color: Colors.primaryPink, fontWeight: '600', marginTop: 2 },
 
   // Section titles
   sectionTitle: {
-    fontSize: 16, fontWeight: '700', color: '#374151',
-    marginBottom: 12, marginTop: 8,
+    fontSize: 15, fontWeight: '800', color: Colors.primaryPink,
+    marginBottom: 10, marginTop: 6,
   },
 
   // Quick Stats
-  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
   statCard: {
     flex: 1, minWidth: '44%',
     backgroundColor: '#fff',
-    borderRadius: 14, padding: 14,
+    borderRadius: 16, padding: 14,
     alignItems: 'center',
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    borderWidth: 1, borderColor: '#FCE4EC',
+    shadowColor: '#E8637C', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2,
   },
-  statEmoji: { fontSize: 24, marginBottom: 4 },
-  statValue: { fontSize: 16, fontWeight: '700', color: Colors.dark },
+  statEmoji: { fontSize: 26, marginBottom: 4 },
+  statValue: { fontSize: 16, fontWeight: '800', color: Colors.dark },
   statLabel: { fontSize: 11, color: Colors.lightGray, marginTop: 2, textAlign: 'center' },
 
   // Growth Snapshot card
   growthCard: {
     backgroundColor: '#fff',
-    borderRadius: 16, padding: 18,
-    marginBottom: 20,
-    borderWidth: 1, borderColor: '#FCE7F3',
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
+    borderRadius: 18, padding: 16,
+    marginBottom: 16,
+    borderWidth: 1, borderColor: '#FCE4EC',
+    shadowColor: '#E8637C', shadowOpacity: 0.08, shadowRadius: 8, elevation: 2,
   },
   growthCardTitle: {
-    fontSize: 14, fontWeight: '700', color: Colors.dark,
+    fontSize: 14, fontWeight: '800', color: Colors.primaryPink,
     marginBottom: 14,
   },
   growthPlaceholder: {
@@ -234,15 +237,17 @@ const s = StyleSheet.create({
   // Birth stats inside growth card
   birthStatsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     marginBottom: 14,
   },
   birthStatItem: {
     flex: 1,
-    backgroundColor: Colors.softPink,
-    borderRadius: 12,
+    backgroundColor: '#FFF0F4',
+    borderRadius: 14,
     padding: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FCE4EC',
   },
   birthStatValue: {
     fontSize: 22, fontWeight: '800', color: Colors.primaryPink,
@@ -255,25 +260,27 @@ const s = StyleSheet.create({
   },
   addMeasurementBtn: {
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1.5,
     borderColor: Colors.primaryPink,
     borderStyle: 'dashed',
     alignItems: 'center',
+    backgroundColor: '#FFF5F7',
   },
   addMeasurementText: {
-    color: Colors.primaryPink, fontWeight: '600', fontSize: 13,
+    color: Colors.primaryPink, fontWeight: '700', fontSize: 13,
   },
 
   // Feature grid
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   featureCard: {
     width: '30%',
-    backgroundColor: '#fff',
-    borderRadius: 14, padding: 14,
+    backgroundColor: '#FFF5F7',
+    borderRadius: 16, padding: 14,
     alignItems: 'center',
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    borderWidth: 1.5, borderColor: '#FCE4EC',
+    shadowColor: '#E8637C', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2,
   },
-  featureEmoji: { fontSize: 28, marginBottom: 6 },
-  featureLabel: { fontSize: 11, fontWeight: '600', color: '#374151', textAlign: 'center' },
+  featureEmoji: { fontSize: 32, marginBottom: 8 },
+  featureLabel: { fontSize: 11, fontWeight: '700', color: Colors.primaryPink, textAlign: 'center', lineHeight: 15 },
 });

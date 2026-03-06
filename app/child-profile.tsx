@@ -2,13 +2,19 @@
  * child-profile.tsx
  * Create / Edit child profile — all fields from docs/02-profile.md
  * Accessible via: router.push('/child-profile') or router.push({ pathname: '/child-profile', params: { id: '...' } })
+ *
+ * Smart UX features:
+ *  - Pre-fills birthday & birth type from onboarding answers
+ *  - Progress bar (required + optional fields)
+ *  - Inline required-field validation with scroll-to-error
+ *  - Pre-fill notice banner when data came from onboarding
  */
 
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, Alert, Platform, ActivityIndicator, Image,
 } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,6 +22,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 
 import Colors from '../constants/Colors';
 import { useChildStore, Child, Sex, BirthType, BloodType } from '../store/childStore';
+import { useOnboardingStore } from '../store/onboardingStore';
 import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -75,9 +82,16 @@ export default function ChildProfileScreen() {
   const { t }    = useTranslation();
   const params   = useLocalSearchParams<{ id?: string }>();
   const { children, addChild, updateChild } = useChildStore();
+  const { data: onboardingData, clearData: clearOnboarding } = useOnboardingStore();
 
   const existing = params.id ? children.find((c) => c.id === params.id) : undefined;
   const isEdit   = Boolean(existing);
+
+  // Determine which fields were pre-filled from onboarding
+  const prefillActive =
+    !isEdit &&
+    onboardingData.status === 'parenting' &&
+    (!!onboardingData.date || !!onboardingData.birthType);
 
   // ── Form state ─────────────────────────────────────────────────────────────
 
@@ -90,11 +104,20 @@ export default function ChildProfileScreen() {
   const [nickname,       setNickname]       = useState(existing?.nickname ?? '');
 
   const [sex,            setSex]            = useState<Sex>(existing?.sex ?? 'female');
-  const [birthday,       setBirthday]       = useState(existing?.birthday ?? '');
+  // Pre-fill birthday from onboarding (only for parenting status, not pregnant EDD)
+  const [birthday, setBirthday] = useState(
+    existing?.birthday ?? (prefillActive && onboardingData.date ? onboardingData.date : '')
+  );
   const [birthTime,      setBirthTime]      = useState(existing?.birthTime ?? ''); // "HH:MM" 24h
   const [bloodType,      setBloodType]      = useState<BloodType | undefined>(existing?.bloodType);
 
-  const [birthType,      setBirthType]      = useState<BirthType | undefined>(existing?.birthType);
+  // Pre-fill birth type from onboarding
+  const [birthType, setBirthType] = useState<BirthType | undefined>(
+    existing?.birthType ??
+    (prefillActive && onboardingData.birthType
+      ? (onboardingData.birthType as BirthType)
+      : undefined)
+  );
   const [birthWeightStr, setBirthWeightStr] = useState(existing?.birthWeight?.toString() ?? '');
   const [birthHeightStr, setBirthHeightStr] = useState(existing?.birthHeight?.toString() ?? '');
   const [gestAgeStr,     setGestAgeStr]     = useState(existing?.gestationalAge?.toString() ?? '');
@@ -110,6 +133,33 @@ export default function ChildProfileScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [saving,         setSaving]         = useState(false);
+  const [errors,         setErrors]         = useState<Record<string, string>>({});
+
+  // ── Scroll + layout refs ──────────────────────────────────────────────────
+
+  const scrollRef   = useRef<ScrollView>(null);
+  const sectionYRef = useRef<Record<string, number>>({});
+
+  // ── Progress calculation ─────────────────────────────────────────────────
+  // Required (3): firstName, lastName, birthday
+  // Optional that count (7): nickname, birthType, birthWeight, birthHeight, bloodType, gestationalAge, pediatrician
+  // Total = 10
+  function calcProgress() {
+    let filled = 0;
+    if (firstName.trim())  filled++;
+    if (lastName.trim())   filled++;
+    if (birthday)          filled++;
+    if (nickname.trim())   filled++;
+    if (birthType)         filled++;
+    if (birthWeightStr)    filled++;
+    if (birthHeightStr)    filled++;
+    if (bloodType)         filled++;
+    if (gestAgeStr)        filled++;
+    if (pediatrician.trim()) filled++;
+    return Math.round((filled / 10) * 100);
+  }
+
+  const progress = calcProgress();
 
   // ── Image picker ──────────────────────────────────────────────────────────
 
@@ -150,14 +200,12 @@ export default function ChildProfileScreen() {
 
   // ── Photo upload to Supabase Storage ──────────────────────────────────────
 
-  /** Upload local photo URI to Supabase Storage → return public URL */
   async function uploadPhoto(localUri: string, childId: string): Promise<string | null> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id ?? 'anon';
       const path   = `${userId}/${childId}.jpg`;
 
-      // Fetch the image as a Blob (works on both web and native)
       const response = await fetch(localUri);
       const blob     = await response.blob();
 
@@ -174,7 +222,7 @@ export default function ChildProfileScreen() {
       return urlData.publicUrl ?? null;
     } catch (err) {
       console.warn('[uploadPhoto] failed:', err);
-      return null; // fall back to no photo rather than crash
+      return null;
     }
   }
 
@@ -202,7 +250,10 @@ export default function ChildProfileScreen() {
 
   const onDateChange = (_event: DateTimePickerEvent, date?: Date) => {
     if (Platform.OS !== 'ios') setShowDatePicker(false);
-    if (date) setBirthday(date.toISOString().split('T')[0]);
+    if (date) {
+      setBirthday(date.toISOString().split('T')[0]);
+      setErrors((e) => { const next = { ...e }; delete next.birthday; return next; });
+    }
   };
 
   const onTimeChange = (_event: DateTimePickerEvent, date?: Date) => {
@@ -210,56 +261,80 @@ export default function ChildProfileScreen() {
     if (date) setBirthTime(dateToHHMM(date));
   };
 
-  // ── Validation & Save ────────────────────────────────────────────────────
+  // ── Validation ────────────────────────────────────────────────────────────
+
+  function validate(): Record<string, string> {
+    const errs: Record<string, string> = {};
+
+    if (!firstName.trim()) errs.firstName = t('profile.required_first_name');
+    if (!lastName.trim())  errs.lastName  = t('profile.required_last_name');
+    if (!birthday)         errs.birthday  = t('profile.required_birthday');
+    if (birthday && birthday > todayISO()) errs.birthday = t('profile.birthday_future');
+
+    const bw = parseFloat(birthWeightStr);
+    if (birthWeightStr && (isNaN(bw) || bw < 0.5 || bw > 8.0))
+      errs.birthWeight = t('profile.weight_range');
+
+    const bh = parseFloat(birthHeightStr);
+    if (birthHeightStr && (isNaN(bh) || bh < 25 || bh > 65))
+      errs.birthHeight = t('profile.height_range');
+
+    const ga = parseInt(gestAgeStr, 10);
+    if (gestAgeStr && (isNaN(ga) || ga < 22 || ga > 42))
+      errs.gestationalAge = t('profile.gestational_range');
+
+    return errs;
+  }
+
+  /** Scroll to the section containing the first validation error */
+  function scrollToFirstError(errs: Record<string, string>) {
+    const FIELD_TO_SECTION: Record<string, string> = {
+      firstName:     'basic',
+      lastName:      'basic',
+      birthday:      'personal',
+      birthWeight:   'birthDetails',
+      birthHeight:   'birthDetails',
+      gestationalAge:'birthDetails',
+    };
+    const firstKey = Object.keys(errs)[0];
+    if (!firstKey) return;
+    const section = FIELD_TO_SECTION[firstKey] ?? 'basic';
+    const y = sectionYRef.current[section] ?? 0;
+    scrollRef.current?.scrollTo({ y: Math.max(0, y - 20), animated: true });
+  }
+
+  // ── Save ─────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
-    // Required fields
-    if (!firstName.trim() || !lastName.trim()) {
-      Alert.alert('', t('profile.required_fields'));
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      scrollToFirstError(errs);
       return;
     }
-    // Birthday not in future
-    if (birthday && birthday > todayISO()) {
-      Alert.alert('', t('profile.birthday_future'));
-      return;
-    }
-    // Numeric range validations
-    const bw = parseFloat(birthWeightStr);
-    if (birthWeightStr && (isNaN(bw) || bw < 0.5 || bw > 8.0)) {
-      Alert.alert('', t('profile.weight_range'));
-      return;
-    }
-    const bh = parseFloat(birthHeightStr);
-    if (birthHeightStr && (isNaN(bh) || bh < 25 || bh > 65)) {
-      Alert.alert('', t('profile.height_range'));
-      return;
-    }
-    const ga = parseInt(gestAgeStr, 10);
-    if (gestAgeStr && (isNaN(ga) || ga < 22 || ga > 42)) {
-      Alert.alert('', t('profile.gestational_range'));
-      return;
-    }
+    setErrors({});
 
     setSaving(true);
     try {
       const childId = existing?.id ?? generateId();
 
-      // ── Photo: upload to Supabase Storage if configured ──────────────────
       let resolvedPhotoUri = photoUri || undefined;
       let resolvedPhotoUrl: string | undefined;
 
       if (isSupabaseConfigured && photoUri && !photoUri.startsWith('http')) {
-        // Local URI → upload to Storage
         const url = await uploadPhoto(photoUri, childId);
         if (url) {
           resolvedPhotoUrl = url;
-          resolvedPhotoUri = url; // store public URL in local store too
+          resolvedPhotoUri = url;
         }
       } else if (photoUri?.startsWith('http')) {
-        // Already a remote URL (editing existing profile)
         resolvedPhotoUrl = photoUri;
         resolvedPhotoUri = photoUri;
       }
+
+      const bw = parseFloat(birthWeightStr);
+      const bh = parseFloat(birthHeightStr);
+      const ga = parseInt(gestAgeStr, 10);
 
       const childData: Child = {
         id:               childId,
@@ -268,7 +343,7 @@ export default function ChildProfileScreen() {
         lastName:         lastName.trim(),
         nickname:         nickname.trim() || undefined,
         sex,
-        birthday:         birthday || todayISO(),
+        birthday,
         birthTime:        birthTime.trim() || undefined,
         bloodType,
         birthType,
@@ -285,30 +360,29 @@ export default function ChildProfileScreen() {
         createdAt:        existing?.createdAt ?? new Date().toISOString(),
       };
 
-      // ── Save to Supabase if configured ───────────────────────────────────
       if (isSupabaseConfigured) {
         const { data: { user } } = await supabase.auth.getUser();
         const row = {
-          id:                 childData.id,
-          user_id:            user?.id,
-          first_name:         childData.firstName,
-          middle_name:        childData.middleName ?? null,
-          last_name:          childData.lastName,
-          nickname:           childData.nickname ?? null,
-          sex:                childData.sex,           // 'male' | 'female' | 'unspecified' ✓
-          birthday:           childData.birthday,
-          birth_time:         childData.birthTime ?? null,
-          blood_type:         childData.bloodType ?? null,
-          birth_type:         childData.birthType ?? null,
-          birth_weight_kg:    childData.birthWeight ?? null,
-          birth_height_cm:    childData.birthHeight ?? null,
+          id:                    childData.id,
+          user_id:               user?.id,
+          first_name:            childData.firstName,
+          middle_name:           childData.middleName ?? null,
+          last_name:             childData.lastName,
+          nickname:              childData.nickname ?? null,
+          sex:                   childData.sex,
+          birthday:              childData.birthday,
+          birth_time:            childData.birthTime ?? null,
+          blood_type:            childData.bloodType ?? null,
+          birth_type:            childData.birthType ?? null,
+          birth_weight_kg:       childData.birthWeight ?? null,
+          birth_height_cm:       childData.birthHeight ?? null,
           gestational_age_weeks: childData.gestationalAge ?? null,
-          allergies:          childData.allergies ?? null,
-          photo_url:          resolvedPhotoUrl ?? null,
-          pediatrician_name:  childData.pediatricianName ?? null,
-          philhealth_number:  childData.philhealthNumber ?? null,
-          mch_booklet_number: childData.mchBookletNumber ?? null,
-          created_at:         childData.createdAt,
+          allergies:             childData.allergies ?? null,
+          photo_url:             resolvedPhotoUrl ?? null,
+          pediatrician_name:     childData.pediatricianName ?? null,
+          philhealth_number:     childData.philhealthNumber ?? null,
+          mch_booklet_number:    childData.mchBookletNumber ?? null,
+          created_at:            childData.createdAt,
         };
         const { error } = isEdit
           ? await supabase.from('children').update(row).eq('id', childData.id)
@@ -316,19 +390,14 @@ export default function ChildProfileScreen() {
         if (error) throw error;
       }
 
-      // Always update local store
       if (isEdit) {
         updateChild(childData.id, childData);
       } else {
         addChild(childData);
+        clearOnboarding(); // Remove pre-fill data after first successful save
       }
 
-      // First save → welcome animation; subsequent edits → straight to dashboard
-      if (isEdit) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/welcome');
-      }
+      router.replace(isEdit ? '/(tabs)' : '/welcome');
     } catch (err: any) {
       Alert.alert(t('profile.save_error'), err.message ?? '');
     } finally {
@@ -370,18 +439,45 @@ export default function ChildProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        ref={scrollRef}
+        style={s.scroll}
+        contentContainerStyle={s.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+
+        {/* ── Progress Bar ── */}
+        <View style={s.progressCard}>
+          <View style={s.progressLabelRow}>
+            <Text style={s.progressLabel}>{t('profile.progress_label')}</Text>
+            <Text style={s.progressPct}>{progress}%</Text>
+          </View>
+          <View style={s.progressTrack}>
+            <View style={[s.progressFill, { width: `${progress}%` as any }]} />
+          </View>
+          {progress === 100 && (
+            <Text style={s.progressComplete}>✓ {t('profile.progress_complete')}</Text>
+          )}
+        </View>
+
+        {/* ── Pre-fill notice ── */}
+        {prefillActive && (
+          <View style={s.prefillBanner}>
+            <Text style={s.prefillText}>✨ {t('profile.prefilled_notice')}</Text>
+          </View>
+        )}
 
         {/* ── 1. Photo ── */}
-        <View style={s.card}>
+        <View
+          style={s.card}
+          onLayout={(e) => { sectionYRef.current['photo'] = e.nativeEvent.layout.y; }}
+        >
           <SectionTitle label={t('profile.photo_section')} />
 
-          {/* Avatar display */}
           <View style={s.avatarContainer}>
             {renderAvatar()}
           </View>
 
-          {/* Default avatar options */}
           <View style={s.defaultAvatarsRow}>
             {DEFAULT_AVATARS.map((av, idx) => (
               <TouchableOpacity
@@ -398,7 +494,6 @@ export default function ChildProfileScreen() {
             ))}
           </View>
 
-          {/* Photo action buttons */}
           <View style={s.photoActions}>
             <TouchableOpacity style={s.photoBtn} onPress={takePhoto}>
               <Text style={s.photoBtnText}>📷 {t('profile.take_photo')}</Text>
@@ -410,13 +505,17 @@ export default function ChildProfileScreen() {
         </View>
 
         {/* ── 2. Basic Info ── */}
-        <View style={s.card}>
-          <SectionTitle label={t('profile.basic_info')} />
+        <View
+          style={s.card}
+          onLayout={(e) => { sectionYRef.current['basic'] = e.nativeEvent.layout.y; }}
+        >
+          <SectionTitle label={t('profile.basic_info')} required />
           <Field
             label={t('profile.first_name')}
             value={firstName}
-            onChangeText={setFirstName}
+            onChangeText={(v) => { setFirstName(v); if (v.trim()) setErrors((e) => { const n = { ...e }; delete n.firstName; return n; }); }}
             maxLength={50}
+            error={errors.firstName}
           />
           <Field
             label={t('profile.middle_name')}
@@ -428,8 +527,9 @@ export default function ChildProfileScreen() {
           <Field
             label={t('profile.last_name')}
             value={lastName}
-            onChangeText={setLastName}
+            onChangeText={(v) => { setLastName(v); if (v.trim()) setErrors((e) => { const n = { ...e }; delete n.lastName; return n; }); }}
             maxLength={50}
+            error={errors.lastName}
           />
           <Field
             label={t('profile.nickname')}
@@ -441,11 +541,14 @@ export default function ChildProfileScreen() {
         </View>
 
         {/* ── 3. Personal Info ── */}
-        <View style={s.card}>
-          <SectionTitle label={t('profile.personal_info')} />
+        <View
+          style={s.card}
+          onLayout={(e) => { sectionYRef.current['personal'] = e.nativeEvent.layout.y; }}
+        >
+          <SectionTitle label={t('profile.personal_info')} required />
 
           {/* Sex toggle */}
-          <Text style={s.fieldLabel}>{t('profile.sex')}</Text>
+          <Text style={s.fieldLabel}>{t('profile.sex')} <Text style={s.requiredStar}>*</Text></Text>
           <View style={s.toggleRow}>
             {(['male', 'female', 'unspecified'] as Sex[]).map((v) => (
               <TouchableOpacity
@@ -462,35 +565,34 @@ export default function ChildProfileScreen() {
             ))}
           </View>
 
-          {/* Birthday */}
+          {/* Birthday — required */}
           <Text style={[s.fieldLabel, { marginTop: 14 }]}>
-            {t('profile.birthday')}
+            {t('profile.birthday')} <Text style={s.requiredStar}>*</Text>
           </Text>
           {Platform.OS === 'web' ? (
-            // Web: native date input
-            <View style={s.input}>
+            <View style={[s.input, errors.birthday && s.inputError]}>
               {/* @ts-ignore */}
               <input
                 type="date"
                 value={birthday}
                 max={todayISO()}
-                onChange={(e: any) => setBirthday(e.target.value)}
+                onChange={(e: any) => {
+                  setBirthday(e.target.value);
+                  if (e.target.value) setErrors((err) => { const n = { ...err }; delete n.birthday; return n; });
+                }}
                 style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
+                  border: 'none', outline: 'none', width: '100%',
                   fontSize: 15,
                   color: birthday ? Colors.dark : Colors.lightGray,
                   backgroundColor: 'transparent',
-                  fontFamily: 'inherit',
-                  padding: 0,
+                  fontFamily: 'inherit', padding: 0,
                 }}
               />
             </View>
           ) : (
             <>
               <TouchableOpacity
-                style={s.input}
+                style={[s.input, errors.birthday && s.inputError]}
                 onPress={() => setShowDatePicker(true)}
               >
                 <Text style={birthday ? s.inputText : s.inputPlaceholder}>
@@ -508,13 +610,13 @@ export default function ChildProfileScreen() {
               )}
             </>
           )}
+          {errors.birthday && <Text style={s.errorText}>{errors.birthday}</Text>}
 
-          {/* Birth time — proper time picker */}
+          {/* Birth time */}
           <Text style={[s.fieldLabel, { marginTop: 14 }]}>
             {t('profile.birth_time')}
           </Text>
           {Platform.OS === 'web' ? (
-            // Web: native time input
             <View style={s.input}>
               {/* @ts-ignore */}
               <input
@@ -522,14 +624,11 @@ export default function ChildProfileScreen() {
                 value={birthTime}
                 onChange={(e: any) => setBirthTime(e.target.value)}
                 style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
+                  border: 'none', outline: 'none', width: '100%',
                   fontSize: 15,
                   color: birthTime ? Colors.dark : Colors.lightGray,
                   backgroundColor: 'transparent',
-                  fontFamily: 'inherit',
-                  padding: 0,
+                  fontFamily: 'inherit', padding: 0,
                 }}
               />
             </View>
@@ -571,10 +670,12 @@ export default function ChildProfileScreen() {
         </View>
 
         {/* ── 4. Birth Details ── */}
-        <View style={s.card}>
+        <View
+          style={s.card}
+          onLayout={(e) => { sectionYRef.current['birthDetails'] = e.nativeEvent.layout.y; }}
+        >
           <SectionTitle label={t('profile.birth_details')} />
 
-          {/* Birth type */}
           <Text style={s.fieldLabel}>{t('profile.birth_type')}</Text>
           <View style={s.toggleRow}>
             {(['vaginal', 'cesarean'] as BirthType[]).map((v) => (
@@ -593,37 +694,41 @@ export default function ChildProfileScreen() {
           <Field
             label={t('profile.birth_weight')}
             value={birthWeightStr}
-            onChangeText={setBirthWeightStr}
+            onChangeText={(v) => { setBirthWeightStr(v); if (v) setErrors((e) => { const n = { ...e }; delete n.birthWeight; return n; }); }}
             placeholder="e.g. 3.2"
             keyboardType="decimal-pad"
             optional
+            error={errors.birthWeight}
           />
           <Field
             label={t('profile.birth_height')}
             value={birthHeightStr}
-            onChangeText={setBirthHeightStr}
+            onChangeText={(v) => { setBirthHeightStr(v); if (v) setErrors((e) => { const n = { ...e }; delete n.birthHeight; return n; }); }}
             placeholder="e.g. 50"
             keyboardType="decimal-pad"
             optional
+            error={errors.birthHeight}
           />
           <Field
             label={t('profile.gestational_age')}
             value={gestAgeStr}
-            onChangeText={setGestAgeStr}
+            onChangeText={(v) => { setGestAgeStr(v); if (v) setErrors((e) => { const n = { ...e }; delete n.gestationalAge; return n; }); }}
             placeholder="e.g. 39"
             keyboardType="number-pad"
             optional
+            error={errors.gestationalAge}
           />
         </View>
 
         {/* ── 5. Health Info ── */}
-        <View style={s.card}>
+        <View
+          style={s.card}
+          onLayout={(e) => { sectionYRef.current['health'] = e.nativeEvent.layout.y; }}
+        >
           <SectionTitle label={t('profile.health_info')} />
 
-          {/* Allergies */}
           <Text style={s.fieldLabel}>{t('profile.allergies')}</Text>
 
-          {/* Preset allergy chips */}
           <View style={s.chipGrid}>
             {PRESET_ALLERGIES.map((a) => (
               <TouchableOpacity
@@ -636,7 +741,6 @@ export default function ChildProfileScreen() {
             ))}
           </View>
 
-          {/* Active allergy tags */}
           {allergies.filter((a) => !PRESET_ALLERGIES.includes(a)).length > 0 && (
             <View style={s.tagRow}>
               {allergies
@@ -649,7 +753,6 @@ export default function ChildProfileScreen() {
             </View>
           )}
 
-          {/* Custom allergy input */}
           <View style={s.allergyInputRow}>
             <TextInput
               style={[s.input, { flex: 1, marginBottom: 0 }]}
@@ -680,7 +783,10 @@ export default function ChildProfileScreen() {
         </View>
 
         {/* ── 6. Government Records ── */}
-        <View style={s.card}>
+        <View
+          style={s.card}
+          onLayout={(e) => { sectionYRef.current['govRecords'] = e.nativeEvent.layout.y; }}
+        >
           <SectionTitle label={t('profile.gov_records')} />
           <Field
             label={t('profile.philhealth')}
@@ -749,6 +855,58 @@ const s = StyleSheet.create({
   scroll:        { flex: 1 },
   scrollContent: { padding: 16, gap: 16 },
 
+  // Progress bar
+  progressCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  progressLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  progressLabel: { fontSize: 13, fontWeight: '700', color: Colors.midGray },
+  progressPct:   { fontSize: 13, fontWeight: '800', color: Colors.primaryPink },
+  progressTrack: {
+    height: 8,
+    backgroundColor: Colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: 8,
+    backgroundColor: Colors.primaryPink,
+    borderRadius: 4,
+  },
+  progressComplete: {
+    marginTop: 6,
+    fontSize: 12,
+    color: Colors.mint,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+
+  // Pre-fill banner
+  prefillBanner: {
+    backgroundColor: Colors.softBlue,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#B3D4F5',
+  },
+  prefillText: {
+    fontSize: 13,
+    color: Colors.blue,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+
   // Cards
   card: {
     backgroundColor: '#fff',
@@ -765,6 +923,12 @@ const s = StyleSheet.create({
     color: Colors.primaryPink,
     marginBottom: 14,
     letterSpacing: 0.3,
+  },
+  requiredBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.lightGray,
+    marginLeft: 6,
   },
 
   // Avatar
@@ -822,7 +986,7 @@ const s = StyleSheet.create({
   // Fields
   fieldRow:    { marginBottom: 12 },
   fieldLabel:  { fontSize: 13, fontWeight: '600', color: Colors.midGray, marginBottom: 6 },
-  required:    { color: Colors.primaryPink },
+  requiredStar:{ color: '#E63B6F', fontWeight: '800' },
   input: {
     borderWidth: 1.5,
     borderColor: Colors.border,
@@ -834,8 +998,19 @@ const s = StyleSheet.create({
     backgroundColor: '#FAFAFA',
     marginBottom: 0,
   },
+  inputError: {
+    borderColor: '#E63B6F',
+    backgroundColor: '#FFF5F7',
+  },
   inputText:        { fontSize: 15, color: Colors.dark },
   inputPlaceholder: { fontSize: 15, color: Colors.lightGray },
+  errorText: {
+    fontSize: 12,
+    color: '#E63B6F',
+    fontWeight: '600',
+    marginTop: 4,
+    marginLeft: 2,
+  },
 
   // Toggle
   toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
@@ -907,14 +1082,19 @@ const s = StyleSheet.create({
   bottomSaveBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
 });
 
-// ── Stable sub-components (outside the screen so they never remount on re-render) ──
+// ── Stable sub-components ─────────────────────────────────────────────────────
 
-export function SectionTitle({ label }: { label: string }) {
-  return <Text style={s.sectionTitle}>{label}</Text>;
+export function SectionTitle({ label, required }: { label: string; required?: boolean }) {
+  return (
+    <Text style={s.sectionTitle}>
+      {label}
+      {required && <Text style={s.requiredBadge}> (required)</Text>}
+    </Text>
+  );
 }
 
 export function Field({
-  label, value, onChangeText, placeholder, keyboardType, maxLength, optional,
+  label, value, onChangeText, placeholder, keyboardType, maxLength, optional, error,
 }: {
   label: string;
   value: string;
@@ -923,15 +1103,16 @@ export function Field({
   keyboardType?: any;
   maxLength?: number;
   optional?: boolean;
+  error?: string;
 }) {
   return (
     <View style={s.fieldRow}>
       <Text style={s.fieldLabel}>
         {label}
-        {!optional && <Text style={s.required}> *</Text>}
+        {!optional && <Text style={s.requiredStar}> *</Text>}
       </Text>
       <TextInput
-        style={s.input}
+        style={[s.input, error ? s.inputError : undefined]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder ?? label}
@@ -940,6 +1121,7 @@ export function Field({
         maxLength={maxLength}
         returnKeyType="done"
       />
+      {error ? <Text style={s.errorText}>{error}</Text> : null}
     </View>
   );
 }
