@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import i18n from '../../src/i18n';
+import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import { supabase } from '../../src/lib/supabase';
 import Colors from '../../constants/Colors';
 
@@ -87,6 +88,21 @@ export default function OnboardingScreen() {
   return (
     <LinearGradient colors={[Colors.primaryPink, Colors.gold]} style={s.gradient}>
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
+
+        {/* Language toggle — top right */}
+        <View style={s.langRow}>
+          {SUPPORTED_LANGUAGES.map(({ code, nativeLabel }) => (
+            <TouchableOpacity
+              key={code}
+              onPress={() => i18n.changeLanguage(code as LanguageCode)}
+              style={[s.langBtn, i18n.language === code && s.langBtnActive]}
+            >
+              <Text style={[s.langText, i18n.language === code && s.langTextActive]}>
+                {nativeLabel}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Header row */}
         <View style={s.headerRow}>
@@ -331,7 +347,7 @@ function DateSelector({
         <View style={ds.col}>
           <Text style={ds.colLabel}>Year</Text>
           <ScrollView style={ds.scroll} showsVerticalScrollIndicator={false}>
-            {Array.from({ length: isPregnant ? 2 : 6 }, (_, i) => {
+            {Array.from({ length: isPregnant ? 2 : 12 }, (_, i) => {
               const y = isPregnant
                 ? String(today.getFullYear() + i)
                 : String(today.getFullYear() - i);
@@ -364,6 +380,12 @@ function DateSelector({
 const s = StyleSheet.create({
   gradient:     { flex: 1 },
   scrollContent:{ padding: 24, paddingTop: 56, paddingBottom: 60 },
+
+  langRow:      { flexDirection: 'row', justifyContent: 'flex-end', gap: 6, marginBottom: 12 },
+  langBtn:      { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.25)' },
+  langBtnActive:{ backgroundColor: '#fff' },
+  langText:     { fontSize: 13, color: '#fff', fontWeight: '600' },
+  langTextActive:{ color: Colors.primaryPink },
 
   headerRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   backBtn:      { minWidth: 60 },
