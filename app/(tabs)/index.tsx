@@ -1,6 +1,4 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useEffect } from 'react';
-import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import Colors from '../../constants/Colors';
@@ -19,13 +17,6 @@ const FEATURES = [
 export default function HomeScreen() {
   const { t }                   = useTranslation();
   const { children, activeChild } = useChildStore();
-
-  // If user has no children yet, send them to create the first profile
-  useEffect(() => {
-    if (children.length === 0) {
-      router.replace('/child-profile');
-    }
-  }, []);     // only on mount — avoids redirect loop while building store
 
   const hour     = new Date().getHours();
   const greeting =

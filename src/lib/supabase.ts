@@ -7,7 +7,7 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://your-proje
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? 'your-anon-key';
 
 // True when real credentials are configured (not placeholder values)
-const isSupabaseConfigured =
+export const isSupabaseConfigured =
   !SUPABASE_URL.includes('your-project') &&
   !SUPABASE_ANON_KEY.includes('your-anon-key');
 

@@ -134,12 +134,20 @@ export default function LoginScreen() {
 
           {/* DEV ONLY — skip login to preview interior layout */}
           {__DEV__ && (
-            <TouchableOpacity
-              style={s.devSkip}
-              onPress={() => router.replace('/(tabs)')}
-            >
-              <Text style={s.devSkipText}>⚡ Dev: Skip Login</Text>
-            </TouchableOpacity>
+            <View style={{ gap: 8, marginTop: 16 }}>
+              <TouchableOpacity
+                style={s.devSkip}
+                onPress={() => router.replace('/(tabs)')}
+              >
+                <Text style={s.devSkipText}>⚡ Dev: Skip Login → Dashboard</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.devSkip, { borderColor: Colors.mint }]}
+                onPress={() => router.replace('/(auth)/onboarding')}
+              >
+                <Text style={[s.devSkipText, { color: Colors.mint }]}>🌱 Dev: Test Onboarding Flow</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 

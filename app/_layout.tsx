@@ -5,7 +5,7 @@ import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { supabase } from '../src/lib/supabase';
+import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
 export { ErrorBoundary } from 'expo-router';
@@ -30,7 +30,38 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (session === undefined) return;
-    router.replace(session ? '/(tabs)' : '/(auth)/login');
+
+    // No session → go to login
+    if (!session) {
+      router.replace('/(auth)/login');
+      return;
+    }
+
+    // Session exists — dev mode: skip Supabase check, go to dashboard
+    if (!isSupabaseConfigured) {
+      router.replace('/(tabs)');
+      return;
+    }
+
+    // Session exists — check whether onboarding is complete
+    (async () => {
+      try {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!profile || !profile.onboarding_completed) {
+          router.replace('/(auth)/onboarding');
+        } else {
+          router.replace('/(tabs)');
+        }
+      } catch {
+        // Network / table missing — fail open to dashboard so users aren't locked out
+        router.replace('/(tabs)');
+      }
+    })();
   }, [session]);
 
   if (!loaded || session === undefined) return null;
