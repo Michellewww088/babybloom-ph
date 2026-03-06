@@ -346,39 +346,6 @@ export default function ChildProfileScreen() {
     );
   };
 
-  const SectionTitle = ({ label }: { label: string }) => (
-    <Text style={s.sectionTitle}>{label}</Text>
-  );
-
-  const Field = ({
-    label, value, onChangeText, placeholder, keyboardType, maxLength, optional,
-  }: {
-    label: string;
-    value: string;
-    onChangeText: (v: string) => void;
-    placeholder?: string;
-    keyboardType?: any;
-    maxLength?: number;
-    optional?: boolean;
-  }) => (
-    <View style={s.fieldRow}>
-      <Text style={s.fieldLabel}>
-        {label}
-        {!optional && <Text style={s.required}> *</Text>}
-      </Text>
-      <TextInput
-        style={s.input}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder ?? label}
-        placeholderTextColor={Colors.lightGray}
-        keyboardType={keyboardType ?? 'default'}
-        maxLength={maxLength}
-        returnKeyType="done"
-      />
-    </View>
-  );
-
   // ── JSX ───────────────────────────────────────────────────────────────────
 
   return (
@@ -935,3 +902,40 @@ const s = StyleSheet.create({
   bottomSaveBtnDisabled: { opacity: 0.6 },
   bottomSaveBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
 });
+
+// ── Stable sub-components (outside the screen so they never remount on re-render) ──
+
+export function SectionTitle({ label }: { label: string }) {
+  return <Text style={s.sectionTitle}>{label}</Text>;
+}
+
+export function Field({
+  label, value, onChangeText, placeholder, keyboardType, maxLength, optional,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder?: string;
+  keyboardType?: any;
+  maxLength?: number;
+  optional?: boolean;
+}) {
+  return (
+    <View style={s.fieldRow}>
+      <Text style={s.fieldLabel}>
+        {label}
+        {!optional && <Text style={s.required}> *</Text>}
+      </Text>
+      <TextInput
+        style={s.input}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder ?? label}
+        placeholderTextColor={Colors.lightGray}
+        keyboardType={keyboardType ?? 'default'}
+        maxLength={maxLength}
+        returnKeyType="done"
+      />
+    </View>
+  );
+}
