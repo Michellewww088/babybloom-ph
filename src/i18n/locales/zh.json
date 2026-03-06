@@ -69,7 +69,13 @@
     "feeding_guide": "饮食指南",
     "insights": "数据报告",
     "pull_refresh": "下拉刷新",
-    "ai_summary_placeholder": "添加宝宝的测量数据，获取 AI 生长分析。"
+    "ai_summary_placeholder": "添加宝宝的测量数据，获取 AI 生长分析。",
+    "age_label": "年龄",
+    "birth_measurements": "出生数据",
+    "birth_weight_label": "出生体重",
+    "birth_height_label": "出生身长",
+    "gestational_label": "孕周",
+    "add_first_measurement": "+ 添加第一次测量"
   },
   "calendar": {
     "title": "日历与提醒",
@@ -125,6 +131,11 @@
     "months_6": "6个月",
     "months_9": "9个月",
     "months_12": "12个月"
+  },
+  "welcome": {
+    "title": "欢迎，{{name}}！🎉",
+    "subtitle": "您的BabyBloom之旅开始了！",
+    "skip": "前往首页"
   },
   "ate_ai": {
     "name": "Ate AI",

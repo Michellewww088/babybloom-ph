@@ -69,7 +69,13 @@
     "feeding_guide": "Gabay sa Pagkain",
     "insights": "Ulat at Pagsusuri",
     "pull_refresh": "Hilahin para i-refresh",
-    "ai_summary_placeholder": "Idagdag ang mga sukat ng iyong sanggol para makakuha ng AI growth analysis."
+    "ai_summary_placeholder": "Idagdag ang mga sukat ng iyong sanggol para makakuha ng AI growth analysis.",
+    "age_label": "Edad",
+    "birth_measurements": "Sukat sa Kapanganakan",
+    "birth_weight_label": "Timbang sa Kapanganakan",
+    "birth_height_label": "Taas sa Kapanganakan",
+    "gestational_label": "Gestational Age",
+    "add_first_measurement": "+ Magdagdag ng unang sukat"
   },
   "calendar": {
     "title": "Kalendaryo at Paalala",
@@ -125,6 +131,11 @@
     "months_6": "6 na Buwan",
     "months_9": "9 na Buwan",
     "months_12": "12 na Buwan"
+  },
+  "welcome": {
+    "title": "Maligayang pagdating, {{name}}! 🎉",
+    "subtitle": "Simula na ng inyong BabyBloom journey!",
+    "skip": "Pumunta sa Dashboard"
   },
   "ate_ai": {
     "name": "Ate AI",

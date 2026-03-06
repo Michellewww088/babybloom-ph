@@ -69,7 +69,13 @@
     "feeding_guide": "Feeding Guide",
     "insights": "Insights & Reports",
     "pull_refresh": "Pull to refresh",
-    "ai_summary_placeholder": "Add your baby's measurements to get an AI growth analysis."
+    "ai_summary_placeholder": "Add your baby's measurements to get an AI growth analysis.",
+    "age_label": "Age",
+    "birth_measurements": "Birth Measurements",
+    "birth_weight_label": "Birth Weight",
+    "birth_height_label": "Birth Height",
+    "gestational_label": "Gestational Age",
+    "add_first_measurement": "+ Add first measurement"
   },
   "calendar": {
     "title": "Calendar & Reminders",
@@ -125,6 +131,11 @@
     "months_6": "6 Months",
     "months_9": "9 Months",
     "months_12": "12 Months"
+  },
+  "welcome": {
+    "title": "Welcome, {{name}}! 🎉",
+    "subtitle": "Your BabyBloom journey starts now!",
+    "skip": "Go to Dashboard"
   },
   "ate_ai": {
     "name": "Ate AI",

@@ -323,8 +323,12 @@ export default function ChildProfileScreen() {
         addChild(childData);
       }
 
-      // Navigate to dashboard
-      router.replace('/(tabs)');
+      // First save → welcome animation; subsequent edits → straight to dashboard
+      if (isEdit) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/welcome');
+      }
     } catch (err: any) {
       Alert.alert(t('profile.save_error'), err.message ?? '');
     } finally {
