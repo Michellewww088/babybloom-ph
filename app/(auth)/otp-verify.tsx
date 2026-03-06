@@ -97,7 +97,7 @@ export default function OTPVerifyScreen() {
           .single();
 
         if (!profile || !profile.onboarding_completed) {
-          router.replace('/(auth)/onboarding');
+          router.replace('/(auth)/intro');
         } else {
           router.replace('/(tabs)');
         }

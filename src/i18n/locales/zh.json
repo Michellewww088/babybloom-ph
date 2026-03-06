@@ -27,6 +27,18 @@
     "invalid_otp": "验证码无效，请重试",
     "terms": "继续即表示您同意我们的服务条款和隐私政策"
   },
+  "intro": {
+    "welcome_title": "欢迎来到BabyBloom",
+    "welcome_desc": "在一个地方追踪宝宝的成长、健康和里程碑",
+    "growth_title": "追踪宝宝成长",
+    "growth_desc": "根据WHO标准监测宝宝的身高、体重和发育情况",
+    "reminders_title": "智能护理提醒",
+    "reminders_desc": "不错过任何喂养、疫苗接种或健康检查",
+    "ai_title": "AI健康洞察",
+    "ai_desc": "获取专属宝宝的个性化健康报告",
+    "next": "下一步",
+    "cta_start": "开始我的育儿之旅"
+  },
   "onboarding": {
     "step1_title": "您目前的状态是？",
     "pregnant": "我正在怀孕",

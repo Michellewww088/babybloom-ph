@@ -149,6 +149,12 @@ export default function LoginScreen() {
               >
                 <Text style={[s.devSkipText, { color: Colors.mint }]}>🌱 Dev: Test Onboarding Flow</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.devSkip, { borderColor: Colors.blue }]}
+                onPress={() => router.replace('/(auth)/intro')}
+              >
+                <Text style={[s.devSkipText, { color: Colors.blue }]}>✨ Dev: Preview Intro Slides</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
