@@ -42,7 +42,8 @@
     "step5_title": "Piling wika",
     "next": "Susunod",
     "back": "Bumalik",
-    "finish": "Magsimula na!"
+    "finish": "Magsimula na!",
+    "select_required": "Pumili ng opsyon para magpatuloy."
   },
   "tabs": {
     "home": "Tahanan",

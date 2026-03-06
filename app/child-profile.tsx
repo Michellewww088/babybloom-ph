@@ -80,7 +80,11 @@ function hhmmToDate(hhmm: string): Date {
 
 export default function ChildProfileScreen() {
   const { t }    = useTranslation();
-  const params   = useLocalSearchParams<{ id?: string }>();
+  const params   = useLocalSearchParams<{
+    id?:                string;
+    prefill_birthday?:  string;   // ISO date from onboarding step 4
+    prefill_birth_type?: string;  // 'vaginal' | 'cesarean' from onboarding step 2
+  }>();
   const { children, addChild, updateChild } = useChildStore();
   const { data: onboardingData, clearData: clearOnboarding } = useOnboardingStore();
 

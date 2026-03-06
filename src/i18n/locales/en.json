@@ -42,7 +42,8 @@
     "step5_title": "Primary language preference",
     "next": "Next",
     "back": "Back",
-    "finish": "Get Started!"
+    "finish": "Get Started!",
+    "select_required": "Please make a selection to continue."
   },
   "tabs": {
     "home": "Home",

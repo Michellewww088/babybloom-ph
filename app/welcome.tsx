@@ -225,9 +225,6 @@ const st = StyleSheet.create({
   babyEmoji: {
     fontSize: 96,
     marginBottom: 8,
-    textShadowColor: 'rgba(230,59,111,0.2)',
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 12,
   },
 
   flowerRow: {
