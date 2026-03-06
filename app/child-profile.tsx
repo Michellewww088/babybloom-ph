@@ -227,13 +227,13 @@ export default function ChildProfileScreen() {
   // ── Validation & Save ────────────────────────────────────────────────────
 
   const handleSave = async () => {
-    // Required fields
-    if (!firstName.trim() || !lastName.trim()) {
+    // Required fields: first name, last name, birthday
+    if (!firstName.trim() || !lastName.trim() || !birthday) {
       Alert.alert('', t('profile.required_fields'));
       return;
     }
     // Birthday not in future
-    if (birthday && birthday > todayISO()) {
+    if (birthday > todayISO()) {
       Alert.alert('', t('profile.birthday_future'));
       return;
     }
@@ -342,12 +342,9 @@ export default function ChildProfileScreen() {
         addChild(childData);
       }
 
-      // First save → welcome animation; subsequent edits → straight to dashboard
-      if (isEdit) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/welcome');
-      }
+      // Always navigate to dashboard — welcome animation shows as a Modal overlay
+      // triggered by showWelcomeModal flag set inside addChild() in the store
+      router.replace('/(tabs)');
     } catch (err: any) {
       Alert.alert(t('profile.save_error'), err.message ?? '');
     } finally {

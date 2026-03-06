@@ -42,7 +42,8 @@
     "step5_title": "Piling wika",
     "next": "Susunod",
     "back": "Bumalik",
-    "finish": "Magsimula na!"
+    "finish": "Magsimula na!",
+    "select_required": "Pumili ng opsyon para magpatuloy."
   },
   "tabs": {
     "home": "Tahanan",
@@ -180,7 +181,7 @@
     "gov_records": "Mga Rekord ng Gobyerno",
     "philhealth": "PhilHealth Number",
     "mch_booklet": "MCH Booklet Number",
-    "required_fields": "Kailangan ang pangalan at apelyido.",
+    "required_fields": "Kailangan ang pangalan, apelyido at kaarawan.",
     "birthday_future": "Hindi maaaring nasa hinaharap ang kaarawan.",
     "weight_range": "Ang timbang ay dapat sa pagitan ng 0.5 at 8.0 kg.",
     "height_range": "Ang taas ay dapat sa pagitan ng 25 at 65 cm.",

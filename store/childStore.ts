@@ -47,29 +47,36 @@ export interface Child {
 // ── Store ────────────────────────────────────────────────────────────────────
 
 interface ChildStore {
-  children:    Child[];
-  activeChild: Child | null;
+  children:         Child[];
+  activeChild:      Child | null;
+  showWelcomeModal: boolean;   // true after first child is saved → triggers welcome overlay
 
-  setChildren:   (children: Child[]) => void;
-  setActiveChild:(child: Child | null) => void;
-  addChild:      (child: Child) => void;
-  updateChild:   (id: string, updates: Partial<Child>) => void;
-  removeChild:   (id: string) => void;
+  setChildren:        (children: Child[]) => void;
+  setActiveChild:     (child: Child | null) => void;
+  addChild:           (child: Child) => void;
+  updateChild:        (id: string, updates: Partial<Child>) => void;
+  removeChild:        (id: string) => void;
+  clearWelcomeModal:  () => void;
 }
 
 export const useChildStore = create<ChildStore>((set) => ({
-  children:    [],
-  activeChild: null,
+  children:         [],
+  activeChild:      null,
+  showWelcomeModal: false,
 
   setChildren: (children) => set({ children }),
 
   setActiveChild: (activeChild) => set({ activeChild }),
 
+  // Auto-select first child and trigger welcome animation
   addChild: (child) =>
     set((state) => ({
-      children:    [...state.children, child],
-      activeChild: state.activeChild ?? child,   // auto-select first child
+      children:         [...state.children, child],
+      activeChild:      state.activeChild ?? child,
+      showWelcomeModal: true,
     })),
+
+  clearWelcomeModal: () => set({ showWelcomeModal: false }),
 
   updateChild: (id, updates) =>
     set((state) => ({

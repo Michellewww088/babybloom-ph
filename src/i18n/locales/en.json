@@ -42,7 +42,8 @@
     "step5_title": "Primary language preference",
     "next": "Next",
     "back": "Back",
-    "finish": "Get Started!"
+    "finish": "Get Started!",
+    "select_required": "Please make a selection to continue."
   },
   "tabs": {
     "home": "Home",
@@ -180,7 +181,7 @@
     "gov_records": "Government Records",
     "philhealth": "PhilHealth Number",
     "mch_booklet": "MCH Booklet Number",
-    "required_fields": "First name and last name are required.",
+    "required_fields": "First name, last name and birthday are required.",
     "birthday_future": "Birthday cannot be in the future.",
     "weight_range": "Birth weight must be between 0.5 and 8.0 kg.",
     "height_range": "Birth height must be between 25 and 65 cm.",

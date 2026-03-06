@@ -22,8 +22,9 @@ const TOTAL_STEPS = 5;
 export default function OnboardingScreen() {
   const { t } = useTranslation();
 
-  const [step,      setStep]      = useState(1);
-  const [saving,    setSaving]    = useState(false);
+  const [step,       setStep]      = useState(1);
+  const [saving,     setSaving]    = useState(false);
+  const [showError,  setShowError] = useState(false);   // validation hint
 
   // Step data
   const [status,    setStatus]    = useState<Status>(null);
@@ -42,6 +43,11 @@ export default function OnboardingScreen() {
   }
 
   function goNext() {
+    if (!canAdvance()) {
+      setShowError(true);   // show "please select" hint
+      return;
+    }
+    setShowError(false);
     // Skip step 2 (birth type) if pregnant
     if (step === 1 && status === 'pregnant') { setStep(3); return; }
     if (step < TOTAL_STEPS) setStep(s => s + 1);
@@ -49,6 +55,7 @@ export default function OnboardingScreen() {
   }
 
   function goBack() {
+    setShowError(false);
     if (step === 3 && status === 'pregnant') { setStep(1); return; }
     if (step > 1) setStep(s => s - 1);
   }
@@ -150,13 +157,13 @@ export default function OnboardingScreen() {
                   emoji="🤰"
                   label={t('onboarding.pregnant')}
                   selected={status === 'pregnant'}
-                  onPress={() => setStatus('pregnant')}
+                  onPress={() => { setStatus('pregnant');  setShowError(false); }}
                 />
                 <OptionCard
                   emoji="👶"
                   label={t('onboarding.parent')}
                   selected={status === 'parenting'}
-                  onPress={() => setStatus('parenting')}
+                  onPress={() => { setStatus('parenting'); setShowError(false); }}
                 />
               </View>
             </>
@@ -173,14 +180,14 @@ export default function OnboardingScreen() {
                   label={t('onboarding.vaginal')}
                   sublabel="Normal / Vaginal"
                   selected={birthType === 'vaginal'}
-                  onPress={() => setBirthType('vaginal')}
+                  onPress={() => { setBirthType('vaginal');  setShowError(false); }}
                 />
                 <OptionCard
                   emoji="🏥"
                   label={t('onboarding.csection')}
                   sublabel="C-Section / CS"
                   selected={birthType === 'cesarean'}
-                  onPress={() => setBirthType('cesarean')}
+                  onPress={() => { setBirthType('cesarean'); setShowError(false); }}
                 />
               </View>
             </>
@@ -194,9 +201,9 @@ export default function OnboardingScreen() {
               </Text>
               <Text style={s.question}>{t('onboarding.step3_title')}</Text>
               <View style={s.optionGrid}>
-                <OptionCard emoji="👶"     label={t('onboarding.single')}   selected={babyCount === 'single'}   onPress={() => setBabyCount('single')}   />
-                <OptionCard emoji="👶👶"   label={t('onboarding.twins')}    selected={babyCount === 'twins'}    onPress={() => setBabyCount('twins')}    />
-                <OptionCard emoji="👶👶👶" label={t('onboarding.triplets')} selected={babyCount === 'triplets'} onPress={() => setBabyCount('triplets')} wide />
+                <OptionCard emoji="👶"     label={t('onboarding.single')}   selected={babyCount === 'single'}   onPress={() => { setBabyCount('single');   setShowError(false); }}   />
+                <OptionCard emoji="👶👶"   label={t('onboarding.twins')}    selected={babyCount === 'twins'}    onPress={() => { setBabyCount('twins');    setShowError(false); }}    />
+                <OptionCard emoji="👶👶👶" label={t('onboarding.triplets')} selected={babyCount === 'triplets'} onPress={() => { setBabyCount('triplets'); setShowError(false); }} wide />
               </View>
             </>
           )}
@@ -253,11 +260,16 @@ export default function OnboardingScreen() {
             </>
           )}
 
-          {/* Next / Finish button */}
+          {/* Validation hint — shown when user taps Next without selecting */}
+          {showError && !canAdvance() && (
+            <Text style={s.errorHint}>⚠️ {t('onboarding.select_required')}</Text>
+          )}
+
+          {/* Next / Finish button — always tappable; goNext() handles validation */}
           <TouchableOpacity
-            style={[s.nextBtn, (!canAdvance() || saving) && s.nextBtnDisabled]}
+            style={[s.nextBtn, saving && s.nextBtnDisabled]}
             onPress={goNext}
-            disabled={!canAdvance() || saving}
+            disabled={saving}
           >
             {saving
               ? <ActivityIndicator color="#fff" />
@@ -414,6 +426,7 @@ const s = StyleSheet.create({
   question:     { fontSize: 20, fontWeight: '800', color: Colors.dark, marginBottom: 20, lineHeight: 26 },
   dateHint:     { fontSize: 12, color: Colors.lightGray, marginBottom: 12 },
 
+  errorHint:    { fontSize: 13, color: '#EF4444', fontWeight: '600', marginBottom: 10, textAlign: 'center' },
   optionGrid:   { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
   optCard:      { flex: 1, minWidth: '44%', alignItems: 'center', padding: 18, borderRadius: 16, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.background, position: 'relative' },
   optCardSelected:{ borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },

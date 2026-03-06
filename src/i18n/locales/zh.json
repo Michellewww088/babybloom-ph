@@ -42,7 +42,8 @@
     "step5_title": "首选语言",
     "next": "下一步",
     "back": "返回",
-    "finish": "开始使用！"
+    "finish": "开始使用！",
+    "select_required": "请先选择一个选项才能继续。"
   },
   "tabs": {
     "home": "首页",
@@ -180,7 +181,7 @@
     "gov_records": "政府记录",
     "philhealth": "PhilHealth号码",
     "mch_booklet": "MCH手册号码",
-    "required_fields": "名字和姓氏为必填项。",
+    "required_fields": "名字、姓氏和生日为必填项。",
     "birthday_future": "生日不能是未来日期。",
     "weight_range": "出生体重必须在0.5至8.0千克之间。",
     "height_range": "出生身长必须在25至65厘米之间。",
