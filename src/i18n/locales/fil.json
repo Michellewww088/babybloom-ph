@@ -27,6 +27,18 @@
     "invalid_otp": "Mali ang OTP. Pakisubukan ulit.",
     "terms": "Sa pagpapatuloy, sumasang-ayon ka sa aming Mga Tuntunin at Patakaran sa Privacy"
   },
+  "intro": {
+    "welcome_title": "Maligayang Pagdating sa BabyBloom",
+    "welcome_desc": "Subaybayan ang paglaki, kalusugan at mga milestone ng iyong sanggol sa isang lugar",
+    "growth_title": "Subaybayan ang Paglaki",
+    "growth_desc": "Bantayan ang taas, timbang at pag-unlad ng iyong sanggol batay sa pamantayan ng WHO",
+    "reminders_title": "Mga Matalinong Paalala",
+    "reminders_desc": "Huwag palampasin ang pagpapakain, bakuna o check-up",
+    "ai_title": "AI Health Insights",
+    "ai_desc": "Makakuha ng personalized na ulat sa kalusugan para sa iyong sanggol",
+    "next": "Susunod",
+    "cta_start": "Simulan ang Aking Paglalakbay"
+  },
   "onboarding": {
     "step1_title": "Ano ang iyong kasalukuyang katayuan?",
     "pregnant": "Buntis ako",

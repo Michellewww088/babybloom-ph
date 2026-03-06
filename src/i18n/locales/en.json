@@ -27,6 +27,18 @@
     "invalid_otp": "Invalid OTP. Please try again.",
     "terms": "By continuing, you agree to our Terms & Privacy Policy"
   },
+  "intro": {
+    "welcome_title": "Welcome to BabyBloom",
+    "welcome_desc": "Track your baby's growth, health and milestones all in one place",
+    "growth_title": "Track Baby Growth",
+    "growth_desc": "Monitor your baby's height, weight and development based on WHO standards",
+    "reminders_title": "Smart Care Reminders",
+    "reminders_desc": "Never miss feeding, vaccinations or checkups",
+    "ai_title": "AI Health Insights",
+    "ai_desc": "Get personalized health reports for your baby",
+    "next": "Next",
+    "cta_start": "Start My Journey"
+  },
   "onboarding": {
     "step1_title": "What is your current status?",
     "pregnant": "I am pregnant",
