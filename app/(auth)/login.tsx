@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Platform, Alert, ActivityIndicator,
+  StyleSheet, ScrollView, Platform, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -43,7 +43,7 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient
-      colors={[Colors.primaryPink, Colors.gold]}
+      colors={['#E8637C', '#F0A0B0', '#F5C5CF']}
       style={s.gradient}
     >
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
@@ -65,7 +65,9 @@ export default function LoginScreen() {
 
         {/* Logo + tagline */}
         <View style={s.logoArea}>
-          <Text style={s.logo}>🌸</Text>
+          <View style={s.logoWrap}>
+            <Image source={require('../../assets/images/icon.png')} style={s.logoImg} />
+          </View>
           <Text style={s.appName}>BabyBloom PH</Text>
           <Text style={s.tagline}>{t('app.tagline')}</Text>
         </View>
@@ -188,7 +190,8 @@ const s = StyleSheet.create({
   langTextActive: { color: Colors.primaryPink },
 
   logoArea:       { alignItems: 'center', marginBottom: 28 },
-  logo:           { fontSize: 52, marginBottom: 4 },
+  logoWrap:       { width: 110, height: 110, borderRadius: 26, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12, elevation: 6 },
+  logoImg:        { width: 172, height: 172, position: 'absolute', top: -31, left: -31 },
   appName:        { fontSize: 30, fontWeight: '900', color: '#fff', letterSpacing: 0.5, marginBottom: 10 },
   tagline:        { fontSize: 14, color: 'rgba(255,255,255,0.95)', fontWeight: '600' },
 

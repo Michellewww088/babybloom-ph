@@ -181,6 +181,9 @@
     "philhealth": "PhilHealth Number",
     "mch_booklet": "MCH Booklet Number",
     "required_fields": "Kailangan ang pangalan at apelyido.",
+    "required_first_name": "Kailangan ang pangalan.",
+    "required_last_name": "Kailangan ang apelyido.",
+    "required_birthday": "Kailangan ang kaarawan.",
     "birthday_future": "Hindi maaaring nasa hinaharap ang kaarawan.",
     "weight_range": "Ang timbang ay dapat sa pagitan ng 0.5 at 8.0 kg.",
     "height_range": "Ang taas ay dapat sa pagitan ng 25 at 65 cm.",
@@ -188,7 +191,10 @@
     "save_error": "Hindi na-save ang profile. Subukan ulit.",
     "permission_denied": "Kailangan ng Pahintulot",
     "camera_permission": "Kailangan ng access sa camera para kumuha ng larawan.",
-    "gallery_permission": "Kailangan ng access sa photo library para pumili ng larawan."
+    "gallery_permission": "Kailangan ng access sa photo library para pumili ng larawan.",
+    "progress_label": "Pagkumpleto ng Profile",
+    "progress_complete": "Kumpleto na ang profile!",
+    "prefilled_notice": "Ang ilang mga field ay na-pre-fill mula sa iyong mga naunang sagot."
   },
   "switcher": {
     "add_child": "Magdagdag ng Sanggol",

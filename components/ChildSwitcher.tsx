@@ -134,9 +134,9 @@ export default function ChildSwitcher() {
 
 const s = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF0F4',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#FCE4EC',
     paddingVertical: 10,
   },
   scrollContent: {
