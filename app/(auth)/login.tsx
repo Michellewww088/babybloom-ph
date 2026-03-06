@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Platform, Alert, ActivityIndicator,
+  StyleSheet, ScrollView, Platform, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,6 @@ import { router } from 'expo-router';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import i18n from '../../src/i18n';
 import Colors from '../../constants/Colors';
-import LogoBadge from '../../components/LogoBadge';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -67,8 +66,14 @@ export default function LoginScreen() {
         {/* Logo + tagline */}
         <View style={s.logoArea}>
 
-          {/* ── BB Logo Badge (SVG) ── */}
-          <LogoBadge size={100} />
+          {/* ── Logo image (cropped to white badge) ── */}
+          <View style={s.logoImgWrapper}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={s.logoImg}
+              resizeMode="cover"
+            />
+          </View>
 
           {/* ── Wordmark ── */}
           <View style={s.appNameRow}>
@@ -197,9 +202,20 @@ const s = StyleSheet.create({
   langText:       { fontSize: 13, color: '#fff', fontWeight: '600' },
   langTextActive: { color: Colors.primaryPink },
 
-  logoArea:       { alignItems: 'center', marginBottom: 28 },
-
-  // LogoBadge is rendered via SVG component — no badge styles needed here.
+  logoArea:        { alignItems: 'center', marginBottom: 28 },
+  // Clip the image to show only the white badge, hiding the pink bg margins
+  logoImgWrapper:  {
+    width: 100, height: 100,
+    borderRadius: 22,
+    overflow: 'hidden',
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 10,
+  },
+  logoImg:         { width: 148, height: 148, marginLeft: -24, marginTop: -24 },
 
   // ── Wordmark ────────────────────────────────────────────────────────────
   appNameRow:     { flexDirection: 'row', alignItems: 'baseline', marginBottom: 10 },
