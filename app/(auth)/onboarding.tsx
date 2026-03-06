@@ -366,9 +366,9 @@ export default function OnboardingScreen() {
               </Text>
               <Text style={s.question}>{t('onboarding.step3_title')}</Text>
               <View style={s.optionGrid}>
-                <OptionCard icon={<IconSingle />}   label={t('onboarding.single')}   selected={babyCount === 'single'}   onPress={() => setBabyCount('single')}   />
-                <OptionCard icon={<IconTwins />}    label={t('onboarding.twins')}    selected={babyCount === 'twins'}    onPress={() => setBabyCount('twins')}    />
-                <OptionCard icon={<IconTriplets />} label={t('onboarding.triplets')} selected={babyCount === 'triplets'} onPress={() => setBabyCount('triplets')} wide />
+                <OptionCard icon={<IconSingle />}   badge="×1"  label={t('onboarding.single')}   sublabel="1 宝宝 · Single"        selected={babyCount === 'single'}   onPress={() => setBabyCount('single')}   />
+                <OptionCard icon={<IconTwins />}    badge="×2"  label={t('onboarding.twins')}    sublabel="2 宝宝 · 双胞胎 Twins"   selected={babyCount === 'twins'}    onPress={() => setBabyCount('twins')}    />
+                <OptionCard icon={<IconTriplets />} badge="×3+" label={t('onboarding.triplets')} sublabel="3+ 宝宝 · 多胞胎 Triplets+" selected={babyCount === 'triplets'} onPress={() => setBabyCount('triplets')} wide />
               </View>
             </>
           )}
@@ -432,9 +432,9 @@ export default function OnboardingScreen() {
 
 // ── Option Card ──────────────────────────────────────────────────────────
 function OptionCard({
-  icon, label, sublabel, selected, onPress, wide,
+  icon, label, sublabel, badge, selected, onPress, wide,
 }: {
-  icon: React.ReactNode; label: string; sublabel?: string;
+  icon: React.ReactNode; label: string; sublabel?: string; badge?: string;
   selected: boolean; onPress: () => void; wide?: boolean;
 }) {
   return (
@@ -444,7 +444,15 @@ function OptionCard({
       activeOpacity={0.7}
     >
       {selected && <Text style={s.optCheck}>✓</Text>}
-      <View style={s.optIconWrap}>{icon}</View>
+      {/* Icon with optional count badge */}
+      <View style={s.optIconWrap}>
+        {icon}
+        {badge && (
+          <View style={s.countBadge}>
+            <Text style={s.countBadgeText}>{badge}</Text>
+          </View>
+        )}
+      </View>
       <Text style={[s.optLabel, selected && s.optLabelSelected]}>{label}</Text>
       {sublabel && <Text style={s.optSublabel}>{sublabel}</Text>}
     </TouchableOpacity>
@@ -550,7 +558,14 @@ const s = StyleSheet.create({
   optCheck:      { position: 'absolute', top: 10, right: 12, fontSize: 14, color: Colors.primaryPink, fontWeight: '800' },
   optLabel:      { fontSize: 14, fontWeight: '700', color: Colors.dark, textAlign: 'center' },
   optLabelSelected: { color: Colors.primaryPink },
-  optSublabel:   { fontSize: 11, color: Colors.lightGray, marginTop: 3, textAlign: 'center' },
+  optSublabel:   { fontSize: 11, color: Colors.midGray, marginTop: 4, textAlign: 'center', fontWeight: '500' },
+  countBadge:    {
+    position: 'absolute', bottom: -4, right: -4,
+    backgroundColor: Colors.primaryPink, borderRadius: 10,
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderWidth: 1.5, borderColor: '#fff',
+  },
+  countBadgeText: { fontSize: 10, color: '#fff', fontWeight: '700' },
 
   langOptions:   { gap: 12, marginBottom: 20 },
   langCard:      { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 16, borderWidth: 2, borderColor: Colors.border, backgroundColor: '#FAFAFA' },
