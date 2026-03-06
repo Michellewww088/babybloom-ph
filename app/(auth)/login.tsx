@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import i18n from '../../src/i18n';
 import Colors from '../../constants/Colors';
+import LogoBadge from '../../components/LogoBadge';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -65,8 +66,17 @@ export default function LoginScreen() {
 
         {/* Logo + tagline */}
         <View style={s.logoArea}>
-          <Text style={s.logo}>🌸</Text>
-          <Text style={s.appName}>BabyBloom PH</Text>
+
+          {/* ── BB Logo Badge (SVG) ── */}
+          <LogoBadge size={100} />
+
+          {/* ── Wordmark ── */}
+          <View style={s.appNameRow}>
+            <Text style={s.appNameLight}>Baby</Text>
+            <Text style={s.appNameBold}>Bloom</Text>
+            <Text style={s.appNamePH}> PH</Text>
+          </View>
+
           <Text style={s.tagline}>{t('app.tagline')}</Text>
         </View>
 
@@ -188,9 +198,16 @@ const s = StyleSheet.create({
   langTextActive: { color: Colors.primaryPink },
 
   logoArea:       { alignItems: 'center', marginBottom: 28 },
-  logo:           { fontSize: 52, marginBottom: 4 },
-  appName:        { fontSize: 30, fontWeight: '900', color: '#fff', letterSpacing: 0.5, marginBottom: 10 },
-  tagline:        { fontSize: 14, color: 'rgba(255,255,255,0.95)', fontWeight: '600' },
+
+  // LogoBadge is rendered via SVG component — no badge styles needed here.
+
+  // ── Wordmark ────────────────────────────────────────────────────────────
+  appNameRow:     { flexDirection: 'row', alignItems: 'baseline', marginBottom: 10 },
+  appNameLight:   { fontSize: 28, fontWeight: '300', color: 'rgba(255,255,255,0.88)', letterSpacing: 0.5 },
+  appNameBold:    { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
+  appNamePH:      { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.6)', letterSpacing: 2.5, marginLeft: 5, marginBottom: 1 },
+
+  tagline:        { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '400', letterSpacing: 0.4 },
 
   card:           { backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
 
