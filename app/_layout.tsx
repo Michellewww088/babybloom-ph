@@ -5,7 +5,7 @@ import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
+import { supabase } from '../src/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
 export { ErrorBoundary } from 'expo-router';
@@ -41,12 +41,6 @@ export default function RootLayout() {
     // they don't interrupt screens like /welcome that appear mid-flow.
     if (hasNavigated.current) return;
     hasNavigated.current = true;
-
-    // Dev mode: Supabase not configured → skip auth entirely, go to dashboard
-    if (!isSupabaseConfigured) {
-      router.replace('/(tabs)');
-      return;
-    }
 
     // No session → go to login
     if (!session) {
