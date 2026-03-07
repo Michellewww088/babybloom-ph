@@ -42,15 +42,15 @@ export default function RootLayout() {
     if (hasNavigated.current) return;
     hasNavigated.current = true;
 
-    // No session → go to login
-    if (!session) {
-      router.replace('/(auth)/login');
+    // Dev mode: Supabase not configured → skip auth entirely, go to dashboard
+    if (!isSupabaseConfigured) {
+      router.replace('/(tabs)');
       return;
     }
 
-    // Session exists — dev mode: skip Supabase check, go to dashboard
-    if (!isSupabaseConfigured) {
-      router.replace('/(tabs)');
+    // No session → go to login
+    if (!session) {
+      router.replace('/(auth)/login');
       return;
     }
 
