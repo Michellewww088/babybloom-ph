@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BabyBloom PH — Your Baby's First Digital Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet"/>
+  <style>
+  /* ─── RESET ─── */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --pink:#FF4899;--pink2:#FF6BB8;--pink3:#FFAED8;
+    --purple:#9B35C0;--purple2:#BB44FF;
+    --cream:#FFF8FC;--text:#1E0A28;--muted:#9B7AAA;
+    --card:#FFFFFF;
+  }
+  html{scroll-behavior:smooth;overflow-x:hidden}
+  body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden;cursor:none}
+
+  /* ─── CUSTOM CURSOR ─── */
+  #cursor{position:fixed;width:20px;height:20px;border-radius:50%;background:rgba(255,72,153,0.6);pointer-events:none;z-index:9999;transition:transform .15s,opacity .15s;transform:translate(-50%,-50%);mix-blend-mode:multiply}
+  #cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,72,153,0.35);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .08s linear}
+
+  /* ─── NOISE TEXTURE ─── */
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:1;opacity:.4}
+
+  /* ─── NAV ─── */
+  nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 56px;height:70px;background:rgba(255,248,252,0.80);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,72,153,0.08);transition:all .3s}
+  nav.scrolled{background:rgba(255,248,252,0.95);box-shadow:0 4px 30px rgba(155,53,192,0.08)}
+  .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .nav-logo-img{width:36px;height:36px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#FF4899,#9B35C0);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .nav-brand{font-size:19px;font-weight:900;background:linear-gradient(90deg,#FF4899,#9B35C0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .nav-links{display:flex;gap:36px}
+  .nav-links a{font-size:14px;font-weight:700;color:var(--muted);text-decoration:none;transition:color .2s;position:relative}
+  .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:2px;background:var(--pink);border-radius:2px;transition:width .25s}
+  .nav-links a:hover{color:var(--pink)}.nav-links a:hover::after{width:100%}
+  .nav-cta{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF4899,#9B35C0);color:#fff;border:none;border-radius:50px;padding:10px 24px;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;box-shadow:0 4px 20px rgba(255,72,153,0.35);transition:all .25s;font-family:'Nunito',sans-serif}
+  .nav-cta:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 30px rgba(255,72,153,0.50)}
+
+  /* ─── HERO ─── */
+  .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 56px 60px;position:relative;overflow:hidden}
+  .hero-mesh{position:absolute;inset:0;background:
+    radial-gradient(ellipse 90% 80% at 70% 40%, rgba(255,72,153,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 60% at 10% 90%, rgba(155,53,192,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 90% 10%, rgba(255,174,216,0.20) 0%, transparent 55%),
+    linear-gradient(175deg,#FFF5FB 0%,#FFE8F4 40%,#F5D8FF 100%)}
+
+  /* Animated mesh orbs */
+  .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:orbFloat 8s ease-in-out infinite}
+  .orb1{width:550px;height:550px;background:rgba(255,72,153,0.12);top:-150px;right:-100px;animation-delay:0s}
+  .orb2{width:400px;height:400px;background:rgba(155,53,192,0.10);bottom:-100px;left:-100px;animation-delay:-3s}
+  .orb3{width:300px;height:300px;background:rgba(255,174,216,0.18);top:30%;left:15%;animation-delay:-5s}
+  @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,15px) scale(0.97)}}
+
+  .hero-inner{position:relative;z-index:2;display:flex;align-items:center;gap:80px;max-width:1240px;width:100%}
+  .hero-text{flex:1;min-width:0}
+
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,72,153,0.08);border:1.5px solid rgba(255,72,153,0.20);border-radius:50px;padding:7px 16px;font-size:13px;font-weight:800;color:var(--pink);margin-bottom:24px;animation:fadeSlideUp .7s ease both}
+  .badge-dot{width:7px;height:7px;background:var(--pink);border-radius:50%;animation:pulse 2s ease infinite}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+
+  h1{font-size:clamp(40px,5.5vw,68px);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:22px;animation:fadeSlideUp .7s .1s ease both}
+  .grad{background:linear-gradient(120deg,#FF4899 0%,#9B35C0 60%,#FF4899 120%);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradShift 4s ease infinite}
+  @keyframes gradShift{0%,100%{background-position:0%}50%{background-position:100%}}
+
+  .hero-sub{font-size:17px;color:var(--muted);font-weight:600;line-height:1.7;max-width:500px;margin-bottom:38px;animation:fadeSlideUp .7s .2s ease both}
+  .hero-btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:52px;animation:fadeSlideUp .7s .3s ease both}
+  .btn-main{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#FF4899,#9B35C0);color:#fff;border:none;border-radius:50px;padding:15px 32px;font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;box-shadow:0 6px 28px rgba(255,72,153,0.40);transition:all .25s;font-family:'Nunito',sans-serif;position:relative;overflow:hidden}
+  .btn-main::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#FF6BB8,#BB44FF);opacity:0;transition:opacity .25s}
+  .btn-main:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 40px rgba(255,72,153,0.55)}.btn-main:hover::before{opacity:1}
+  .btn-main span{position:relative;z-index:1}
+  .btn-ghost{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.8);color:var(--purple);border:2px solid rgba(155,53,192,0.18);border-radius:50px;padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;transition:all .25s;backdrop-filter:blur(10px)}
+  .btn-ghost:hover{border-color:var(--purple);background:#fff;transform:translateY(-2px)}
+
+  .hero-stats{display:flex;gap:44px;animation:fadeSlideUp .7s .4s ease both}
+  .stat-divider{width:1px;background:rgba(155,53,192,0.15)}
+  .stat-n{font-size:30px;font-weight:900;color:var(--pink);line-height:1}
+  .stat-l{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ─── CUTE SVG BABY ─── */
+  .hero-visual{flex-shrink:0;position:relative;animation:fadeSlideUp .8s .15s ease both}
+  .baby-stage{width:340px;height:520px;position:relative;display:flex;align-items:center;justify-content:center}
+
+  /* Glow behind baby */
+  .baby-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,153,0.25) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);animation:glowPulse 3s ease infinite}
+  @keyframes glowPulse{0%,100%{transform:translate(-50%,-55%) scale(1);opacity:.8}50%{transform:translate(-50%,-55%) scale(1.12);opacity:1}}
+
+  .baby-svg-wrap{position:relative;z-index:3;animation:babyFloat 3.5s ease-in-out infinite}
+  @keyframes babyFloat{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-20px) rotate(1.5deg)}}
+
+  /* Orbit items */
+  .orbit-ring{position:absolute;top:50%;left:50%;width:320px;height:120px;margin:-60px 0 0 -160px;border:2px dashed rgba(255,72,153,0.22);border-radius:50%;animation:orbitSpin 8s linear infinite;z-index:2}
+  .orbit-item{position:absolute;width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 20px rgba(155,53,192,0.18);animation:orbitSpin 8s linear infinite reverse}
+  .orbit-item.o1{top:-22px;left:50%;margin-left:-22px}
+  .orbit-item.o2{bottom:-22px;left:50%;margin-left:-22px}
+  @keyframes orbitSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  /* Floating badge cards */
+  .float-card{position:absolute;background:#fff;border-radius:18px;padding:10px 16px;box-shadow:0 8px 32px rgba(155,53,192,0.15);display:flex;align-items:center;gap:10px;z-index:10;border:1px solid rgba(255,72,153,0.08)}
+  .fc-icon{font-size:22px}
+  .fc-label{font-size:11px;color:var(--muted);font-weight:700}
+  .fc-val{font-size:14px;font-weight:900;color:var(--text)}
+  .fc1{top:40px;left:-80px;animation:cardFloat1 4s ease-in-out infinite}
+  .fc2{top:160px;right:-70px;animation:cardFloat2 5s ease-in-out infinite}
+  .fc3{bottom:80px;left:-60px;animation:cardFloat1 4.5s 1s ease-in-out infinite}
+  @keyframes cardFloat1{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes cardFloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+
+  /* ─── MARQUEE STRIP ─── */
+  .marquee-wrap{background:linear-gradient(135deg,#FF4899,#9B35C0);padding:14px 0;overflow:hidden;position:relative;z-index:5}
+  .marquee-track{display:flex;gap:0;animation:marquee 20s linear infinite;width:max-content}
+  .marquee-item{display:flex;align-items:center;gap:12px;padding:0 32px;font-size:14px;font-weight:800;color:rgba(255,255,255,0.9);white-space:nowrap}
+  .marquee-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.5)}
+  @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ─── SECTIONS ─── */
+  .section{padding:110px 56px;max-width:1240px;margin:0 auto}
+  .section-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--pink);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:18px}
+  .section-label::before{content:'';width:20px;height:2px;background:var(--pink);border-radius:2px}
+  h2{font-size:clamp(30px,4vw,50px);font-weight:900;line-height:1.15;letter-spacing:-1px;margin-bottom:18px}
+  .section-desc{font-size:16px;color:var(--muted);font-weight:600;line-height:1.7;max-width:520px;margin-bottom:60px}
+
+  /* ─── FEATURES ─── */
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:900px){.feat-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.feat-grid{grid-template-columns:1fr}}
+  .feat-card{background:#fff;border-radius:28px;padding:34px 28px;border:1.5px solid rgba(155,53,192,0.06);box-shadow:0 2px 20px rgba(155,53,192,0.06);transition:all .3s cubic-bezier(.34,1.56,.64,1);cursor:default;opacity:0;transform:translateY(30px)}
+  .feat-card.visible{opacity:1;transform:translateY(0)}
+  .feat-card:hover{transform:translateY(-8px) scale(1.01);box-shadow:0 16px 48px rgba(155,53,192,0.14);border-color:rgba(255,72,153,0.18)}
+  .feat-card:hover .feat-icon-wrap{transform:scale(1.12) rotate(-5deg)}
+  .feat-icon-wrap{width:62px;height:62px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:22px;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+  .feat-card h3{font-size:18px;font-weight:800;margin-bottom:10px;letter-spacing:-.3px}
+  .feat-card p{font-size:14px;color:var(--muted);font-weight:600;line-height:1.7}
+
+  /* ─── BENTO GRID (Stats) ─── */
+  .bento{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:16px;margin-top:0}
+  .bento-cell{background:#fff;border-radius:24px;padding:28px;border:1.5px solid rgba(155,53,192,0.06);box-shadow:0 2px 16px rgba(155,53,192,0.05);opacity:0;transform:translateY(20px);transition:all .4s ease}
+  .bento-cell.visible{opacity:1;transform:translateY(0)}
+  .bento-cell.span2{grid-column:span 2}
+  .bento-cell.dark{background:linear-gradient(135deg,#2D1A35,#1A0D22);color:#fff}
+  .bento-cell.pink{background:linear-gradient(135deg,#FF4899,#FF6BB8);color:#fff}
+  .bento-cell.purple{background:linear-gradient(135deg,#9B35C0,#BB44FF);color:#fff}
+  .bento-big-num{font-size:52px;font-weight:900;line-height:1;letter-spacing:-2px}
+  .bento-label{font-size:13px;font-weight:700;opacity:.7;margin-top:4px}
+  .bento-emoji{font-size:36px;margin-bottom:8px}
+  .bento-title{font-size:16px;font-weight:800;margin-bottom:6px}
+  .bento-text{font-size:13px;opacity:.65;font-weight:600;line-height:1.5}
+
+  /* ─── HOW IT WORKS ─── */
+  .how-bg{background:linear-gradient(170deg,#1E0A28 0%,#2D0E3D 50%,#1A0A2E 100%);border-radius:48px;padding:90px 72px;position:relative;overflow:hidden;margin:0 56px}
+  .how-bg::before,.how-bg::after{content:'';position:absolute;border-radius:50%;filter:blur(100px)}
+  .how-bg::before{width:500px;height:500px;background:rgba(255,72,153,0.08);top:-150px;right:-150px}
+  .how-bg::after{width:400px;height:400px;background:rgba(155,53,192,0.10);bottom:-100px;left:-100px}
+  .how-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto}
+  .how-bg h2{color:#fff}.how-bg .section-desc{color:rgba(255,255,255,0.45);margin-bottom:56px}
+  .how-bg .section-label{color:#FF88CC}.how-bg .section-label::before{background:#FF88CC}
+  .steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;position:relative}
+  .steps-row::before{content:'';position:absolute;top:32px;left:calc(16.66% + 12px);right:calc(16.66% + 12px);height:1.5px;background:linear-gradient(90deg,var(--pink),var(--purple));opacity:.3}
+  .step-card{background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:24px;padding:32px;text-align:center;transition:all .3s;opacity:0;transform:translateY(24px)}
+  .step-card.visible{opacity:1;transform:translateY(0)}
+  .step-card:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,72,153,0.25);transform:translateY(-4px)}
+  .step-num{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 6px 24px rgba(255,72,153,0.40);position:relative;z-index:1}
+  .step-card h4{color:#fff;font-size:16px;font-weight:800;margin-bottom:10px}
+  .step-card p{color:rgba(255,255,255,.45);font-size:13px;font-weight:600;line-height:1.65}
+
+  /* ─── TESTIMONIALS ─── */
+  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:900px){.testi-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.testi-grid{grid-template-columns:1fr}}
+  .testi-card{background:#fff;border-radius:24px;padding:30px;border:1.5px solid rgba(155,53,192,0.06);box-shadow:0 2px 20px rgba(155,53,192,0.06);transition:all .3s;opacity:0;transform:translateY(24px)}
+  .testi-card.visible{opacity:1;transform:translateY(0)}
+  .testi-card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(155,53,192,0.12)}
+  .stars{font-size:15px;color:#FFD700;letter-spacing:2px;margin-bottom:14px}
+  .testi-text{font-size:14px;color:var(--muted);font-weight:600;line-height:1.75;margin-bottom:20px;font-style:italic}
+  .testi-author{display:flex;align-items:center;gap:12px}
+  .testi-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .testi-name{font-size:14px;font-weight:800;color:var(--text)}
+  .testi-role{font-size:12px;color:var(--muted);font-weight:600}
+
+  /* ─── CTA ─── */
+  .cta-wrap{margin:0 56px 100px;background:linear-gradient(135deg,rgba(255,72,153,0.07),rgba(155,53,192,0.07));border:1.5px solid rgba(255,72,153,0.13);border-radius:48px;padding:90px 56px;text-align:center;position:relative;overflow:hidden}
+  .cta-wrap::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,153,0.12),transparent);top:-150px;left:50%;transform:translateX(-50%)}
+  .cta-inner{position:relative;z-index:1}
+  .cta-wrap h2{font-size:clamp(28px,4vw,52px);margin-bottom:16px}
+  .cta-sub{font-size:17px;color:var(--muted);font-weight:600;margin-bottom:40px}
+  .store-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .store-btn{display:inline-flex;align-items:center;gap:12px;background:#1E0A28;color:#fff;border-radius:18px;padding:14px 26px;text-decoration:none;transition:all .25s;border:1px solid rgba(255,255,255,0.08)}
+  .store-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(30,10,40,0.35)}
+  .sb-icon{font-size:26px}
+  .sb-sub{font-size:10px;color:rgba(255,255,255,.5);font-weight:700;display:block;text-transform:uppercase;letter-spacing:.5px}
+  .sb-name{font-size:17px;font-weight:900;display:block}
+
+  /* ─── FOOTER ─── */
+  footer{border-top:1px solid rgba(155,53,192,0.09);padding:40px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;max-width:1240px;margin:0 auto}
+  .footer-brand{font-size:17px;font-weight:900;background:linear-gradient(90deg,#FF4899,#9B35C0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .footer-links{display:flex;gap:28px}
+  .footer-links a{font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;transition:color .2s}
+  .footer-links a:hover{color:var(--pink)}
+  .footer-copy{font-size:12px;color:var(--muted);font-weight:600}
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width:1000px){
+    nav{padding:0 24px}.hero{padding:90px 24px 60px}
+    .hero-inner{flex-direction:column;gap:48px;text-align:center}
+    .hero-sub,.hero-btns,.hero-stats{margin-left:auto;margin-right:auto;justify-content:center}
+    .hero-visual{order:-1}.baby-stage{width:280px;height:420px}
+    .float-card{display:none}
+    .section{padding:70px 24px}.bento{grid-template-columns:1fr 1fr}
+    .bento-cell.span2{grid-column:span 2}.how-bg{margin:0 24px;padding:60px 28px}
+    .steps-row{grid-template-columns:1fr;gap:16px}.steps-row::before{display:none}
+    .testi-grid{grid-template-columns:1fr}
+    .cta-wrap{margin:0 24px 80px;padding:60px 28px}
+    footer{flex-direction:column;text-align:center;padding:40px 24px}
+    .footer-links{justify-content:center}
+  }
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(155,53,192,.25);border-radius:5px}
+  </style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-img">👶</div>
+    <span class="nav-brand">BabyBloom PH</span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#stats">About</a>
+    <a href="#how">How it works</a>
+    <a href="#reviews">Reviews</a>
+  </div>
+  <a class="nav-cta" href="#download">🌸 Get App Free</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-mesh"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <div class="hero-inner">
+    <!-- Text -->
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        🇵🇭 &nbsp;Made for Filipino Parents
+      </div>
+      <h1>Track Every<br/><span class="grad">Precious Milestone</span><br/>of Your Baby</h1>
+      <p class="hero-sub">BabyBloom PH is the all-in-one baby tracker built for Filipino families — feeding, sleep, vaccinations, and milestones in one beautiful app.</p>
+      <div class="hero-btns">
+        <a class="btn-main" href="#download"><span>📱 Download Free</span></a>
+        <a class="btn-ghost" href="#features">✨ See Features</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-n" data-count="10">0</div>
+          <div class="stat-l">K+ Parents</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div>
+          <div class="stat-n">4.9★</div>
+          <div class="stat-l">App Rating</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div>
+          <div class="stat-n">100%</div>
+          <div class="stat-l">Free Forever</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Baby Visual -->
+    <div class="hero-visual">
+      <div class="baby-stage">
+        <div class="baby-glow"></div>
+
+        <!-- Orbit -->
+        <div class="orbit-ring">
+          <div class="orbit-item o1">🍼</div>
+          <div class="orbit-item o2">⭐</div>
+        </div>
+
+        <!-- Cute SVG Baby -->
+        <div class="baby-svg-wrap">
+          <svg width="280" height="340" viewBox="0 0 280 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Skin gradient -->
+              <radialGradient id="sk" cx="38%" cy="28%" r="70%">
+                <stop offset="0%" stop-color="#FFF2E0"/>
+                <stop offset="50%" stop-color="#FFCC8A"/>
+                <stop offset="100%" stop-color="#F08C50"/>
+              </radialGradient>
+              <radialGradient id="sk2" cx="40%" cy="30%" r="60%">
+                <stop offset="0%" stop-color="#FFD49A"/>
+                <stop offset="100%" stop-color="#E88050"/>
+              </radialGradient>
+              <!-- Eye gradient -->
+              <radialGradient id="ey" cx="30%" cy="25%" r="75%">
+                <stop offset="0%" stop-color="#6B3D22"/>
+                <stop offset="55%" stop-color="#3D1A08"/>
+                <stop offset="100%" stop-color="#180802"/>
+              </radialGradient>
+              <!-- Cloud gradient -->
+              <radialGradient id="cl" cx="45%" cy="15%" r="65%">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="65%" stop-color="#FEF2FF"/>
+                <stop offset="100%" stop-color="#EDD4FC"/>
+              </radialGradient>
+              <!-- Hair gradient -->
+              <radialGradient id="hr" cx="40%" cy="22%" r="65%">
+                <stop offset="0%" stop-color="#C07838"/>
+                <stop offset="100%" stop-color="#6A3815"/>
+              </radialGradient>
+              <!-- Diaper gradient -->
+              <linearGradient id="dp" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="100%" stop-color="#EEE8FF"/>
+              </linearGradient>
+            </defs>
+
+            <!-- ── CLOUD ── -->
+            <ellipse cx="140" cy="316" rx="120" ry="8" fill="rgba(180,100,220,0.12)"/>
+            <rect x="24" y="278" width="232" height="38" rx="19" fill="url(#cl)"/>
+            <!-- Back puffs -->
+            <circle cx="62"  cy="278" r="28" fill="#EEE0FC"/>
+            <circle cx="116" cy="268" r="36" fill="#EEE0FC"/>
+            <circle cx="172" cy="268" r="36" fill="#EEE0FC"/>
+            <circle cx="226" cy="278" r="28" fill="#EEE0FC"/>
+            <!-- Front puffs -->
+            <circle cx="36"  cy="288" r="30" fill="url(#cl)"/>
+            <circle cx="78"  cy="274" r="40" fill="url(#cl)"/>
+            <circle cx="124" cy="264" r="50" fill="url(#cl)"/>
+            <circle cx="172" cy="268" r="46" fill="url(#cl)"/>
+            <circle cx="216" cy="278" r="38" fill="url(#cl)"/>
+            <circle cx="252" cy="288" r="28" fill="url(#cl)"/>
+            <rect x="24" y="286" width="232" height="30" fill="url(#cl)"/>
+
+            <!-- ── LITTLE FOOT left ── -->
+            <ellipse cx="22" cy="300" rx="18" ry="13" fill="url(#sk)"/>
+            <circle cx="9"  cy="293" r="5.5" fill="url(#sk)"/>
+            <circle cx="16" cy="289" r="5.5" fill="url(#sk)"/>
+            <circle cx="24" cy="287" r="5.5" fill="url(#sk)"/>
+            <circle cx="32" cy="289" r="5"   fill="url(#sk)"/>
+
+            <!-- ── BODY / DIAPER ── -->
+            <ellipse cx="72"  cy="248" rx="36" ry="28" fill="url(#sk)"/>
+            <ellipse cx="208" cy="248" rx="36" ry="28" fill="url(#sk)"/>
+            <rect    x="72"   y="228"  width="136" height="36" fill="url(#sk)"/>
+            <!-- Diaper -->
+            <ellipse cx="140" cy="260" rx="56" ry="24" fill="url(#dp)"/>
+            <rect    x="90"   y="248"  width="100" height="22" rx="10" fill="url(#dp)"/>
+            <!-- Diaper tapes -->
+            <rect x="82" y="244" width="20" height="10" rx="5" fill="rgba(200,180,240,0.7)"/>
+            <rect x="178" y="244" width="20" height="10" rx="5" fill="rgba(200,180,240,0.7)"/>
+
+            <!-- ── LEFT ARM ── -->
+            <path d="M68 240 Q46 256 34 272 Q38 284 52 282 Q64 275 72 265 Q80 270 90 270" fill="url(#sk)"/>
+            <circle cx="38" cy="276" r="17" fill="url(#sk2)"/>
+            <circle cx="38" cy="276" r="11" fill="url(#sk)"/>
+            <circle cx="25" cy="268" r="7"  fill="url(#sk)"/>
+            <circle cx="32" cy="264" r="7"  fill="url(#sk)"/>
+            <circle cx="40" cy="262" r="7"  fill="url(#sk)"/>
+            <circle cx="48" cy="264" r="6.5" fill="url(#sk)"/>
+
+            <!-- ── RIGHT ARM ── -->
+            <path d="M212 240 Q234 256 246 272 Q242 284 228 282 Q216 275 208 265 Q200 270 190 270" fill="url(#sk)"/>
+            <circle cx="242" cy="276" r="17" fill="url(#sk2)"/>
+            <circle cx="242" cy="276" r="11" fill="url(#sk)"/>
+            <circle cx="255" cy="268" r="7"  fill="url(#sk)"/>
+            <circle cx="248" cy="264" r="7"  fill="url(#sk)"/>
+            <circle cx="240" cy="262" r="7"  fill="url(#sk)"/>
+            <circle cx="232" cy="264" r="6.5" fill="url(#sk)"/>
+
+            <!-- ── HEAD ── -->
+            <circle cx="140" cy="144" r="112" fill="url(#sk)"/>
+            <!-- Ears -->
+            <circle cx="32"  cy="152" r="22" fill="url(#sk2)"/>
+            <circle cx="32"  cy="152" r="14" fill="url(#sk)"/>
+            <circle cx="248" cy="152" r="22" fill="url(#sk2)"/>
+            <circle cx="248" cy="152" r="14" fill="url(#sk)"/>
+
+            <!-- ── HAIR ── -->
+            <path d="M88 46 Q112 20 140 24 Q168 20 192 46 Q172 34 140 36 Q108 34 88 46Z" fill="url(#hr)"/>
+            <path d="M88 46 Q112 14 140 20 Q168 14 192 46" stroke="#7A4020" stroke-width="8" fill="none" stroke-linecap="round"/>
+            <!-- Swoop -->
+            <path d="M130 22 Q140 4 154 10 Q160 6 152 20" fill="url(#hr)"/>
+            <!-- Hair shine -->
+            <path d="M118 28 Q138 18 158 26" stroke="rgba(220,160,90,0.45)" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <!-- Flower clip -->
+            <circle cx="185" cy="44" r="10" fill="#FF88C2" opacity="0.9"/>
+            <circle cx="175" cy="38" r="8"  fill="#FF88C2" opacity="0.9"/>
+            <circle cx="192" cy="34" r="8"  fill="#FF88C2" opacity="0.9"/>
+            <circle cx="185" cy="44" r="5"  fill="#FFD0E8"/>
+            <circle cx="183" cy="40" r="5"  fill="#FFD0E8"/>
+            <circle cx="189" cy="38" r="5"  fill="#FFD0E8"/>
+            <circle cx="185" cy="41" r="4"  fill="#FF4899"/>
+
+            <!-- ── EYEBROWS ── -->
+            <path d="M80 108 Q106 96 130 103" stroke="#7A4020" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M150 103 Q174 96 200 108" stroke="#7A4020" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+            <!-- ── EYES ── -->
+            <!-- Left eye white -->
+            <ellipse cx="105" cy="148" rx="30" ry="32" fill="white"/>
+            <!-- Left iris -->
+            <circle  cx="107" cy="150" r="24" fill="url(#ey)"/>
+            <!-- Left pupil -->
+            <circle  cx="108" cy="151" r="15" fill="#100503"/>
+            <!-- Left sparkle big -->
+            <circle  cx="96"  cy="139" r="10" fill="white"/>
+            <!-- Left sparkle small -->
+            <circle  cx="116" cy="160" r="4"  fill="rgba(255,255,255,0.6)"/>
+            <!-- Left lashes -->
+            <path d="M76 134 L80 125 M88 130 L90 120 M100 128 L100 118" stroke="#3D1A08" stroke-width="2.5" stroke-linecap="round"/>
+
+            <!-- Right eye white -->
+            <ellipse cx="175" cy="148" rx="30" ry="32" fill="white"/>
+            <!-- Right iris -->
+            <circle  cx="173" cy="150" r="24" fill="url(#ey)"/>
+            <!-- Right pupil -->
+            <circle  cx="172" cy="151" r="15" fill="#100503"/>
+            <!-- Right sparkle big -->
+            <circle  cx="164" cy="139" r="10" fill="white"/>
+            <!-- Right sparkle small -->
+            <circle  cx="164" cy="160" r="4"  fill="rgba(255,255,255,0.6)"/>
+            <!-- Right lashes -->
+            <path d="M204 134 L200 125 M192 130 L190 120 M180 128 L180 118" stroke="#3D1A08" stroke-width="2.5" stroke-linecap="round"/>
+
+            <!-- ── NOSE ── -->
+            <circle cx="133" cy="176" r="3.5" fill="#D87840" opacity="0.6"/>
+            <circle cx="147" cy="176" r="3.5" fill="#D87840" opacity="0.6"/>
+
+            <!-- ── MOUTH / SMILE ── -->
+            <path d="M118 198 Q140 215 162 198" stroke="#CC6640" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+            <!-- ── ROSY CHEEKS ── -->
+            <circle cx="72"  cy="172" r="30" fill="#FFB3C6" opacity="0.32"/>
+            <circle cx="208" cy="172" r="30" fill="#FFB3C6" opacity="0.32"/>
+
+            <!-- ── PACIFIER ── -->
+            <circle  cx="140" cy="206" r="24" fill="none" stroke="#FFB820" stroke-width="6"/>
+            <circle  cx="140" cy="206" r="15" fill="none" stroke="#FFD870" stroke-width="2" opacity="0.6"/>
+            <ellipse cx="140" cy="197" rx="14" ry="12" fill="#FFD040"/>
+            <ellipse cx="140" cy="197" rx="9"  ry="7.5" fill="#F5A820"/>
+            <circle  cx="134" cy="192" r="4"   fill="rgba(255,255,255,0.65)"/>
+          </svg>
+
+          <!-- Blink overlay (CSS animated) -->
+          <div id="blink-left"  style="position:absolute;top:118px;left:64px;width:60px;height:10px;background:#FFCC8A;border-radius:50%;display:none"></div>
+          <div id="blink-right" style="position:absolute;top:118px;left:132px;width:60px;height:10px;background:#FFCC8A;border-radius:50%;display:none"></div>
+        </div>
+
+        <!-- Floating info cards -->
+        <div class="float-card fc1">
+          <div class="fc-icon">🍼</div>
+          <div>
+            <div class="fc-label">Last Fed</div>
+            <div class="fc-val">2 hrs ago</div>
+          </div>
+        </div>
+        <div class="float-card fc2">
+          <div class="fc-icon">💤</div>
+          <div>
+            <div class="fc-label">Sleep today</div>
+            <div class="fc-val">3h 30m</div>
+          </div>
+        </div>
+        <div class="float-card fc3">
+          <div class="fc-icon">⭐</div>
+          <div>
+            <div class="fc-label">Milestone!</div>
+            <div class="fc-val">First smile 😊</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><span>🍼</span> Feeding Log <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>💤</span> Sleep Tracker <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>💉</span> Vaccination Log <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>📏</span> Growth Chart <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>⭐</span> Milestones <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>📖</span> Parenting Guide <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>🌸</span> BabyBloom PH <span class="marquee-dot"></span></div>
+    <!-- Duplicate for seamless loop -->
+    <div class="marquee-item"><span>🍼</span> Feeding Log <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>💤</span> Sleep Tracker <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>💉</span> Vaccination Log <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>📏</span> Growth Chart <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>⭐</span> Milestones <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>📖</span> Parenting Guide <span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span>🌸</span> BabyBloom PH <span class="marquee-dot"></span></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">Features</div>
+  <h2>Everything Your Baby<br/><span class="grad">Needs, Tracked</span></h2>
+  <p class="section-desc">From the first feeding to the first steps — BabyBloom PH has everything you need to nurture your baby's growth beautifully.</p>
+  <div class="feat-grid">
+    <div class="feat-card" style="transition-delay:.00s">
+      <div class="feat-icon-wrap" style="background:rgba(255,72,153,0.09)">🍼</div>
+      <h3>Feeding Log</h3>
+      <p>Track breastfeeding, bottle feeds, and solids with times and amounts. Get reminders so you never miss a feed.</p>
+    </div>
+    <div class="feat-card" style="transition-delay:.07s">
+      <div class="feat-icon-wrap" style="background:rgba(155,53,192,0.09)">💤</div>
+      <h3>Sleep Tracker</h3>
+      <p>Log naps and night sleep. See patterns over time and understand your baby's natural sleep schedule.</p>
+    </div>
+    <div class="feat-card" style="transition-delay:.14s">
+      <div class="feat-icon-wrap" style="background:rgba(255,72,153,0.09)">💉</div>
+      <h3>Vaccination Log</h3>
+      <p>Never miss a vaccine. Track completed shots and get reminders on the Philippine EPI schedule.</p>
+    </div>
+    <div class="feat-card" style="transition-delay:.21s">
+      <div class="feat-icon-wrap" style="background:rgba(155,53,192,0.09)">📏</div>
+      <h3>Growth Chart</h3>
+      <p>Monitor weight and height with WHO growth charts. See how your baby compares to healthy benchmarks.</p>
+    </div>
+    <div class="feat-card" style="transition-delay:.28s">
+      <div class="feat-icon-wrap" style="background:rgba(255,72,153,0.09)">⭐</div>
+      <h3>Milestones</h3>
+      <p>Celebrate every first — first smile, first word, first steps. Create a beautiful memory timeline.</p>
+    </div>
+    <div class="feat-card" style="transition-delay:.35s">
+      <div class="feat-icon-wrap" style="background:rgba(155,53,192,0.09)">📖</div>
+      <h3>Parenting Guide</h3>
+      <p>Age-appropriate tips and articles written for Filipino parents, from newborn care to toddler development.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BENTO STATS -->
+<section class="section" id="stats" style="padding-top:0">
+  <div class="bento">
+    <div class="bento-cell pink" style="transition-delay:.0s">
+      <div class="bento-emoji">👪</div>
+      <div class="bento-big-num" data-count="10">0</div>
+      <div class="bento-label">K+ Families trust us</div>
+    </div>
+    <div class="bento-cell purple" style="transition-delay:.1s">
+      <div class="bento-emoji">🇵🇭</div>
+      <div class="bento-big-num">PH</div>
+      <div class="bento-label">Built for Filipinos</div>
+    </div>
+    <div class="bento-cell span2" style="transition-delay:.2s">
+      <div class="bento-title" style="font-size:20px">🌸 Why BabyBloom PH?</div>
+      <div class="bento-text" style="font-size:15px;color:var(--muted);margin-top:8px">Built specifically for Filipino parents with Philippine vaccine schedules, Tagalog support, and local parenting insights. 100% free, no ads, no hidden fees.</div>
+    </div>
+    <div class="bento-cell dark span2" style="transition-delay:.3s">
+      <div class="bento-emoji">💕</div>
+      <div class="bento-title" style="color:#fff">"The best parenting app I've used"</div>
+      <div class="bento-text">— Featured by Filipino Mom Bloggers</div>
+    </div>
+    <div class="bento-cell" style="transition-delay:.4s;background:linear-gradient(135deg,rgba(255,72,153,0.07),rgba(155,53,192,0.07));border:1.5px solid rgba(255,72,153,0.14)">
+      <div class="bento-emoji">⭐</div>
+      <div class="bento-big-num" style="color:var(--pink)">4.9</div>
+      <div class="bento-label">App Store Rating</div>
+    </div>
+    <div class="bento-cell" style="transition-delay:.5s">
+      <div class="bento-emoji">🔒</div>
+      <div class="bento-title">Private & Secure</div>
+      <div class="bento-text">Your baby's data stays private. We never sell your information.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="how-bg">
+  <div class="how-inner">
+    <section class="section" id="how" style="padding:0;margin:0;max-width:none">
+      <div class="section-label">How it works</div>
+      <h2>Up & Running<br/>in 3 Simple Steps</h2>
+      <p class="section-desc">Getting started with BabyBloom PH takes less than 2 minutes.</p>
+      <div class="steps-row">
+        <div class="step-card" style="transition-delay:.0s">
+          <div class="step-num">1</div>
+          <h4>Create Your Profile</h4>
+          <p>Sign up free and add your baby's name, birthday, and photo to personalize your experience.</p>
+        </div>
+        <div class="step-card" style="transition-delay:.12s">
+          <div class="step-num">2</div>
+          <h4>Log Daily Activities</h4>
+          <p>Track feedings, sleep, diapers, weight, and more with just a few taps throughout your day.</p>
+        </div>
+        <div class="step-card" style="transition-delay:.24s">
+          <div class="step-num">3</div>
+          <h4>Watch Them Bloom 🌸</h4>
+          <p>See your baby's progress, get personalized insights, and celebrate every precious milestone.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="reviews">
+  <div class="section-label">Reviews</div>
+  <h2>Loved by Filipino<br/><span class="grad">Parents</span></h2>
+  <p class="section-desc">Join thousands of families across the Philippines who trust BabyBloom PH every day.</p>
+  <div class="testi-grid">
+    <div class="testi-card" style="transition-delay:.0s">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Sobrang helpful! As a first-time mom, this app gives me so much peace of mind. I can track everything in one place."</p>
+      <div class="testi-author">
+        <div class="testi-av">👩</div>
+        <div><div class="testi-name">Maria Santos</div><div class="testi-role">Mom of 1 · Quezon City</div></div>
+      </div>
+    </div>
+    <div class="testi-card" style="transition-delay:.1s">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"The sleep tracker is amazing! I finally understand my son's sleep patterns. This app is a lifesaver for working parents."</p>
+      <div class="testi-author">
+        <div class="testi-av">👨</div>
+        <div><div class="testi-name">Juan dela Cruz</div><div class="testi-role">Dad of 2 · Cebu City</div></div>
+      </div>
+    </div>
+    <div class="testi-card" style="transition-delay:.2s">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Ang ganda ng app na ito! The milestone tracker made me cry happy tears. All my daughter's firsts in one beautiful place."</p>
+      <div class="testi-author">
+        <div class="testi-av">👩‍🦱</div>
+        <div><div class="testi-name">Ana Reyes</div><div class="testi-role">Mom of 3 · Davao</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-wrap" id="download">
+  <div class="cta-inner">
+    <div class="section-label" style="justify-content:center;margin-bottom:20px">🎉 Free Download</div>
+    <h2 style="text-align:center">Start Your Baby's<br/><span class="grad">BabyBloom Journey</span> Today</h2>
+    <p class="cta-sub">Free forever. No ads. No hidden fees. Just love for your baby 💕</p>
+    <div class="store-btns">
+      <a class="store-btn" href="#">
+        <span class="sb-icon">🍎</span>
+        <div><span class="sb-sub">Download on the</span><span class="sb-name">App Store</span></div>
+      </a>
+      <a class="store-btn" href="#">
+        <span class="sb-icon">▶</span>
+        <div><span class="sb-sub">Get it on</span><span class="sb-name">Google Play</span></div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-brand">BabyBloom PH 🌸</span>
+  <div class="footer-links">
+    <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a><a href="#">FAQ</a>
+  </div>
+  <div class="footer-copy">© 2026 BabyBloom PH — Made with 💕 in the Philippines</div>
+</footer>
+
+<script>
+  // ── CURSOR ──
+  const cur = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+  function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+  animRing();
+  document.querySelectorAll('a,button,.feat-card,.testi-card').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';ring.style.transform='translate(-50%,-50%) scale(1.5)'});
+    el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)'});
+  });
+
+  // ── NAV SCROLL ──
+  window.addEventListener('scroll',()=>{
+    document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);
+  });
+
+  // ── INTERSECTION OBSERVER (reveal animations) ──
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}});
+  },{threshold:.12});
+  document.querySelectorAll('.feat-card,.bento-cell,.step-card,.testi-card').forEach(el=>io.observe(el));
+
+  // ── COUNT-UP NUMBERS ──
+  const countIo = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const el=e.target;const target=+el.dataset.count;let n=0;
+      const step=()=>{n+=Math.ceil(target/40);if(n>=target){el.textContent=target;return}el.textContent=n;requestAnimationFrame(step)};
+      step();countIo.unobserve(el);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(el=>countIo.observe(el));
+
+  // ── BABY BLINK ──
+  const bL=document.getElementById('blink-left'), bR=document.getElementById('blink-right');
+  function blink(){
+    bL.style.display=bR.style.display='block';
+    setTimeout(()=>{bL.style.display=bR.style.display='none'},140);
+    setTimeout(blink,2800+Math.random()*1200);
+  }
+  setTimeout(blink,1500);
+
+  // ── SMOOTH ANCHOR ──
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const t=document.querySelector(a.getAttribute('href'));
+      if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}
+    });
+  });
+
+  // ── CARD 3D TILT ──
+  document.querySelectorAll('.feat-card').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5;
+      const y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`translateY(-8px) scale(1.01) rotateX(${-y*8}deg) rotateY(${x*8}deg)`;
+      card.style.transformOrigin='center center';
+    });
+    card.addEventListener('mouseleave',()=>{card.style.transform='';});
+  });
+</script>
+</body>
+</html>
