@@ -1,167 +1,62 @@
 /**
- * index.tsx — BabyBloom PH Dashboard
- * Redesigned to match system.png — kawaii SVG illustrated icons, hero baby card, growth chart
+ * index.tsx — Dashboard / Home Screen
+ * Per docs/03-dashboard.md + CLAUDE.md Design System
+ *
+ * Layout (top to bottom):
+ *  1. TopNavBar  — child switcher LEFT · name+age CENTER · AI+bell RIGHT
+ *  2. ChildSwitcher row (only if 2+ children)
+ *  3. ScrollView (pull-to-refresh)
+ *     a. Quick Stats Strip  — 4 horizontal chips
+ *     b. Growth Snapshot Card
+ *     c. Feature Icon Grid  — 6 items (2 cols × 3 rows)
+ *     d. Insights Card      — weekly summary
+ *  OR empty state when no child profile exists
  */
 
+import { useState, useCallback } from 'react';
 import {
-  ScrollView, View, Text, TouchableOpacity,
-  StyleSheet, Dimensions,
+  ScrollView, View, Text, TouchableOpacity, Image,
+  StyleSheet, Dimensions, RefreshControl,
 } from 'react-native';
 import Svg, {
-  Path, Circle, Ellipse, Rect, G, Line, Polyline,
-  Defs, LinearGradient as SvgGrad, Stop, Text as SvgText,
+  Path, Circle, Ellipse, Line, Polyline,
+  Defs, LinearGradient as SvgGrad, Stop, Rect, G,
 } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import Colors from '../../constants/Colors';
 import ChildSwitcher from '../../components/ChildSwitcher';
-import { useChildStore, getChildDisplayName, getChildAge } from '../../store/childStore';
+import {
+  useChildStore, Child,
+  getChildDisplayName, getChildAgeVerbose,
+} from '../../store/childStore';
 
 const { width: W } = Dimensions.get('window');
-const CARD_W = W - 32;
+const PAD       = 16;
+const CARD_W    = W - PAD * 2;
+const FEAT_GAP  = 10;
+const FEAT_W    = (CARD_W - FEAT_GAP) / 2;
 
-// ── Kawaii SVG Icons ───────────────────────────────────────────────────────────
-
-function IconBottle({ size = 48 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      <Defs>
-        <SvgGrad id="bGrad" x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#FFD6E8" />
-          <Stop offset="1" stopColor="#FFB3CF" />
-        </SvgGrad>
-      </Defs>
-      {/* Bottle body */}
-      <Rect x="14" y="16" width="20" height="24" rx="9" fill="url(#bGrad)" />
-      {/* Neck */}
-      <Rect x="17" y="10" width="14" height="8" rx="4" fill="#FFB3CF" />
-      {/* Nipple */}
-      <Ellipse cx="24" cy="9" rx="6" ry="3.5" fill="#FF8FAB" />
-      <Ellipse cx="24" cy="7" rx="3.5" ry="2.5" fill="#FF6B8A" />
-      {/* Milk fill */}
-      <Rect x="15" y="26" width="18" height="12" rx="7" fill="white" opacity="0.45" />
-      {/* Shine */}
-      <Ellipse cx="18" cy="20" rx="2.5" ry="5" fill="white" opacity="0.4" />
-      {/* Scale marks */}
-      <Line x1="15" y1="30" x2="19" y2="30" stroke="#FFB3CF" strokeWidth="1.2" />
-      <Line x1="15" y1="34" x2="19" y2="34" stroke="#FFB3CF" strokeWidth="1.2" />
-    </Svg>
-  );
-}
-
-function IconMoon({ size = 48 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      <Defs>
-        <SvgGrad id="mGrad" x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#FFF9C4" />
-          <Stop offset="1" stopColor="#FFD54F" />
-        </SvgGrad>
-      </Defs>
-      {/* Moon crescent */}
-      <Path
-        d="M30 8 Q42 16 42 28 Q42 40 28 44 Q14 40 12 28 Q16 34 26 32 Q40 28 30 8Z"
-        fill="url(#mGrad)"
-      />
-      {/* Stars */}
-      <Circle cx="10" cy="14" r="2.5" fill="#FFD700" />
-      <Circle cx="40" cy="10" r="2" fill="#FFD700" />
-      <Circle cx="42" cy="30" r="1.5" fill="#FFD700" />
-      <Circle cx="6" cy="34" r="1.5" fill="#FFD700" />
-      {/* Moon face */}
-      <Circle cx="26" cy="24" r="2" fill="#E8A020" />
-      <Circle cx="34" cy="22" r="2" fill="#E8A020" />
-      <Path d="M26 30 Q30 34 34 30" stroke="#E8A020" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      {/* Z letters */}
-      <Path d="M6 18 L10 18 L6 23 L10 23" stroke="#C5B4FF" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M3 13 L6 13 L3 17 L6 17" stroke="#C5B4FF" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function IconSyringe({ size = 48 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      <Defs>
-        <SvgGrad id="sGrad" x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#C5E8F5" />
-          <Stop offset="1" stopColor="#8AC8DE" />
-        </SvgGrad>
-      </Defs>
-      {/* Body */}
-      <Rect x="10" y="20" width="26" height="8" rx="4" fill="url(#sGrad)" />
-      {/* Plunger */}
-      <Rect x="34" y="17" width="5" height="14" rx="2.5" fill="#7BBDD0" />
-      <Rect x="35" y="15" width="3" height="4" rx="1" fill="#5AAABF" />
-      {/* Needle */}
-      <Path d="M10 23 L4 24" stroke="#8AC8DE" strokeWidth="2.2" strokeLinecap="round" />
-      <Path d="M10 25 L4 24" stroke="#8AC8DE" strokeWidth="2.2" strokeLinecap="round" />
-      {/* Liquid */}
-      <Rect x="11" y="21" width="15" height="6" rx="3" fill="#A8D8F0" />
-      {/* Heart */}
-      <Path d="M21 10 Q23 7 25 10 Q28 13 23 17 Q18 13 21 10Z" fill="#FFB3C8" />
-      {/* Plus */}
-      <Path d="M7 10 L7 14 M5 12 L9 12" stroke="#A8D8F0" strokeWidth="1.8" strokeLinecap="round" />
-    </Svg>
-  );
-}
-
-function IconPills({ size = 48 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      {/* Capsule top half */}
-      <Path d="M12 22 Q12 14 24 14 Q36 14 36 22" fill="#B2A4FF" />
-      {/* Capsule bottom half */}
-      <Path d="M12 22 Q12 30 24 30 Q36 30 36 22" fill="#FFB3C8" />
-      {/* Capsule outline */}
-      <Ellipse cx="24" cy="22" rx="12" ry="8" fill="none" stroke="white" strokeWidth="1.5" />
-      {/* Divider */}
-      <Line x1="12" y1="22" x2="36" y2="22" stroke="white" strokeWidth="1.5" />
-      {/* Shine */}
-      <Ellipse cx="18" cy="18" rx="3.5" ry="2" fill="white" opacity="0.4" />
-      {/* Small round pill */}
-      <Ellipse cx="36" cy="38" rx="6" ry="3.5" fill="#FFD3A5" transform="rotate(-35, 36, 38)" />
-      {/* Star */}
-      <Path d="M10 37 L11 40 L14 40 L11.5 42 L12.5 45 L10 43 L7.5 45 L8.5 42 L6 40 L9 40Z" fill="#FFD700" />
-    </Svg>
-  );
-}
-
-function IconChart({ size = 48 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      {/* Card bg */}
-      <Rect x="4" y="8" width="40" height="34" rx="7" fill="#FFF0F4" />
-      {/* Bars */}
-      <Rect x="10" y="28" width="7" height="10" rx="2.5" fill="#FFB3C8" />
-      <Rect x="20" y="20" width="7" height="18" rx="2.5" fill="#B2A4FF" />
-      <Rect x="30" y="14" width="7" height="24" rx="2.5" fill="#A8D8EA" />
-      {/* Dotted trend line */}
-      <Polyline
-        points="13,26 23,18 33,12"
-        fill="none" stroke="#FF8FAB" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round"
-        strokeDasharray="2.5,2.5"
-      />
-      {/* Up arrow */}
-      <Path d="M37 10 L40 7 L43 10" stroke="#6BC46A" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <Line x1="40" y1="7" x2="40" y2="14" stroke="#6BC46A" strokeWidth="2" strokeLinecap="round" />
-    </Svg>
-  );
-}
-
-// ── Kawaii Baby Illustration ───────────────────────────────────────────────────
-
-function KawaiiBaby({ size = 100 }: { size?: number }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Kawaii Baby Illustration  (empty-state hero)
+// ─────────────────────────────────────────────────────────────────────────────
+function KawaiiBaby({ size = 140 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
-      {/* Onesie / body */}
-      <Ellipse cx="50" cy="76" rx="26" ry="20" fill="#FFD6E8" />
+      <Defs>
+        <SvgGrad id="bodyG" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#FFD6E8" />
+          <Stop offset="1" stopColor="#FFB6C8" />
+        </SvgGrad>
+      </Defs>
+      {/* Onesie */}
+      <Ellipse cx="50" cy="76" rx="26" ry="20" fill="url(#bodyG)" />
       <Path d="M28 72 Q38 88 50 90 Q62 88 72 72 Q62 68 50 70 Q38 68 28 72Z" fill="#FFB6C8" />
       {/* Arms */}
-      <Ellipse cx="22" cy="72" rx="7" ry="13" fill="#FFECD5" transform="rotate(-15, 22, 72)" />
-      <Ellipse cx="78" cy="72" rx="7" ry="13" fill="#FFECD5" transform="rotate(15, 78, 72)" />
+      <Ellipse cx="22" cy="72" rx="7" ry="13" fill="#FFECD5" transform="rotate(-15,22,72)" />
+      <Ellipse cx="78" cy="72" rx="7" ry="13" fill="#FFECD5" transform="rotate(15,78,72)" />
       {/* Head */}
       <Circle cx="50" cy="40" r="24" fill="#FFECD5" />
       {/* Hair */}
@@ -170,14 +65,11 @@ function KawaiiBaby({ size = 100 }: { size?: number }) {
       {/* Ears */}
       <Circle cx="26" cy="40" r="6.5" fill="#FFDFC8" />
       <Circle cx="74" cy="40" r="6.5" fill="#FFDFC8" />
-      <Circle cx="26" cy="40" r="4" fill="#FFB3A0" />
-      <Circle cx="74" cy="40" r="4" fill="#FFB3A0" />
-      {/* Kawaii closed eyes */}
+      <Circle cx="26" cy="40" r="4"   fill="#FFB3A0" />
+      <Circle cx="74" cy="40" r="4"   fill="#FFB3A0" />
+      {/* Kawaii eyes */}
       <Path d="M36 39 Q40 35 44 39" stroke="#5C3317" strokeWidth="2.8" fill="none" strokeLinecap="round" />
       <Path d="M56 39 Q60 35 64 39" stroke="#5C3317" strokeWidth="2.8" fill="none" strokeLinecap="round" />
-      {/* Eyelashes */}
-      <Line x1="36" y1="39" x2="34" y2="37" stroke="#5C3317" strokeWidth="1.4" strokeLinecap="round" />
-      <Line x1="44" y1="39" x2="46" y2="37" stroke="#5C3317" strokeWidth="1.4" strokeLinecap="round" />
       {/* Blush */}
       <Ellipse cx="35" cy="46" rx="6" ry="3.5" fill="#FFB3C8" opacity="0.65" />
       <Ellipse cx="65" cy="46" rx="6" ry="3.5" fill="#FFB3C8" opacity="0.65" />
@@ -186,303 +78,529 @@ function KawaiiBaby({ size = 100 }: { size?: number }) {
       {/* Bow */}
       <Path d="M38 23 Q50 18 62 23 Q50 28 38 23Z" fill="#FF8FAB" />
       <Circle cx="50" cy="23" r="3" fill="#FF6B8A" />
-      {/* Flower decoration */}
+      {/* Flower accent */}
       <Circle cx="76" cy="27" r="3.5" fill="#FFD700" />
-      <Circle cx="71" cy="25" r="3" fill="#FFB3C8" />
-      <Circle cx="81" cy="25" r="3" fill="#FFB3C8" />
-      <Circle cx="76" cy="20" r="3" fill="#FFB3C8" />
-      <Circle cx="76" cy="32" r="3" fill="#FFB3C8" />
-      <Circle cx="76" cy="27" r="2" fill="white" opacity="0.7" />
+      <Circle cx="71" cy="25" r="3"   fill="#FFB3C8" />
+      <Circle cx="81" cy="25" r="3"   fill="#FFB3C8" />
+      <Circle cx="76" cy="20" r="3"   fill="#FFB3C8" />
+      <Circle cx="76" cy="32" r="3"   fill="#FFB3C8" />
+      <Circle cx="76" cy="27" r="2"   fill="white" opacity="0.7" />
     </Svg>
   );
 }
 
-// ── Elephant Decoration ────────────────────────────────────────────────────────
-
-function ElephantDecor({ size = 52 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size * 0.9} viewBox="0 0 52 46">
-      <Ellipse cx="30" cy="30" rx="18" ry="14" fill="#D4C5EE" />
-      <Circle cx="14" cy="20" r="14" fill="#D4C5EE" />
-      <Circle cx="5" cy="14" r="9" fill="#DDD0F4" />
-      <Circle cx="5" cy="14" r="5.5" fill="#FFB3C8" />
-      <Circle cx="10" cy="17" r="3" fill="white" />
-      <Circle cx="10" cy="17" r="1.8" fill="#333" />
-      <Circle cx="10.5" cy="16.5" r="0.6" fill="white" />
-      <Path d="M7 27 Q2 36 8 40 Q12 42 11 46" stroke="#C0B0E0" strokeWidth="5.5" strokeLinecap="round" fill="none" />
-      <Rect x="18" y="41" width="7" height="8" rx="3" fill="#C0B0E0" />
-      <Rect x="28" y="41" width="7" height="8" rx="3" fill="#C0B0E0" />
-      <Rect x="37" y="41" width="7" height="8" rx="3" fill="#C0B0E0" />
-      <Path d="M48 28 Q54 24 50 19" stroke="#C0B0E0" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-      <Circle cx="32" cy="24" r="4" fill="#FFD700" opacity="0.75" />
-    </Svg>
-  );
-}
-
-// ── Growth Chart SVG ──────────────────────────────────────────────────────────
-
-function GrowthChartSvg({ width }: { width: number }) {
-  const h = 160;
-  const padL = 30, padR = 14, padT = 12, padB = 28;
-  const cW = width - padL - padR;
-  const cH = h - padT - padB;
-
-  const months  = [0, 1, 2, 3, 4, 5];
-  const weights = [3.5, 4.2, 5.1, 5.8, 6.2, 6.5];
-  const heights = [50, 53, 57, 60, 62, 64];
-
-  const wMin = 2.5, wMax = 8;
-  const hMin = 46, hMax = 68;
-
-  const toX  = (i: number) => padL + (i / (months.length - 1)) * cW;
-  const toYW = (v: number) => padT + (1 - (v - wMin) / (wMax - wMin)) * cH;
-  const toYH = (v: number) => padT + (1 - (v - hMin) / (hMax - hMin)) * cH;
-
-  const wPts = weights.map((v, i) => `${toX(i)},${toYW(v)}`).join(' ');
-  const hPts = heights.map((v, i) => `${toX(i)},${toYH(v)}`).join(' ');
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Mini Sparkline  (placeholder — will use Victory Native when data exists)
+// ─────────────────────────────────────────────────────────────────────────────
+function MiniSparkLine({ width = 120, hasData = false }: { width?: number; hasData?: boolean }) {
+  const h = 44;
+  if (!hasData) {
+    return (
+      <Svg width={width} height={h}>
+        <Line x1="4" y1={h - 6} x2={width - 4} y2={h - 6}
+          stroke="#F8BBD9" strokeWidth="1.5" strokeLinecap="round"
+          strokeDasharray="5,4" />
+        <Line x1={width / 2} y1="4" x2={width / 2} y2={h - 8}
+          stroke="#FCE4EC" strokeWidth="1" />
+      </Svg>
+    );
+  }
+  const pts = [3.2, 4.1, 5.0, 5.6, 6.2];
+  const minV = 2.5, maxV = 8;
+  const toX  = (i: number) => 8 + (i / (pts.length - 1)) * (width - 16);
+  const toY  = (v: number) => 4 + (1 - (v - minV) / (maxV - minV)) * (h - 10);
+  const poly = pts.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
   return (
     <Svg width={width} height={h}>
-      {/* Grid lines */}
-      {[0, 0.33, 0.66, 1].map((t, i) => (
-        <Line key={i}
-          x1={padL} y1={padT + t * cH}
-          x2={padL + cW} y2={padT + t * cH}
-          stroke="#FCE4EC" strokeWidth="1"
-        />
+      <Polyline points={poly} fill="none" stroke={Colors.primaryPink}
+        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {pts.map((v, i) => (
+        <Circle key={i} cx={toX(i)} cy={toY(v)} r="3.5" fill={Colors.primaryPink} />
       ))}
-      {/* Axes */}
-      <Line x1={padL} y1={padT} x2={padL} y2={padT + cH} stroke="#F8BBD9" strokeWidth="1.5" />
-      <Line x1={padL} y1={padT + cH} x2={padL + cW} y2={padT + cH} stroke="#F8BBD9" strokeWidth="1.5" />
-
-      {/* Height line (blue) */}
-      <Polyline points={hPts} fill="none" stroke="#60B8E0" strokeWidth="2.5"
-        strokeLinecap="round" strokeLinejoin="round" />
-      {heights.map((v, i) => (
-        <Circle key={`h${i}`} cx={toX(i)} cy={toYH(v)} r="4.5" fill="#60B8E0" />
-      ))}
-
-      {/* Weight line (pink) */}
-      <Polyline points={wPts} fill="none" stroke="#E87090" strokeWidth="2.5"
-        strokeLinecap="round" strokeLinejoin="round" />
-      {weights.map((v, i) => (
-        <Circle key={`w${i}`} cx={toX(i)} cy={toYW(v)} r="4.5" fill="#E87090" />
-      ))}
-
-      {/* Weight label */}
-      <SvgText x={toX(4) + 6} y={toYW(weights[4]) - 7}
-        fontSize="10" fill="#E87090" fontWeight="bold">{weights[4]} kg</SvgText>
-
-      {/* Month x-axis labels */}
-      {months.map((m, i) => (
-        <SvgText key={i} x={toX(i)} y={h - 6}
-          fontSize="9" fill="#BBBBBB" textAnchor="middle">{m}</SvgText>
-      ))}
-
-      {/* Y-axis labels */}
-      <SvgText x={padL - 4} y={padT + cH * 0.05} fontSize="9" fill="#BBBBBB" textAnchor="end">8</SvgText>
-      <SvgText x={padL - 4} y={padT + cH * 0.5}  fontSize="9" fill="#BBBBBB" textAnchor="end">5</SvgText>
-      <SvgText x={padL - 4} y={padT + cH * 0.95} fontSize="9" fill="#BBBBBB" textAnchor="end">3</SvgText>
     </Svg>
   );
 }
 
-// ── Feature & Stats Config ────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Mini Avatar  (for top nav, inline — no ChildSwitcher import needed)
+// ─────────────────────────────────────────────────────────────────────────────
+const AVATAR_BG    = ['#E8F2FF', '#FFE4EE', '#E0F7EF', '#FFF8E8'];
+const AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
 
-const FEATURES = [
-  { key: 'feeding_log',   Icon: IconBottle, bg: ['#FFE4EE', '#FFD0E6'] as [string,string], accent: '#FF8FAB' },
-  { key: 'sleep_tracker', Icon: IconMoon,   bg: ['#FFFDE7', '#FFF0A0'] as [string,string], accent: '#F0C040' },
-  { key: 'vitamins_meds', Icon: IconPills,  bg: ['#EDE8FF', '#DDD4FF'] as [string,string], accent: '#9B89F7' },
-  { key: 'insights',      Icon: IconChart,  bg: ['#E0F4FF', '#C8EAFF'] as [string,string], accent: '#60B8E0' },
-];
+function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
+  const idx  = (child.avatarIndex ?? 0) % AVATAR_BG.length;
+  if (child.photoUri) {
+    return (
+      <Image
+        source={{ uri: child.photoUri }}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+      />
+    );
+  }
+  return (
+    <View style={{
+      width: size, height: size, borderRadius: size / 2,
+      backgroundColor: AVATAR_BG[idx],
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      <Text style={{ fontSize: size * 0.46 }}>{AVATAR_EMOJI[idx]}</Text>
+    </View>
+  );
+}
 
-const QUICK_STATS = [
-  { key: 'feeding',    Icon: IconBottle,  label: "Today's Feeding", value: '—',         accent: '#FF8FAB' },
-  { key: 'sleep',      Icon: IconMoon,    label: 'Sleep Today',     value: '—',         accent: '#F0C040' },
-  { key: 'vaccine',    Icon: IconSyringe, label: 'Next Vaccine',    value: 'Check →',   accent: '#60B8E0' },
-];
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. Top Navigation Bar
+//    LEFT  — child avatar switcher (▾ if multi-child) OR "Add Baby" pill
+//    CENTER — child nickname  •  age string
+//    RIGHT  — 🤖 Ate AI  |  🔔 Bell
+// ─────────────────────────────────────────────────────────────────────────────
+function TopNavBar() {
+  const { activeChild, children } = useChildStore();
+  const hasChild     = !!activeChild;
+  const displayName  = hasChild ? getChildDisplayName(activeChild!) : null;
+  const ageStr       = hasChild && activeChild!.birthday
+    ? getChildAgeVerbose(activeChild!.birthday)
+    : null;
 
-// ── Home Screen ───────────────────────────────────────────────────────────────
-
-export default function HomeScreen() {
-  const { t }           = useTranslation();
-  const { activeChild } = useChildStore();
-
-  const babyName = activeChild ? getChildDisplayName(activeChild) : '';
-  const babyAge  = activeChild?.birthday ? getChildAge(activeChild.birthday) : null;
+  const onAvatarPress = () => {
+    if (hasChild) {
+      router.push({ pathname: '/child-profile', params: { id: activeChild!.id } });
+    } else {
+      router.push('/child-profile');
+    }
+  };
 
   return (
-    <View style={s.screen}>
+    <View style={nav.bar}>
 
-      {/* ── Child Switcher ── */}
-      <ChildSwitcher />
+      {/* ── Left: Child Switcher ── */}
+      <TouchableOpacity style={nav.left} onPress={onAvatarPress} activeOpacity={0.75}>
+        {hasChild ? (
+          <>
+            <View style={nav.avatarRing}>
+              <MiniAvatar child={activeChild!} size={34} />
+            </View>
+            {children.length > 1 && (
+              <Text style={nav.arrow}>▾</Text>
+            )}
+          </>
+        ) : (
+          <TouchableOpacity
+            style={nav.addPill}
+            onPress={() => router.push('/child-profile')}
+            activeOpacity={0.8}
+          >
+            <Text style={nav.addPillText}>+ Add Baby</Text>
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
 
-      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      {/* ── Center: Name + Age ── */}
+      <View style={nav.center}>
+        {hasChild ? (
+          <>
+            <Text style={nav.name} numberOfLines={1}>{displayName}</Text>
+            {ageStr && <Text style={nav.age} numberOfLines={1}>{ageStr}</Text>}
+          </>
+        ) : (
+          <Text style={nav.appName}>BabyBloom PH 🌸</Text>
+        )}
+      </View>
 
-        {/* ── Hero Baby Card ── */}
+      {/* ── Right: AI + Bell ── */}
+      <View style={nav.right}>
+        <TouchableOpacity style={nav.iconBtn} activeOpacity={0.7}>
+          <Text style={nav.iconEmoji}>🤖</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={nav.iconBtn} activeOpacity={0.7}>
+          <Text style={nav.iconEmoji}>🔔</Text>
+        </TouchableOpacity>
+      </View>
+
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. Quick Stats Strip  — 4 white pill chips, colored left border
+// ─────────────────────────────────────────────────────────────────────────────
+const QUICK_STATS = [
+  { id: 'fed',     emoji: '🍼', label: 'Last Fed',     value: '—',    accent: Colors.primaryPink },
+  { id: 'sleep',   emoji: '🌙', label: 'Sleep Today',  value: '—',    accent: '#9B89F7'          },
+  { id: 'vaccine', emoji: '💉', label: 'Next Vaccine', value: '—',    accent: Colors.blue        },
+  { id: 'weight',  emoji: '⚖️', label: 'Weight',       value: '— kg', accent: Colors.mint        },
+] as const;
+
+function QuickStatsStrip() {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={qs.row}
+    >
+      {QUICK_STATS.map(({ id, emoji, label, value, accent }) => (
+        <View key={id} style={[qs.chip, { borderLeftColor: accent }]}>
+          <Text style={qs.chipEmoji}>{emoji}</Text>
+          <View>
+            <Text style={qs.chipLabel}>{label}</Text>
+            <Text style={[qs.chipValue, { color: accent }]}>{value}</Text>
+          </View>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. Growth Snapshot Card
+// ─────────────────────────────────────────────────────────────────────────────
+function GrowthSnapshotCard() {
+  const { activeChild } = useChildStore();
+  const hasMeasurements = false; // future: connect to Supabase growth_records
+
+  const weight = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '—';
+  const height = activeChild?.birthHeight ? `${activeChild.birthHeight} cm` : '—';
+
+  return (
+    <View style={gc.card}>
+      {/* Title row */}
+      <View style={gc.row}>
+        <Text style={gc.title}>Growth Snapshot 📈</Text>
+        <TouchableOpacity><Text style={gc.link}>View Full Analysis →</Text></TouchableOpacity>
+      </View>
+
+      {/* 3 stat boxes: Weight | Height | Head Circ */}
+      <View style={gc.statsRow}>
+        {[
+          { label: 'Weight',    value: weight },
+          { label: 'Height',    value: height },
+          { label: 'Head Circ.', value: '—'   },
+        ].map(({ label, value }) => (
+          <View key={label} style={gc.statBox}>
+            <Text style={gc.statNum}>{value}</Text>
+            <Text style={gc.statLbl}>{label}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* WHO Percentile badge placeholder */}
+      <View style={gc.percentRow}>
+        <View style={[gc.badge, { backgroundColor: Colors.softMint }]}>
+          <Text style={[gc.badgeText, { color: Colors.mint }]}>🟢 Normal</Text>
+        </View>
+        <Text style={gc.percentNote}>WHO percentile — add measurement to update</Text>
+      </View>
+
+      {/* Sparkline */}
+      <View style={gc.sparkWrap}>
+        <MiniSparkLine width={CARD_W - 48} hasData={hasMeasurements} />
+      </View>
+
+      {/* AI summary (italic placeholder) */}
+      <Text style={gc.aiText}>
+        ✨ Add your baby's measurements to get an AI growth analysis from Ate AI.
+      </Text>
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. Feature Icon Grid  — 6 items from docs/03-dashboard.md, 2 cols × 3 rows
+// ─────────────────────────────────────────────────────────────────────────────
+const FEATURES = [
+  { id: 'feeding_log',    emoji: '🍼', labelKey: 'home.feeding_log',    bg: '#FFF3E0' },
+  { id: 'sleep_tracker',  emoji: '😴', labelKey: 'home.sleep_tracker',  bg: '#F0ECFF' },
+  { id: 'vaccination_log',emoji: '💉', labelKey: 'home.vaccination_log',bg: '#FFE4EE' },
+  { id: 'vitamins_meds',  emoji: '💊', labelKey: 'home.vitamins_meds',  bg: '#E0F7EF' },
+  { id: 'feeding_guide',  emoji: '🥗', labelKey: 'home.feeding_guide',  bg: '#FFF8E8' },
+  { id: 'insights',       emoji: '📊', labelKey: 'home.insights',       bg: '#E8F2FF' },
+] as const;
+
+function FeatureIconGrid() {
+  const { t } = useTranslation();
+  return (
+    <View>
+      <Text style={s.sectionTitle}>{t('home.features')}</Text>
+      <View style={fg.grid}>
+        {FEATURES.map(({ id, emoji, labelKey, bg }) => (
+          <TouchableOpacity
+            key={id}
+            style={[fg.card, { backgroundColor: bg, width: FEAT_W }]}
+            activeOpacity={0.8}
+          >
+            <Text style={fg.emoji}>{emoji}</Text>
+            <Text style={fg.label}>{t(labelKey)}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. Insights Card  — weekly summary (placeholder until Supabase data)
+// ─────────────────────────────────────────────────────────────────────────────
+function InsightsCard() {
+  return (
+    <View style={ic.card}>
+      <View style={ic.titleRow}>
+        <Text style={ic.title}>This Week's Summary 📋</Text>
+        <TouchableOpacity><Text style={ic.link}>View Full Reports →</Text></TouchableOpacity>
+      </View>
+      {[
+        { emoji: '🍼', label: 'Total Feeds',    value: '— feeds  •  — ml'     },
+        { emoji: '🌙', label: 'Total Sleep',     value: '— hours  •  — avg/day' },
+        { emoji: '💉', label: 'Upcoming Event',  value: 'No upcoming events'    },
+      ].map(({ emoji, label, value }, i) => (
+        <View key={label} style={[ic.row, i > 0 && ic.rowBorder]}>
+          <Text style={ic.rowEmoji}>{emoji}</Text>
+          <View style={ic.rowText}>
+            <Text style={ic.rowLabel}>{label}</Text>
+            <Text style={ic.rowValue}>{value}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Empty State  — shown when no child profile exists
+// ─────────────────────────────────────────────────────────────────────────────
+function EmptyState() {
+  return (
+    <View style={es.wrap}>
+      <KawaiiBaby size={160} />
+      <Text style={es.title}>Welcome to BabyBloom PH! 🌸</Text>
+      <Text style={es.subtitle}>
+        Add your baby's profile to start tracking their health journey.
+      </Text>
+      <TouchableOpacity
+        onPress={() => router.push('/child-profile')}
+        activeOpacity={0.85}
+      >
         <LinearGradient
-          colors={['#FFDDE8', '#FFE8F2', '#FFF5F8']}
-          style={s.heroCard}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          colors={[Colors.primaryPink, '#F06292']}
+          style={es.btn}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
         >
-          <Text style={s.heroDeco1}>🌸</Text>
-          <Text style={s.heroDeco2}>✨</Text>
-          <Text style={s.heroDeco3}>🌼</Text>
-
-          <View style={s.heroRow}>
-            <KawaiiBaby size={100} />
-
-            <View style={s.heroInfo}>
-              <Text style={s.heroName} numberOfLines={1}>
-                {babyName || 'Add your baby 🌸'}
-              </Text>
-              {babyAge
-                ? <Text style={s.heroAge}>Age: {babyAge}</Text>
-                : <Text style={s.heroAge}>Tap + to add your baby</Text>
-              }
-
-              <View style={s.heroStatBox}>
-                <View style={s.heroStat}>
-                  <IconBottle size={22} />
-                  <View>
-                    <Text style={s.heroStatLabel}>Today's feeding</Text>
-                    <Text style={s.heroStatValue}>—</Text>
-                  </View>
-                </View>
-                <View style={s.heroStatDivider} />
-                <View style={s.heroStat}>
-                  <IconSyringe size={22} />
-                  <View>
-                    <Text style={s.heroStatLabel}>Next vaccine</Text>
-                    <Text style={s.heroStatValue}>—</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </View>
+          <Text style={es.btnText}>Add Baby Profile  🍼</Text>
         </LinearGradient>
+      </TouchableOpacity>
+      <Text style={es.note}>Your digital MCH Booklet 🇵🇭</Text>
+    </View>
+  );
+}
 
-        {/* ── Quick Stats Row ── */}
-        <View style={s.quickRow}>
-          {QUICK_STATS.map(({ key, Icon, label, value, accent }) => (
-            <TouchableOpacity key={key} style={s.quickCard} activeOpacity={0.8}>
-              <Icon size={38} />
-              <Text style={[s.quickValue, { color: accent }]}>{value}</Text>
-              <Text style={s.quickLabel}>{label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+// ─────────────────────────────────────────────────────────────────────────────
+// Home Screen
+// ─────────────────────────────────────────────────────────────────────────────
+export default function HomeScreen() {
+  const { activeChild, children } = useChildStore();
+  const [refreshing, setRefreshing] = useState(false);
 
-        {/* ── Feature Grid ── */}
-        <Text style={s.sectionTitle}>{t('home.features')}</Text>
-        <View style={s.featureGrid}>
-          {FEATURES.map(({ key, Icon, bg, accent }) => (
-            <TouchableOpacity key={key} style={s.featureWrap} activeOpacity={0.82}>
-              <LinearGradient colors={bg} style={s.featureCard}>
-                <Icon size={54} />
-                <Text style={[s.featureLabel, { color: accent }]}>{t(`home.${key}`)}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          ))}
-        </View>
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Future: trigger Supabase refetch here
+    setTimeout(() => setRefreshing(false), 900);
+  }, []);
 
-        {/* ── Growth Chart ── */}
-        <Text style={s.sectionTitle}>{t('home.growth_snapshot')}</Text>
-        <View style={s.chartCard}>
-          {/* Legend */}
-          <View style={s.chartLegend}>
-            <View style={s.legendItem}>
-              <View style={[s.legendDot, { backgroundColor: '#E87090' }]} />
-              <Text style={s.legendText}>Weight (kg)</Text>
-            </View>
-            <View style={s.legendItem}>
-              <View style={[s.legendDot, { backgroundColor: '#60B8E0' }]} />
-              <Text style={s.legendText}>Height (cm)</Text>
-            </View>
-          </View>
+  // ── No child profile → empty state ──────────────────────────────────────
+  if (!activeChild) {
+    return (
+      <View style={s.screen}>
+        <TopNavBar />
+        <EmptyState />
+      </View>
+    );
+  }
 
-          <GrowthChartSvg width={CARD_W - 32} />
+  // ── Has child → full dashboard ───────────────────────────────────────────
+  return (
+    <View style={s.screen}>
+      <TopNavBar />
+      {/* Show full switcher strip only if family has 2+ children */}
+      {children.length > 1 && <ChildSwitcher />}
 
-          <Text style={s.chartAxisLabel}>Age (months)</Text>
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primaryPink}
+            colors={[Colors.primaryPink]}
+          />
+        }
+      >
+        {/* Quick Stats */}
+        <Text style={[s.sectionTitle, { marginBottom: 8 }]}>{' Quick Stats'}</Text>
+        <QuickStatsStrip />
 
-          {/* Elephant decoration */}
-          <View style={s.elephantWrap}>
-            <ElephantDecor size={52} />
-          </View>
-        </View>
+        {/* Growth Snapshot */}
+        <Text style={s.sectionTitle}>{'Growth Snapshot'}</Text>
+        <GrowthSnapshotCard />
 
-        <View style={{ height: 30 }} />
+        {/* Feature Grid */}
+        <FeatureIconGrid />
+
+        {/* Weekly Insights */}
+        <Text style={s.sectionTitle}>{'Insights'}</Text>
+        <InsightsCard />
+
+        <View style={{ height: 24 }} />
       </ScrollView>
     </View>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FFF5F8' },
-  scroll: { flex: 1 },
-  content: { padding: 16, paddingBottom: 40 },
-
-  // Hero card
-  heroCard: {
-    borderRadius: 22, padding: 16, marginBottom: 14, overflow: 'hidden',
-    shadowColor: '#E87090', shadowOpacity: 0.18, shadowRadius: 14, elevation: 5,
-  },
-  heroDeco1: { position: 'absolute', top: 10,  right: 24, fontSize: 20, opacity: 0.55 },
-  heroDeco2: { position: 'absolute', top: 34,  right: 10, fontSize: 15, opacity: 0.45 },
-  heroDeco3: { position: 'absolute', bottom: 12, right: 20, fontSize: 16, opacity: 0.4 },
-  heroRow:   { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  heroInfo:  { flex: 1 },
-  heroName:  { fontSize: 19, fontWeight: '800', color: '#C2185B', marginBottom: 3 },
-  heroAge:   { fontSize: 13, color: '#E87090', fontWeight: '600', marginBottom: 10 },
-  heroStatBox: {
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 14, padding: 10, gap: 8,
-  },
-  heroStat:     { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  heroStatDivider: { height: 1, backgroundColor: 'rgba(232,112,144,0.15)' },
-  heroStatLabel: { fontSize: 10, color: '#E87090', fontWeight: '600' },
-  heroStatValue: { fontSize: 13, color: '#C2185B', fontWeight: '800' },
-
-  // Quick stats
-  quickRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  quickCard: {
-    flex: 1, backgroundColor: 'white', borderRadius: 18, padding: 12,
-    alignItems: 'center', gap: 5,
-    shadowColor: '#E8637C', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
-    borderWidth: 1, borderColor: '#FCE4EC',
-  },
-  quickValue: { fontSize: 12, fontWeight: '800' },
-  quickLabel: { fontSize: 9, color: '#BBBBBB', textAlign: 'center', fontWeight: '600' },
-
-  // Section title
+  screen:       { flex: 1, backgroundColor: Colors.background },
+  scroll:       { flex: 1 },
+  content:      { paddingHorizontal: PAD, paddingTop: 14, paddingBottom: 40 },
   sectionTitle: {
-    fontSize: 15, fontWeight: '800', color: '#C2185B',
-    marginBottom: 10, marginTop: 4,
+    fontSize: 14, fontWeight: '800', color: Colors.dark,
+    marginBottom: 10, marginTop: 16,
+    textTransform: 'uppercase', letterSpacing: 0.6, opacity: 0.55,
   },
+});
 
-  // Feature grid
-  featureGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
-  featureWrap:  { width: '47.5%' },
-  featureCard: {
-    borderRadius: 20, paddingVertical: 18, paddingHorizontal: 12,
-    alignItems: 'center', gap: 10,
+// Top nav
+const nav = StyleSheet.create({
+  bar: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 14, paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1, borderBottomColor: Colors.border,
+    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 3,
+  },
+  left:       { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  avatarRing: {
+    borderRadius: 20, borderWidth: 2, borderColor: Colors.softPink,
+    overflow: 'hidden',
+  },
+  arrow:    { fontSize: 13, color: Colors.lightGray },
+  addPill: {
+    backgroundColor: Colors.softPink, borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  addPillText: { fontSize: 12, fontWeight: '800', color: Colors.primaryPink },
+  center:   { flex: 2, alignItems: 'center' },
+  name:     { fontSize: 15, fontWeight: '800', color: Colors.dark },
+  age:      { fontSize: 11, color: Colors.lightGray, fontWeight: '600', marginTop: 1 },
+  appName:  { fontSize: 15, fontWeight: '800', color: Colors.primaryPink },
+  right:    { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 6 },
+  iconBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: Colors.softPink,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  iconEmoji: { fontSize: 17 },
+});
+
+// Quick stats strip
+const qs = StyleSheet.create({
+  row:       { gap: 10, paddingBottom: 6 },
+  chip: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primaryPink,  // overridden per item
+    paddingHorizontal: 14, paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2,
+    minWidth: 148,
+  },
+  chipEmoji: { fontSize: 24 },
+  chipLabel: { fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginBottom: 3 },
+  chipValue: { fontSize: 15, fontWeight: '800' },
+});
+
+// Growth snapshot
+const gc = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 4,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    borderWidth: 1, borderColor: Colors.border,
   },
-  featureLabel: { fontSize: 13, fontWeight: '700', textAlign: 'center', lineHeight: 17 },
+  row:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  title:     { fontSize: 15, fontWeight: '800', color: Colors.dark },
+  link:      { fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
+  statsRow:  { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  statBox: {
+    flex: 1, backgroundColor: Colors.softPink, borderRadius: 14,
+    padding: 11, alignItems: 'center',
+  },
+  statNum:      { fontSize: 16, fontWeight: '800', color: Colors.dark },
+  statLbl:      { fontSize: 9, color: Colors.lightGray, fontWeight: '700', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.4 },
+  percentRow:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  badge:        { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
+  badgeText:    { fontSize: 12, fontWeight: '700' },
+  percentNote:  { fontSize: 10, color: Colors.lightGray, flex: 1 },
+  sparkWrap:    { marginBottom: 10 },
+  aiText:       { fontSize: 12, color: Colors.lightGray, fontStyle: 'italic', lineHeight: 18 },
+});
 
-  // Growth chart
-  chartCard: {
-    backgroundColor: 'white', borderRadius: 20, padding: 16, marginBottom: 16,
-    shadowColor: '#E8637C', shadowOpacity: 0.08, shadowRadius: 10, elevation: 3,
-    borderWidth: 1, borderColor: '#FCE4EC',
-    overflow: 'visible',
+// Feature icon grid
+const fg = StyleSheet.create({
+  grid:  { flexDirection: 'row', flexWrap: 'wrap', gap: FEAT_GAP, marginBottom: 4 },
+  card: {
+    aspectRatio: 1,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
   },
-  chartLegend:   { flexDirection: 'row', gap: 18, marginBottom: 6 },
-  legendItem:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot:     { width: 10, height: 10, borderRadius: 5 },
-  legendText:    { fontSize: 11, color: '#999', fontWeight: '600' },
-  chartAxisLabel:{ fontSize: 10, color: '#BBBBBB', textAlign: 'center', marginTop: 2 },
-  elephantWrap:  { alignItems: 'flex-start', marginTop: 8, opacity: 0.5 },
+  emoji: { fontSize: 40 },
+  label: {
+    fontSize: 12, fontWeight: '700', color: Colors.midGray,
+    textAlign: 'center', paddingHorizontal: 6, lineHeight: 16,
+  },
+});
+
+// Insights card
+const ic = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 4,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    borderWidth: 1, borderColor: Colors.border,
+  },
+  titleRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  title:     { fontSize: 15, fontWeight: '800', color: Colors.dark },
+  link:      { fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
+  row:       { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11 },
+  rowBorder: { borderTopWidth: 1, borderTopColor: Colors.border },
+  rowEmoji:  { fontSize: 24 },
+  rowText:   { flex: 1 },
+  rowLabel:  { fontSize: 10, color: Colors.lightGray, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 2 },
+  rowValue:  { fontSize: 13, fontWeight: '700', color: Colors.dark },
+});
+
+// Empty state
+const es = StyleSheet.create({
+  wrap: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 32, paddingBottom: 40,
+  },
+  title: {
+    fontSize: 22, fontWeight: '800', color: Colors.dark,
+    textAlign: 'center', marginTop: 20, marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 14, color: Colors.midGray, textAlign: 'center',
+    lineHeight: 21, marginBottom: 28,
+  },
+  btn: {
+    borderRadius: 18, paddingVertical: 15, paddingHorizontal: 32,
+    shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5,
+  },
+  btnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  note:    { marginTop: 20, fontSize: 13, color: Colors.lightGray, fontWeight: '600' },
 });
