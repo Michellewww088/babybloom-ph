@@ -1,26 +1,28 @@
 /**
  * index.tsx — Dashboard / Home Screen
  * Per docs/03-dashboard.md + CLAUDE.md Design System
+ * Kawaii SVG icon redesign — beautiful gradient cards, no plain emoji icons
  *
  * Layout (top to bottom):
  *  1. TopNavBar  — child switcher LEFT · name+age CENTER · AI+bell RIGHT
  *  2. ChildSwitcher row (only if 2+ children)
  *  3. ScrollView (pull-to-refresh)
- *     a. Quick Stats Strip  — 4 horizontal chips
- *     b. Growth Snapshot Card
- *     c. Feature Icon Grid  — 6 items (2 cols × 3 rows)
- *     d. Insights Card      — weekly summary
+ *     a. Hero Banner (gradient + KawaiiBaby)
+ *     b. Quick Stats Strip  — 4 horizontal chips with SVG icons
+ *     c. Growth Snapshot Card
+ *     d. Feature Icon Grid  — 6 items (2 cols × 3 rows) gradient + kawaii SVG
+ *     e. Insights Card      — weekly summary
  *  OR empty state when no child profile exists
  */
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Image,
   StyleSheet, Dimensions, RefreshControl,
 } from 'react-native';
 import Svg, {
-  Path, Circle, Ellipse, Line, Polyline,
-  Defs, LinearGradient as SvgGrad, Stop, Rect, G,
+  Path, Circle, Ellipse, Line, Polyline, Rect,
+  Defs, LinearGradient as SvgGrad, Stop,
 } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -34,51 +36,41 @@ import {
 } from '../../store/childStore';
 
 const { width: W } = Dimensions.get('window');
-const PAD       = 16;
-const CARD_W    = W - PAD * 2;
-const FEAT_GAP  = 10;
-const FEAT_W    = (CARD_W - FEAT_GAP) / 2;
+const PAD      = 16;
+const CARD_W   = W - PAD * 2;
+const FEAT_GAP = 12;
+const FEAT_W   = (CARD_W - FEAT_GAP) / 2;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Kawaii Baby Illustration  (empty-state hero)
+// Kawaii Baby Illustration
 // ─────────────────────────────────────────────────────────────────────────────
 function KawaiiBaby({ size = 140 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
       <Defs>
-        <SvgGrad id="bodyG" x1="0" y1="0" x2="1" y2="1">
+        <SvgGrad id="kbBody" x1="0" y1="0" x2="1" y2="1">
           <Stop offset="0" stopColor="#FFD6E8" />
           <Stop offset="1" stopColor="#FFB6C8" />
         </SvgGrad>
       </Defs>
-      {/* Onesie */}
-      <Ellipse cx="50" cy="76" rx="26" ry="20" fill="url(#bodyG)" />
+      <Ellipse cx="50" cy="76" rx="26" ry="20" fill="url(#kbBody)" />
       <Path d="M28 72 Q38 88 50 90 Q62 88 72 72 Q62 68 50 70 Q38 68 28 72Z" fill="#FFB6C8" />
-      {/* Arms */}
       <Ellipse cx="22" cy="72" rx="7" ry="13" fill="#FFECD5" transform="rotate(-15,22,72)" />
       <Ellipse cx="78" cy="72" rx="7" ry="13" fill="#FFECD5" transform="rotate(15,78,72)" />
-      {/* Head */}
       <Circle cx="50" cy="40" r="24" fill="#FFECD5" />
-      {/* Hair */}
       <Path d="M28 33 Q50 14 72 33 Q65 18 50 16 Q35 18 28 33Z" fill="#8B5E3C" />
       <Circle cx="50" cy="19" r="5.5" fill="#8B5E3C" />
-      {/* Ears */}
       <Circle cx="26" cy="40" r="6.5" fill="#FFDFC8" />
       <Circle cx="74" cy="40" r="6.5" fill="#FFDFC8" />
       <Circle cx="26" cy="40" r="4"   fill="#FFB3A0" />
       <Circle cx="74" cy="40" r="4"   fill="#FFB3A0" />
-      {/* Kawaii eyes */}
       <Path d="M36 39 Q40 35 44 39" stroke="#5C3317" strokeWidth="2.8" fill="none" strokeLinecap="round" />
       <Path d="M56 39 Q60 35 64 39" stroke="#5C3317" strokeWidth="2.8" fill="none" strokeLinecap="round" />
-      {/* Blush */}
       <Ellipse cx="35" cy="46" rx="6" ry="3.5" fill="#FFB3C8" opacity="0.65" />
       <Ellipse cx="65" cy="46" rx="6" ry="3.5" fill="#FFB3C8" opacity="0.65" />
-      {/* Smile */}
       <Path d="M40 51 Q50 58 60 51" stroke="#E87090" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-      {/* Bow */}
       <Path d="M38 23 Q50 18 62 23 Q50 28 38 23Z" fill="#FF8FAB" />
       <Circle cx="50" cy="23" r="3" fill="#FF6B8A" />
-      {/* Flower accent */}
       <Circle cx="76" cy="27" r="3.5" fill="#FFD700" />
       <Circle cx="71" cy="25" r="3"   fill="#FFB3C8" />
       <Circle cx="81" cy="25" r="3"   fill="#FFB3C8" />
@@ -90,7 +82,210 @@ function KawaiiBaby({ size = 140 }: { size?: number }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Mini Sparkline  (placeholder — will use Victory Native when data exists)
+// Kawaii SVG Feature Icons
+// ─────────────────────────────────────────────────────────────────────────────
+
+function IconBottle({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Defs>
+        <SvgGrad id="iBottle" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#FFB6C8" />
+          <Stop offset="1" stopColor="#E63B6F" />
+        </SvgGrad>
+      </Defs>
+      {/* Bottle body */}
+      <Rect x="14" y="18" width="20" height="24" rx="8" fill="url(#iBottle)" />
+      {/* Milk highlight */}
+      <Rect x="15" y="28" width="18" height="13" rx="6" fill="#fff" opacity="0.22" />
+      {/* Nipple base */}
+      <Rect x="18" y="11" width="12" height="8" rx="4" fill="#FFD6E8" />
+      {/* Nipple tip */}
+      <Rect x="20" y="7" width="8" height="5" rx="3" fill="#FF8FAB" />
+      {/* Cap ring */}
+      <Rect x="13" y="17" width="22" height="4" rx="2" fill="#FF6B8A" />
+      {/* Measurement lines */}
+      <Line x1="16" y1="29" x2="21" y2="29" stroke="#fff" strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />
+      <Line x1="16" y1="33" x2="21" y2="33" stroke="#fff" strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />
+      <Line x1="16" y1="37" x2="21" y2="37" stroke="#fff" strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />
+      {/* Heart sparkle */}
+      <Path d="M28 25 C28 24 30 24 30 25.5 C30 24 32 24 32 25 C32 26.5 30 28 30 28 C30 28 28 26.5 28 25Z" fill="#fff" opacity="0.7" />
+    </Svg>
+  );
+}
+
+function IconMoon({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Defs>
+        <SvgGrad id="iMoon" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#C4B5FD" />
+          <Stop offset="1" stopColor="#7C3AED" />
+        </SvgGrad>
+      </Defs>
+      {/* Moon crescent */}
+      <Path d="M26 8 C16 8 9 16 9 25 C9 33 15 40 25 40 C33 40 39 34 40 27 C36 29 30 27 27 22 C23 18 22 12 26 8Z" fill="url(#iMoon)" />
+      {/* Stars */}
+      <Circle cx="37" cy="11" r="2.5" fill="#FDE68A" />
+      <Circle cx="42" cy="19" r="1.5" fill="#FDE68A" />
+      <Circle cx="34" cy="7"  r="1.5" fill="#FDE68A" />
+      {/* Kawaii eyes */}
+      <Path d="M18 24 Q20 22 22 24" stroke="#4C1D95" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <Path d="M26 26 Q28 24 30 26" stroke="#4C1D95" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      {/* Smile */}
+      <Path d="M19 31 Q24 35 30 31" stroke="#4C1D95" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      {/* Blush */}
+      <Ellipse cx="18" cy="29" rx="3" ry="2" fill="#FF9CC0" opacity="0.45" />
+      <Ellipse cx="31" cy="29" rx="3" ry="2" fill="#FF9CC0" opacity="0.45" />
+    </Svg>
+  );
+}
+
+function IconSyringe({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Defs>
+        <SvgGrad id="iSyr" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#93C5FD" />
+          <Stop offset="1" stopColor="#1A73C8" />
+        </SvgGrad>
+      </Defs>
+      {/* Barrel */}
+      <Rect x="10" y="19" width="28" height="10" rx="5" fill="url(#iSyr)" />
+      {/* Plunger handle */}
+      <Rect x="37" y="21" width="7" height="6" rx="2" fill="#93C5FD" />
+      <Rect x="42" y="20" width="3" height="8" rx="1.5" fill="#60A5FA" />
+      {/* Needle */}
+      <Path d="M10 22.5 L4 24 L10 25.5Z" fill="#BFDBFE" />
+      {/* Liquid fill */}
+      <Rect x="12" y="21" width="14" height="6" rx="3" fill="#BFDBFE" opacity="0.5" />
+      {/* Tick marks */}
+      <Line x1="22" y1="19" x2="22" y2="17" stroke="#fff" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+      <Line x1="27" y1="19" x2="27" y2="17" stroke="#fff" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+      {/* Heart accent top */}
+      <Path d="M23 11 C23 9 26 9 26 11.5 C26 9 29 9 29 11 C29 14 26 17 26 17 C26 17 23 14 23 11Z" fill="#E63B6F" />
+    </Svg>
+  );
+}
+
+function IconPills({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Defs>
+        <SvgGrad id="iPill1" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#6EE7B7" />
+          <Stop offset="1" stopColor="#27AE7A" />
+        </SvgGrad>
+        <SvgGrad id="iPill2" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#FDE68A" />
+          <Stop offset="1" stopColor="#FBBF24" />
+        </SvgGrad>
+      </Defs>
+      {/* Main capsule */}
+      <Path d="M10 20 Q10 12 20 12 L28 12 Q38 12 38 20 Q38 28 28 28 L20 28 Q10 28 10 20Z" fill="url(#iPill1)" />
+      {/* Left half lighter */}
+      <Path d="M10 20 Q10 12 20 12 L24 12 L24 28 L20 28 Q10 28 10 20Z" fill="#A7F3D0" />
+      <Line x1="24" y1="12" x2="24" y2="28" stroke="white" strokeWidth="1.5" opacity="0.4" />
+      {/* Plus sign on right half */}
+      <Line x1="29" y1="20" x2="37" y2="20" stroke="white" strokeWidth="2" strokeLinecap="round" />
+      <Line x1="33" y1="16" x2="33" y2="24" stroke="white" strokeWidth="2" strokeLinecap="round" />
+      {/* Small yellow pill */}
+      <Ellipse cx="19" cy="37" rx="7" ry="5" fill="url(#iPill2)" />
+      <Line x1="19" y1="32" x2="19" y2="42" stroke="white" strokeWidth="1.5" opacity="0.5" />
+      {/* Dot pills */}
+      <Circle cx="30" cy="37" r="4" fill="#FDA4AF" />
+      <Circle cx="39" cy="35" r="3" fill="#C4B5FD" />
+    </Svg>
+  );
+}
+
+function IconGuide({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Defs>
+        <SvgGrad id="iGuide" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#FDE68A" />
+          <Stop offset="1" stopColor="#F59E0B" />
+        </SvgGrad>
+      </Defs>
+      {/* Bowl */}
+      <Path d="M8 24 Q8 38 24 38 Q40 38 40 24Z" fill="url(#iGuide)" />
+      <Ellipse cx="24" cy="24" rx="16" ry="5" fill="#FEF3C7" />
+      {/* Steam */}
+      <Path d="M17 18 Q15 14 17 10" stroke="#F59E0B" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <Path d="M24 16 Q22 12 24 8" stroke="#F59E0B" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <Path d="M31 18 Q29 14 31 10" stroke="#F59E0B" strokeWidth="2" fill="none" strokeLinecap="round" />
+      {/* Spoon */}
+      <Ellipse cx="40" cy="14" rx="4" ry="3.5" fill="#FBBF24" />
+      <Line x1="39.5" y1="17" x2="37" y2="29" stroke="#FBBF24" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Food in bowl */}
+      <Circle cx="19" cy="25.5" r="2.5" fill="#F59E0B" opacity="0.55" />
+      <Circle cx="26" cy="24.5" r="3"   fill="#FCA5A5" opacity="0.65" />
+      <Circle cx="32" cy="26"   r="2"   fill="#86EFAC" opacity="0.75" />
+    </Svg>
+  );
+}
+
+function IconChart({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Defs>
+        <SvgGrad id="iC1" x1="0" y1="1" x2="0" y2="0">
+          <Stop offset="0" stopColor="#93C5FD" />
+          <Stop offset="1" stopColor="#1A73C8" />
+        </SvgGrad>
+        <SvgGrad id="iC2" x1="0" y1="1" x2="0" y2="0">
+          <Stop offset="0" stopColor="#F9A8D4" />
+          <Stop offset="1" stopColor="#E63B6F" />
+        </SvgGrad>
+        <SvgGrad id="iC3" x1="0" y1="1" x2="0" y2="0">
+          <Stop offset="0" stopColor="#6EE7B7" />
+          <Stop offset="1" stopColor="#27AE7A" />
+        </SvgGrad>
+      </Defs>
+      {/* Grid lines */}
+      <Line x1="8" y1="38" x2="42" y2="38" stroke="#E5E7EB" strokeWidth="1.5" />
+      <Line x1="8" y1="30" x2="42" y2="30" stroke="#F3F4F6" strokeWidth="1" />
+      <Line x1="8" y1="22" x2="42" y2="22" stroke="#F3F4F6" strokeWidth="1" />
+      {/* Bars */}
+      <Rect x="10" y="26" width="8"  height="12" rx="3" fill="url(#iC1)" />
+      <Rect x="20" y="14" width="8"  height="24" rx="3" fill="url(#iC2)" />
+      <Rect x="30" y="19" width="8"  height="19" rx="3" fill="url(#iC3)" />
+      {/* Trend line */}
+      <Polyline points="14,25 24,13 34,18"
+        fill="none" stroke="#FDE68A" strokeWidth="2"
+        strokeLinecap="round" strokeDasharray="3,2" />
+      <Circle cx="14" cy="25" r="2.5" fill="#FDE68A" />
+      <Circle cx="24" cy="13" r="2.5" fill="#FDE68A" />
+      <Circle cx="34" cy="18" r="2.5" fill="#FDE68A" />
+    </Svg>
+  );
+}
+
+function IconWeight({ size = 28 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 28 28">
+      <Defs>
+        <SvgGrad id="iWt" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#6EE7B7" />
+          <Stop offset="1" stopColor="#27AE7A" />
+        </SvgGrad>
+      </Defs>
+      {/* Scale body */}
+      <Rect x="5" y="22" width="18" height="4" rx="2" fill="url(#iWt)" />
+      {/* Scale post */}
+      <Rect x="12" y="10" width="4" height="12" rx="2" fill="#A7F3D0" />
+      {/* Platform */}
+      <Ellipse cx="14" cy="10" rx="9" ry="3.5" fill="url(#iWt)" />
+      {/* Weight ball */}
+      <Circle cx="14" cy="6" r="5" fill="#6EE7B7" />
+      <Circle cx="12" cy="5" r="1.5" fill="white" opacity="0.5" />
+    </Svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mini Sparkline
 // ─────────────────────────────────────────────────────────────────────────────
 function MiniSparkLine({ width = 120, hasData = false }: { width?: number; hasData?: boolean }) {
   const h = 44;
@@ -122,13 +317,13 @@ function MiniSparkLine({ width = 120, hasData = false }: { width?: number; hasDa
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Mini Avatar  (for top nav, inline — no ChildSwitcher import needed)
+// Mini Avatar
 // ─────────────────────────────────────────────────────────────────────────────
 const AVATAR_BG    = ['#E8F2FF', '#FFE4EE', '#E0F7EF', '#FFF8E8'];
 const AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
 
 function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
-  const idx  = (child.avatarIndex ?? 0) % AVATAR_BG.length;
+  const idx = (child.avatarIndex ?? 0) % AVATAR_BG.length;
   if (child.photoUri) {
     return (
       <Image
@@ -150,52 +345,40 @@ function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Top Navigation Bar
-//    LEFT  — child avatar switcher (▾ if multi-child) OR "Add Baby" pill
-//    CENTER — child nickname  •  age string
-//    RIGHT  — 🤖 Ate AI  |  🔔 Bell
 // ─────────────────────────────────────────────────────────────────────────────
 function TopNavBar() {
   const { activeChild, children } = useChildStore();
-  const hasChild     = !!activeChild;
-  const displayName  = hasChild ? getChildDisplayName(activeChild!) : null;
-  const ageStr       = hasChild && activeChild!.birthday
-    ? getChildAgeVerbose(activeChild!.birthday)
-    : null;
-
-  const onAvatarPress = () => {
-    if (hasChild) {
-      router.push({ pathname: '/child-profile', params: { id: activeChild!.id } });
-    } else {
-      router.push('/child-profile');
-    }
-  };
+  const hasChild    = !!activeChild;
+  const displayName = hasChild ? getChildDisplayName(activeChild!) : null;
+  const ageStr      = hasChild && activeChild!.birthday
+    ? getChildAgeVerbose(activeChild!.birthday) : null;
 
   return (
     <View style={nav.bar}>
 
-      {/* ── Left: Child Switcher ── */}
-      <TouchableOpacity style={nav.left} onPress={onAvatarPress} activeOpacity={0.75}>
+      {/* Left: Avatar / Add Baby */}
+      <TouchableOpacity
+        style={nav.left}
+        onPress={() => router.push(hasChild
+          ? { pathname: '/child-profile', params: { id: activeChild!.id } }
+          : '/child-profile')}
+        activeOpacity={0.75}
+      >
         {hasChild ? (
           <>
             <View style={nav.avatarRing}>
               <MiniAvatar child={activeChild!} size={34} />
             </View>
-            {children.length > 1 && (
-              <Text style={nav.arrow}>▾</Text>
-            )}
+            {children.length > 1 && <Text style={nav.arrow}>▾</Text>}
           </>
         ) : (
-          <TouchableOpacity
-            style={nav.addPill}
-            onPress={() => router.push('/child-profile')}
-            activeOpacity={0.8}
-          >
+          <View style={nav.addPill}>
             <Text style={nav.addPillText}>+ Add Baby</Text>
-          </TouchableOpacity>
+          </View>
         )}
       </TouchableOpacity>
 
-      {/* ── Center: Name + Age ── */}
+      {/* Center: Name + Age */}
       <View style={nav.center}>
         {hasChild ? (
           <>
@@ -207,7 +390,7 @@ function TopNavBar() {
         )}
       </View>
 
-      {/* ── Right: AI + Bell ── */}
+      {/* Right: AI + Bell */}
       <View style={nav.right}>
         <TouchableOpacity style={nav.iconBtn} activeOpacity={0.7}>
           <Text style={nav.iconEmoji}>🤖</Text>
@@ -222,14 +405,55 @@ function TopNavBar() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Quick Stats Strip  — 4 white pill chips, colored left border
+// Hero Banner — gradient hero card with KawaiiBaby
 // ─────────────────────────────────────────────────────────────────────────────
-const QUICK_STATS = [
-  { id: 'fed',     emoji: '🍼', label: 'Last Fed',     value: '—',    accent: Colors.primaryPink },
-  { id: 'sleep',   emoji: '🌙', label: 'Sleep Today',  value: '—',    accent: '#9B89F7'          },
-  { id: 'vaccine', emoji: '💉', label: 'Next Vaccine', value: '—',    accent: Colors.blue        },
-  { id: 'weight',  emoji: '⚖️', label: 'Weight',       value: '— kg', accent: Colors.mint        },
+function HeroBanner({ child }: { child: Child }) {
+  const name = getChildDisplayName(child);
+  return (
+    <LinearGradient
+      colors={[Colors.primaryPink, '#F472B6', '#FB7185']}
+      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+      style={hb.wrap}
+    >
+      {/* Decorative circles */}
+      <View style={hb.circleTop} />
+      <View style={hb.circleBot} />
+
+      <View style={hb.textCol}>
+        <Text style={hb.greeting}>Hello, Mommy! 🌸</Text>
+        <Text style={hb.babyName}>{name}'s Dashboard</Text>
+        <LinearGradient
+          colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
+          style={hb.statusPill}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+        >
+          <Text style={hb.statusText}>✨ Everything looks great!</Text>
+        </LinearGradient>
+      </View>
+
+      <View style={hb.illustration}>
+        <KawaiiBaby size={112} />
+      </View>
+    </LinearGradient>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. Quick Stats Strip — 4 chips with kawaii SVG icons
+// ─────────────────────────────────────────────────────────────────────────────
+const QS_DATA = [
+  { id: 'fed',     label: 'Last Fed',     value: '—',    accent: Colors.primaryPink },
+  { id: 'sleep',   label: 'Sleep Today',  value: '—',    accent: '#7C3AED'          },
+  { id: 'vaccine', label: 'Next Vaccine', value: '—',    accent: Colors.blue        },
+  { id: 'weight',  label: 'Weight',       value: '— kg', accent: Colors.mint        },
 ] as const;
+
+function QsIcon({ id, size }: { id: string; size: number }) {
+  if (id === 'fed')     return <IconBottle  size={size} />;
+  if (id === 'sleep')   return <IconMoon    size={size} />;
+  if (id === 'vaccine') return <IconSyringe size={size} />;
+  return <IconWeight size={size} />;
+}
 
 function QuickStatsStrip() {
   return (
@@ -238,9 +462,11 @@ function QuickStatsStrip() {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={qs.row}
     >
-      {QUICK_STATS.map(({ id, emoji, label, value, accent }) => (
+      {QS_DATA.map(({ id, label, value, accent }) => (
         <View key={id} style={[qs.chip, { borderLeftColor: accent }]}>
-          <Text style={qs.chipEmoji}>{emoji}</Text>
+          <View style={[qs.iconWrap, { backgroundColor: accent + '22' }]}>
+            <QsIcon id={id} size={28} />
+          </View>
           <View>
             <Text style={qs.chipLabel}>{label}</Text>
             <Text style={[qs.chipValue, { color: accent }]}>{value}</Text>
@@ -256,39 +482,43 @@ function QuickStatsStrip() {
 // ─────────────────────────────────────────────────────────────────────────────
 function GrowthSnapshotCard() {
   const { activeChild } = useChildStore();
-  const hasMeasurements = false; // future: connect to Supabase growth_records
+  const hasMeasurements = false;
 
   const weight = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '—';
   const height = activeChild?.birthHeight ? `${activeChild.birthHeight} cm` : '—';
 
   return (
     <View style={gc.card}>
-      {/* Title row */}
       <View style={gc.row}>
         <Text style={gc.title}>Growth Snapshot 📈</Text>
         <TouchableOpacity><Text style={gc.link}>View Full Analysis →</Text></TouchableOpacity>
       </View>
 
-      {/* 3 stat boxes: Weight | Height | Head Circ */}
+      {/* 3 stat boxes */}
       <View style={gc.statsRow}>
         {[
           { label: 'Weight',    value: weight },
           { label: 'Height',    value: height },
           { label: 'Head Circ.', value: '—'   },
         ].map(({ label, value }) => (
-          <View key={label} style={gc.statBox}>
+          <LinearGradient
+            key={label}
+            colors={[Colors.softPink, '#FFD6E8']}
+            style={gc.statBox}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          >
             <Text style={gc.statNum}>{value}</Text>
             <Text style={gc.statLbl}>{label}</Text>
-          </View>
+          </LinearGradient>
         ))}
       </View>
 
-      {/* WHO Percentile badge placeholder */}
+      {/* WHO badge */}
       <View style={gc.percentRow}>
         <View style={[gc.badge, { backgroundColor: Colors.softMint }]}>
           <Text style={[gc.badgeText, { color: Colors.mint }]}>🟢 Normal</Text>
         </View>
-        <Text style={gc.percentNote}>WHO percentile — add measurement to update</Text>
+        <Text style={gc.percentNote}>WHO percentile · add measurement to update</Text>
       </View>
 
       {/* Sparkline */}
@@ -296,7 +526,6 @@ function GrowthSnapshotCard() {
         <MiniSparkLine width={CARD_W - 48} hasData={hasMeasurements} />
       </View>
 
-      {/* AI summary (italic placeholder) */}
       <Text style={gc.aiText}>
         ✨ Add your baby's measurements to get an AI growth analysis from Ate AI.
       </Text>
@@ -305,16 +534,60 @@ function GrowthSnapshotCard() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. Feature Icon Grid  — 6 items from docs/03-dashboard.md, 2 cols × 3 rows
+// 4. Feature Icon Grid — kawaii SVG icons + gradient card backgrounds
 // ─────────────────────────────────────────────────────────────────────────────
-const FEATURES = [
-  { id: 'feeding_log',    emoji: '🍼', labelKey: 'home.feeding_log',    bg: '#FFF3E0' },
-  { id: 'sleep_tracker',  emoji: '😴', labelKey: 'home.sleep_tracker',  bg: '#F0ECFF' },
-  { id: 'vaccination_log',emoji: '💉', labelKey: 'home.vaccination_log',bg: '#FFE4EE' },
-  { id: 'vitamins_meds',  emoji: '💊', labelKey: 'home.vitamins_meds',  bg: '#E0F7EF' },
-  { id: 'feeding_guide',  emoji: '🥗', labelKey: 'home.feeding_guide',  bg: '#FFF8E8' },
-  { id: 'insights',       emoji: '📊', labelKey: 'home.insights',       bg: '#E8F2FF' },
-] as const;
+interface FeatureItem {
+  id: string;
+  Icon: React.ComponentType<{ size?: number }>;
+  labelKey: string;
+  gradColors: [string, string];
+  shadowColor: string;
+}
+
+const FEATURES: FeatureItem[] = [
+  {
+    id: 'feeding_log',
+    Icon: IconBottle,
+    labelKey: 'home.feeding_log',
+    gradColors: ['#FFD6E8', '#FFAAC8'],
+    shadowColor: Colors.primaryPink,
+  },
+  {
+    id: 'sleep_tracker',
+    Icon: IconMoon,
+    labelKey: 'home.sleep_tracker',
+    gradColors: ['#EDE9FE', '#C4B5FD'],
+    shadowColor: '#7C3AED',
+  },
+  {
+    id: 'vaccination_log',
+    Icon: IconSyringe,
+    labelKey: 'home.vaccination_log',
+    gradColors: ['#DBEAFE', '#93C5FD'],
+    shadowColor: Colors.blue,
+  },
+  {
+    id: 'vitamins_meds',
+    Icon: IconPills,
+    labelKey: 'home.vitamins_meds',
+    gradColors: ['#D1FAE5', '#6EE7B7'],
+    shadowColor: Colors.mint,
+  },
+  {
+    id: 'feeding_guide',
+    Icon: IconGuide,
+    labelKey: 'home.feeding_guide',
+    gradColors: ['#FEF3C7', '#FDE68A'],
+    shadowColor: '#F59E0B',
+  },
+  {
+    id: 'insights',
+    Icon: IconChart,
+    labelKey: 'home.insights',
+    gradColors: ['#DBEAFE', '#BAE6FD'],
+    shadowColor: Colors.blue,
+  },
+];
 
 function FeatureIconGrid() {
   const { t } = useTranslation();
@@ -322,14 +595,25 @@ function FeatureIconGrid() {
     <View>
       <Text style={s.sectionTitle}>{t('home.features')}</Text>
       <View style={fg.grid}>
-        {FEATURES.map(({ id, emoji, labelKey, bg }) => (
+        {FEATURES.map(({ id, Icon, labelKey, gradColors, shadowColor }) => (
           <TouchableOpacity
             key={id}
-            style={[fg.card, { backgroundColor: bg, width: FEAT_W }]}
-            activeOpacity={0.8}
+            style={{ width: FEAT_W }}
+            activeOpacity={0.82}
           >
-            <Text style={fg.emoji}>{emoji}</Text>
-            <Text style={fg.label}>{t(labelKey)}</Text>
+            <LinearGradient
+              colors={gradColors}
+              style={fg.card}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              {/* Decorative circle */}
+              <View style={[fg.deco, { backgroundColor: shadowColor + '18' }]} />
+              <Icon size={52} />
+              <Text style={[fg.label, { color: shadowColor === Colors.primaryPink ? '#9B1B4B' : '#2D2D5A' }]}>
+                {t(labelKey)}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         ))}
       </View>
@@ -338,7 +622,7 @@ function FeatureIconGrid() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 5. Insights Card  — weekly summary (placeholder until Supabase data)
+// 5. Insights Card — weekly summary with SVG icons
 // ─────────────────────────────────────────────────────────────────────────────
 function InsightsCard() {
   return (
@@ -347,25 +631,45 @@ function InsightsCard() {
         <Text style={ic.title}>This Week's Summary 📋</Text>
         <TouchableOpacity><Text style={ic.link}>View Full Reports →</Text></TouchableOpacity>
       </View>
-      {[
-        { emoji: '🍼', label: 'Total Feeds',    value: '— feeds  •  — ml'     },
-        { emoji: '🌙', label: 'Total Sleep',     value: '— hours  •  — avg/day' },
-        { emoji: '💉', label: 'Upcoming Event',  value: 'No upcoming events'    },
-      ].map(({ emoji, label, value }, i) => (
-        <View key={label} style={[ic.row, i > 0 && ic.rowBorder]}>
-          <Text style={ic.rowEmoji}>{emoji}</Text>
-          <View style={ic.rowText}>
-            <Text style={ic.rowLabel}>{label}</Text>
-            <Text style={ic.rowValue}>{value}</Text>
-          </View>
+
+      {/* Row 1: Feeds */}
+      <View style={ic.row}>
+        <View style={[ic.iconCircle, { backgroundColor: Colors.softPink }]}>
+          <IconBottle size={22} />
         </View>
-      ))}
+        <View style={ic.rowText}>
+          <Text style={ic.rowLabel}>TOTAL FEEDS</Text>
+          <Text style={ic.rowValue}>— feeds  •  — ml</Text>
+        </View>
+      </View>
+
+      {/* Row 2: Sleep */}
+      <View style={[ic.row, ic.rowBorder]}>
+        <View style={[ic.iconCircle, { backgroundColor: '#EDE9FE' }]}>
+          <IconMoon size={22} />
+        </View>
+        <View style={ic.rowText}>
+          <Text style={ic.rowLabel}>TOTAL SLEEP</Text>
+          <Text style={ic.rowValue}>— hours  •  — avg/day</Text>
+        </View>
+      </View>
+
+      {/* Row 3: Upcoming */}
+      <View style={[ic.row, ic.rowBorder]}>
+        <View style={[ic.iconCircle, { backgroundColor: Colors.softBlue }]}>
+          <IconSyringe size={22} />
+        </View>
+        <View style={ic.rowText}>
+          <Text style={ic.rowLabel}>UPCOMING EVENT</Text>
+          <Text style={ic.rowValue}>No upcoming events</Text>
+        </View>
+      </View>
     </View>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Empty State  — shown when no child profile exists
+// Empty State
 // ─────────────────────────────────────────────────────────────────────────────
 function EmptyState() {
   return (
@@ -375,12 +679,9 @@ function EmptyState() {
       <Text style={es.subtitle}>
         Add your baby's profile to start tracking their health journey.
       </Text>
-      <TouchableOpacity
-        onPress={() => router.push('/child-profile')}
-        activeOpacity={0.85}
-      >
+      <TouchableOpacity onPress={() => router.push('/child-profile')} activeOpacity={0.85}>
         <LinearGradient
-          colors={[Colors.primaryPink, '#F06292']}
+          colors={[Colors.primaryPink, '#F472B6']}
           style={es.btn}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
         >
@@ -401,11 +702,9 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Future: trigger Supabase refetch here
     setTimeout(() => setRefreshing(false), 900);
   }, []);
 
-  // ── No child profile → empty state ──────────────────────────────────────
   if (!activeChild) {
     return (
       <View style={s.screen}>
@@ -415,11 +714,9 @@ export default function HomeScreen() {
     );
   }
 
-  // ── Has child → full dashboard ───────────────────────────────────────────
   return (
     <View style={s.screen}>
       <TopNavBar />
-      {/* Show full switcher strip only if family has 2+ children */}
       {children.length > 1 && <ChildSwitcher />}
 
       <ScrollView
@@ -435,22 +732,25 @@ export default function HomeScreen() {
           />
         }
       >
+        {/* Hero Banner */}
+        <HeroBanner child={activeChild} />
+
         {/* Quick Stats */}
-        <Text style={[s.sectionTitle, { marginBottom: 8 }]}>{' Quick Stats'}</Text>
+        <Text style={[s.sectionTitle, { marginTop: 20, marginBottom: 10 }]}>Quick Stats</Text>
         <QuickStatsStrip />
 
         {/* Growth Snapshot */}
-        <Text style={s.sectionTitle}>{'Growth Snapshot'}</Text>
+        <Text style={s.sectionTitle}>Growth Snapshot</Text>
         <GrowthSnapshotCard />
 
         {/* Feature Grid */}
         <FeatureIconGrid />
 
         {/* Weekly Insights */}
-        <Text style={s.sectionTitle}>{'Insights'}</Text>
+        <Text style={s.sectionTitle}>Insights</Text>
         <InsightsCard />
 
-        <View style={{ height: 24 }} />
+        <View style={{ height: 30 }} />
       </ScrollView>
     </View>
   );
@@ -463,11 +763,11 @@ export default function HomeScreen() {
 const s = StyleSheet.create({
   screen:       { flex: 1, backgroundColor: Colors.background },
   scroll:       { flex: 1 },
-  content:      { paddingHorizontal: PAD, paddingTop: 14, paddingBottom: 40 },
+  content:      { paddingBottom: 40 },
   sectionTitle: {
-    fontSize: 14, fontWeight: '800', color: Colors.dark,
-    marginBottom: 10, marginTop: 16,
-    textTransform: 'uppercase', letterSpacing: 0.6, opacity: 0.55,
+    fontSize: 11, fontWeight: '800', color: Colors.midGray,
+    marginBottom: 10, marginTop: 18, marginHorizontal: PAD,
+    textTransform: 'uppercase', letterSpacing: 1,
   },
 });
 
@@ -481,64 +781,78 @@ const nav = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 3,
   },
   left:       { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 },
-  avatarRing: {
-    borderRadius: 20, borderWidth: 2, borderColor: Colors.softPink,
-    overflow: 'hidden',
-  },
-  arrow:    { fontSize: 13, color: Colors.lightGray },
-  addPill: {
-    backgroundColor: Colors.softPink, borderRadius: 20,
-    paddingHorizontal: 12, paddingVertical: 6,
-  },
-  addPillText: { fontSize: 12, fontWeight: '800', color: Colors.primaryPink },
-  center:   { flex: 2, alignItems: 'center' },
-  name:     { fontSize: 15, fontWeight: '800', color: Colors.dark },
-  age:      { fontSize: 11, color: Colors.lightGray, fontWeight: '600', marginTop: 1 },
-  appName:  { fontSize: 15, fontWeight: '800', color: Colors.primaryPink },
-  right:    { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 6 },
-  iconBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: Colors.softPink,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  iconEmoji: { fontSize: 17 },
+  avatarRing: { borderRadius: 20, borderWidth: 2, borderColor: Colors.softPink, overflow: 'hidden' },
+  arrow:      { fontSize: 13, color: Colors.lightGray },
+  addPill:    { backgroundColor: Colors.softPink, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6 },
+  addPillText:{ fontSize: 12, fontWeight: '800', color: Colors.primaryPink },
+  center:     { flex: 2, alignItems: 'center' },
+  name:       { fontSize: 15, fontWeight: '800', color: Colors.dark },
+  age:        { fontSize: 11, color: Colors.lightGray, fontWeight: '600', marginTop: 1 },
+  appName:    { fontSize: 15, fontWeight: '800', color: Colors.primaryPink },
+  right:      { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 6 },
+  iconBtn:    { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.softPink, alignItems: 'center', justifyContent: 'center' },
+  iconEmoji:  { fontSize: 17 },
 });
 
-// Quick stats strip
+// Hero banner
+const hb = StyleSheet.create({
+  wrap: {
+    marginHorizontal: PAD, marginTop: 14,
+    borderRadius: 24, padding: 20,
+    flexDirection: 'row', alignItems: 'center',
+    overflow: 'hidden', minHeight: 120,
+    shadowColor: Colors.primaryPink, shadowOpacity: 0.35, shadowRadius: 16, elevation: 8,
+  },
+  circleTop: {
+    position: 'absolute', top: -30, right: 80,
+    width: 100, height: 100, borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  circleBot: {
+    position: 'absolute', bottom: -20, left: 20,
+    width: 70, height: 70, borderRadius: 35,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  textCol:     { flex: 1, zIndex: 1 },
+  greeting:    { fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginBottom: 4 },
+  babyName:    { fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 10 },
+  statusPill:  { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start' },
+  statusText:  { fontSize: 12, color: '#FFFFFF', fontWeight: '700' },
+  illustration:{ zIndex: 1, marginLeft: -8 },
+});
+
+// Quick stats
 const qs = StyleSheet.create({
-  row:       { gap: 10, paddingBottom: 6 },
+  row:  { gap: 10, paddingBottom: 6, paddingHorizontal: PAD },
   chip: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     borderLeftWidth: 4,
-    borderLeftColor: Colors.primaryPink,  // overridden per item
     paddingHorizontal: 14, paddingVertical: 12,
     flexDirection: 'row', alignItems: 'center', gap: 10,
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2,
-    minWidth: 148,
+    minWidth: 155,
   },
-  chipEmoji: { fontSize: 24 },
-  chipLabel: { fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginBottom: 3 },
-  chipValue: { fontSize: 15, fontWeight: '800' },
+  iconWrap:   { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  chipLabel:  { fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginBottom: 3 },
+  chipValue:  { fontSize: 15, fontWeight: '800' },
 });
 
 // Growth snapshot
 const gc = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 4,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    backgroundColor: '#FFFFFF', borderRadius: 22, padding: 16,
+    marginHorizontal: PAD, marginBottom: 4,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: Colors.border,
   },
-  row:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  title:     { fontSize: 15, fontWeight: '800', color: Colors.dark },
-  link:      { fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
-  statsRow:  { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  statBox: {
-    flex: 1, backgroundColor: Colors.softPink, borderRadius: 14,
-    padding: 11, alignItems: 'center',
-  },
+  row:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  title:        { fontSize: 15, fontWeight: '800', color: Colors.dark },
+  link:         { fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
+  statsRow:     { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  statBox:      { flex: 1, borderRadius: 16, padding: 11, alignItems: 'center' },
   statNum:      { fontSize: 16, fontWeight: '800', color: Colors.dark },
-  statLbl:      { fontSize: 9, color: Colors.lightGray, fontWeight: '700', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.4 },
+  statLbl:      { fontSize: 9, color: Colors.midGray, fontWeight: '700', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.4 },
   percentRow:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   badge:        { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
   badgeText:    { fontSize: 12, fontWeight: '700' },
@@ -547,40 +861,44 @@ const gc = StyleSheet.create({
   aiText:       { fontSize: 12, color: Colors.lightGray, fontStyle: 'italic', lineHeight: 18 },
 });
 
-// Feature icon grid
+// Feature grid
 const fg = StyleSheet.create({
-  grid:  { flexDirection: 'row', flexWrap: 'wrap', gap: FEAT_GAP, marginBottom: 4 },
+  grid:  { flexDirection: 'row', flexWrap: 'wrap', gap: FEAT_GAP, marginBottom: 4, paddingHorizontal: PAD },
   card: {
-    aspectRatio: 1,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
+    width: '100%', aspectRatio: 1,
+    borderRadius: 24,
+    alignItems: 'center', justifyContent: 'center',
+    gap: 8, overflow: 'hidden',
+    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
-  emoji: { fontSize: 40 },
+  deco: {
+    position: 'absolute', bottom: -20, right: -20,
+    width: 80, height: 80, borderRadius: 40,
+  },
   label: {
-    fontSize: 12, fontWeight: '700', color: Colors.midGray,
-    textAlign: 'center', paddingHorizontal: 6, lineHeight: 16,
+    fontSize: 12, fontWeight: '800',
+    textAlign: 'center', paddingHorizontal: 8, lineHeight: 16,
+    zIndex: 1,
   },
 });
 
 // Insights card
 const ic = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 4,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    backgroundColor: '#FFFFFF', borderRadius: 22, padding: 16,
+    marginHorizontal: PAD, marginBottom: 4,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: Colors.border,
   },
-  titleRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title:     { fontSize: 15, fontWeight: '800', color: Colors.dark },
-  link:      { fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
-  row:       { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11 },
-  rowBorder: { borderTopWidth: 1, borderTopColor: Colors.border },
-  rowEmoji:  { fontSize: 24 },
-  rowText:   { flex: 1 },
-  rowLabel:  { fontSize: 10, color: Colors.lightGray, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 2 },
-  rowValue:  { fontSize: 13, fontWeight: '700', color: Colors.dark },
+  titleRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  title:      { fontSize: 15, fontWeight: '800', color: Colors.dark },
+  link:       { fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
+  row:        { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11 },
+  rowBorder:  { borderTopWidth: 1, borderTopColor: Colors.border },
+  iconCircle: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  rowText:    { flex: 1 },
+  rowLabel:   { fontSize: 10, color: Colors.lightGray, fontWeight: '700', letterSpacing: 0.4, marginBottom: 2 },
+  rowValue:   { fontSize: 13, fontWeight: '700', color: Colors.dark },
 });
 
 // Empty state
@@ -589,18 +907,9 @@ const es = StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 32, paddingBottom: 40,
   },
-  title: {
-    fontSize: 22, fontWeight: '800', color: Colors.dark,
-    textAlign: 'center', marginTop: 20, marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 14, color: Colors.midGray, textAlign: 'center',
-    lineHeight: 21, marginBottom: 28,
-  },
-  btn: {
-    borderRadius: 18, paddingVertical: 15, paddingHorizontal: 32,
-    shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5,
-  },
-  btnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  note:    { marginTop: 20, fontSize: 13, color: Colors.lightGray, fontWeight: '600' },
+  title:    { fontSize: 22, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginTop: 20, marginBottom: 10 },
+  subtitle: { fontSize: 14, color: Colors.midGray, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
+  btn:      { borderRadius: 18, paddingVertical: 15, paddingHorizontal: 32, shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
+  btnText:  { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  note:     { marginTop: 20, fontSize: 13, color: Colors.lightGray, fontWeight: '600' },
 });
