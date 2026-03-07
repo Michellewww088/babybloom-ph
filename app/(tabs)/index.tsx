@@ -5,7 +5,7 @@
 
 import {
   ScrollView, View, Text, TouchableOpacity,
-  StyleSheet, Image, Dimensions,
+  StyleSheet, Dimensions,
 } from 'react-native';
 import Svg, {
   Path, Circle, Ellipse, Rect, G, Line, Polyline,
@@ -314,22 +314,6 @@ export default function HomeScreen() {
   return (
     <View style={s.screen}>
 
-      {/* ── Header ── */}
-      <LinearGradient colors={['#F06292', '#F48FB1']} style={s.header}>
-        <View style={s.headerLeft}>
-          <View style={s.bbLogo}>
-            <Text style={s.bbLogoText}>BB</Text>
-          </View>
-          <Text style={s.headerTitle}>BabyBloom PH</Text>
-        </View>
-        <View style={s.avatarCircle}>
-          {activeChild?.photoUri
-            ? <Image source={{ uri: activeChild.photoUri }} style={s.avatarImg} />
-            : <Text style={s.avatarEmoji}>👶</Text>
-          }
-        </View>
-      </LinearGradient>
-
       {/* ── Child Switcher ── */}
       <ChildSwitcher />
 
@@ -439,26 +423,6 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FFF5F8' },
   scroll: { flex: 1 },
   content: { padding: 16, paddingBottom: 40 },
-
-  // Header
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14,
-  },
-  headerLeft:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  bbLogo: {
-    width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'white', alignItems: 'center', justifyContent: 'center',
-  },
-  bbLogoText:   { fontSize: 12, fontWeight: '900', color: '#F06292' },
-  headerTitle:  { fontSize: 18, fontWeight: '800', color: 'white', letterSpacing: 0.4 },
-  avatarCircle: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: 'white', alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden', borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)',
-  },
-  avatarImg:   { width: 40, height: 40 },
-  avatarEmoji: { fontSize: 22 },
 
   // Hero card
   heroCard: {

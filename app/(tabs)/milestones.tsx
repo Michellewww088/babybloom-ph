@@ -1,69 +1,186 @@
+/**
+ * milestones.tsx — Milestones & Records
+ * Cute BabyBloom pink + warm theme
+ */
+
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import Colors from '../../constants/Colors';
 
 const MILESTONE_AGES = [
-  { ageKey: 'months_2',  items: ['Smiles at people 😊', 'Tracks objects 👀'] },
-  { ageKey: 'months_4',  items: ['Holds head steady 💪', 'Laughs out loud 😂'] },
-  { ageKey: 'months_6',  items: ['Sits with support 🪑', 'Recognizes faces 🤗'] },
-  { ageKey: 'months_9',  items: ["Says 'mama/dada' 🗣️", 'Pulls to stand 🧍'] },
-  { ageKey: 'months_12', items: ['Takes first steps 🚶', 'Waves bye-bye 👋'] },
+  {
+    ageKey: 'months_2', emoji: '😊',
+    color: '#F06292',
+    items: ['Smiles at people 😊', 'Tracks objects 👀', 'Makes cooing sounds 🎵'],
+  },
+  {
+    ageKey: 'months_4', emoji: '😂',
+    color: '#E87090',
+    items: ['Holds head steady 💪', 'Laughs out loud 😂', 'Pushes up on arms 🤸'],
+  },
+  {
+    ageKey: 'months_6', emoji: '🪑',
+    color: '#FF8FAB',
+    items: ['Sits with support 🪑', 'Recognizes faces 🤗', 'Responds to name 📣'],
+  },
+  {
+    ageKey: 'months_9', emoji: '🗣️',
+    color: '#F06292',
+    items: ["Says 'mama/dada' 🗣️", 'Pulls to stand 🧍', 'Pincer grasp 🤌'],
+  },
+  {
+    ageKey: 'months_12', emoji: '🚶',
+    color: '#E87090',
+    items: ['Takes first steps 🚶', 'Waves bye-bye 👋', 'Says 2–3 words 🗨️'],
+  },
+] as const;
+
+const QUICK_ACTIONS = [
+  { label: 'milestones.memory_book',  emoji: '📔', grad: ['#FFE0EC', '#FFBBD0'] as [string,string], accent: '#C2185B' },
+  { label: 'milestones.first_times',  emoji: '⭐', grad: ['#FFF5C8', '#FFE8A3'] as [string,string], accent: '#A07020' },
+  { label: 'milestones.growth_photos',emoji: '📸', grad: ['#D8F5E8', '#A8ECC4'] as [string,string], accent: '#2A8A5A' },
+  { label: 'milestones.checklist',    emoji: '✅', grad: ['#EDE8FF', '#D4C8FF'] as [string,string], accent: '#7050C8' },
 ] as const;
 
 export default function MilestonesScreen() {
   const { t } = useTranslation();
-  return (
-    <ScrollView style={s.container} contentContainerStyle={s.content}>
-      <Text style={s.title}>{t('milestones.title')}</Text>
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-      {/* Quick actions */}
-      <View style={s.actionsRow}>
-        {[
-          { label: t('milestones.memory_book'),  emoji: '📔' },
-          { label: t('milestones.first_times'),  emoji: '⭐' },
-          { label: t('milestones.growth_photos'),emoji: '📸' },
-          { label: t('milestones.checklist'),    emoji: '✅' },
-        ].map(({ label, emoji }) => (
-          <TouchableOpacity key={label} style={s.actionCard}>
-            <Text style={s.actionEmoji}>{emoji}</Text>
-            <Text style={s.actionLabel}>{label}</Text>
+  const toggle = (key: string) =>
+    setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  return (
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+
+      {/* ── Hero banner ── */}
+      <LinearGradient colors={['#FFDDE8', '#FFB3C6']} style={s.heroBanner} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+        <Text style={s.heroEmoji}>⭐</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={s.heroTitle}>Baby's Big Moments</Text>
+          <Text style={s.heroSub}>Capture every precious milestone 📸</Text>
+        </View>
+      </LinearGradient>
+
+      {/* ── Quick actions ── */}
+      <Text style={s.sectionTitle}>🌸 Quick Access</Text>
+      <View style={s.actionsGrid}>
+        {QUICK_ACTIONS.map(({ label, emoji, grad, accent }) => (
+          <TouchableOpacity key={label} activeOpacity={0.82} style={s.actionWrap}>
+            <LinearGradient colors={grad} style={s.actionCard}>
+              <Text style={s.actionEmoji}>{emoji}</Text>
+              <Text style={[s.actionLabel, { color: accent }]}>{t(label)}</Text>
+            </LinearGradient>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Milestone checklist by age */}
-      {MILESTONE_AGES.map(({ ageKey, items }) => (
+      {/* ── Milestone checklist ── */}
+      <Text style={s.sectionTitle}>🏆 Development Checklist</Text>
+      {MILESTONE_AGES.map(({ ageKey, emoji, color, items }) => (
         <View key={ageKey} style={s.card}>
-          <Text style={s.age}>{t(`milestones.${ageKey}`)}</Text>
-          {items.map((item) => (
-            <TouchableOpacity key={item} style={s.itemRow}>
-              <View style={s.checkbox} />
-              <Text style={s.itemText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
+          {/* Age header */}
+          <LinearGradient colors={['#FFDDE8', '#FFE8F2']} style={s.ageHeader}>
+            <Text style={s.ageHeaderEmoji}>{emoji}</Text>
+            <Text style={[s.ageHeaderText, { color }]}>{t(`milestones.${ageKey}`)}</Text>
+            <View style={[s.ageHeaderDot, { backgroundColor: color }]} />
+          </LinearGradient>
+
+          {/* Milestone items */}
+          <View style={s.itemsList}>
+            {items.map((item) => {
+              const itemKey = `${ageKey}:${item}`;
+              const isDone = !!checked[itemKey];
+              return (
+                <TouchableOpacity
+                  key={item}
+                  style={s.itemRow}
+                  activeOpacity={0.7}
+                  onPress={() => toggle(itemKey)}
+                >
+                  <View style={[s.checkbox, isDone && { backgroundColor: color, borderColor: color }]}>
+                    {isDone && <Text style={s.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={[s.itemText, isDone && { color: '#BBB', textDecorationLine: 'line-through' }]}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
       ))}
 
-      <TouchableOpacity style={s.addBtn}>
-        <Text style={s.addBtnText}>+ {t('milestones.add_milestone')}</Text>
+      {/* ── Add Milestone CTA ── */}
+      <TouchableOpacity activeOpacity={0.85}>
+        <LinearGradient colors={['#F06292', '#F48FB1']} style={s.addBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <Text style={s.addBtnText}>🌸  {t('milestones.add_milestone')}</Text>
+        </LinearGradient>
       </TouchableOpacity>
+
+      <View style={{ height: 20 }} />
     </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  container:   { flex: 1, backgroundColor: '#F9FAFB' },
-  content:     { padding: 20, paddingBottom: 40 },
-  title:       { fontSize: 22, fontWeight: '700', color: '#1F2937', marginBottom: 16 },
-  actionsRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  actionCard:  { width: '46%', backgroundColor: '#fff', borderRadius: 14, padding: 16, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
-  actionEmoji: { fontSize: 28, marginBottom: 6 },
-  actionLabel: { fontSize: 12, fontWeight: '600', color: '#374151', textAlign: 'center' },
-  card:        { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  age:         { fontSize: 15, fontWeight: '700', color: Colors.primaryPink, marginBottom: 10 },
-  itemRow:     { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  checkbox:    { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#D1D5DB' },
-  itemText:    { fontSize: 14, color: '#374151', flex: 1 },
-  addBtn:      { backgroundColor: Colors.primaryPink, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 },
-  addBtnText:  { color: '#fff', fontSize: 16, fontWeight: '700' },
+  container: { flex: 1, backgroundColor: '#FFF5F8' },
+  content:   { padding: 16, paddingBottom: 40 },
+
+  // Hero
+  heroBanner: {
+    borderRadius: 22, padding: 18, marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    shadowColor: '#F06292', shadowOpacity: 0.22, shadowRadius: 10, elevation: 4,
+  },
+  heroEmoji: { fontSize: 42 },
+  heroTitle: { fontSize: 16, fontWeight: '800', color: '#880E4F', lineHeight: 20 },
+  heroSub:   { fontSize: 12, color: '#E87090', fontWeight: '600', marginTop: 2 },
+
+  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#C2185B', marginBottom: 10 },
+
+  // Quick actions grid
+  actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
+  actionWrap:  { width: '47.5%' },
+  actionCard: {
+    borderRadius: 18, paddingVertical: 18, alignItems: 'center', gap: 8,
+    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
+  },
+  actionEmoji: { fontSize: 28 },
+  actionLabel: { fontSize: 12, fontWeight: '700', textAlign: 'center', lineHeight: 16 },
+
+  // Milestone cards
+  card: {
+    backgroundColor: '#fff', borderRadius: 22, marginBottom: 14, overflow: 'hidden',
+    shadowColor: '#F06292', shadowOpacity: 0.10, shadowRadius: 10, elevation: 3,
+    borderWidth: 1, borderColor: '#FCE4EC',
+  },
+  ageHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 12,
+  },
+  ageHeaderEmoji: { fontSize: 20 },
+  ageHeaderText:  { fontSize: 15, fontWeight: '800', flex: 1 },
+  ageHeaderDot:   { width: 8, height: 8, borderRadius: 4 },
+
+  // Items
+  itemsList: { paddingHorizontal: 16, paddingBottom: 12 },
+  itemRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#FCE4EC',
+  },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 6,
+    borderWidth: 2, borderColor: '#F8BBD9',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  checkmark: { fontSize: 13, color: '#fff', fontWeight: '900' },
+  itemText:  { fontSize: 14, color: '#444', flex: 1, fontWeight: '500' },
+
+  // Add button
+  addBtn: {
+    borderRadius: 18, paddingVertical: 16, alignItems: 'center',
+    shadowColor: '#F06292', shadowOpacity: 0.35, shadowRadius: 10, elevation: 5,
+  },
+  addBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
 });
