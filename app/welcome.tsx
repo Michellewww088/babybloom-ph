@@ -1,18 +1,16 @@
 /**
  * welcome.tsx — BabyBloom PH
- * Full-screen animated welcome shown after the first child profile is saved.
- *
- * Animations (react-native-reanimated):
- *  • Main card : 3-D flip-in  (perspective + rotateX 45°→0°) + slide-up
- *  • Illustration : spring scale bounce + continuous float
- *  • Glow rings  : 3 staggered pulse rings (scale + fade)
- *  • Confetti    : 14 coloured dots floating up from bottom
- *  • Title / sub : fade + scale from 0.85
- *
- * Auto-navigates to Dashboard after 3.2 s (or on Tap).
+ * Closely matches the brand reference artwork:
+ *   • Chubby 3D baby peeking from a huge fluffy cloud, brown hair tuft,
+ *     tiny foot sticking out on the left, hands gripping cloud top
+ *   • Bottle + pacifier + 3 gold stars orbiting on a glowing ellipse
+ *   • "BabyBloom" logo in pink→purple gradient with white outline
+ *   • Dreamy pink-purple sky, sparkle stars, layered foreground clouds
+ *   • Baby bobs, tilts head, blinks every ~3 s
+ *   • 5-second auto-navigate to Dashboard (tap to skip)
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -31,492 +29,608 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
+import Svg, {
+  Circle, Ellipse, Path, Rect,
+  Defs, RadialGradient, LinearGradient as SvgLinearGradient, Stop, G,
+} from 'react-native-svg';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import Colors from '../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// ─── Confetti config ──────────────────────────────────────────────────────────
+const ORBIT_RX       = W * 0.40;
+const ORBIT_RY       = W * 0.135;
+const ORBIT_DURATION = 7200;
 
-const CONFETTI_COLORS = [
-  '#FF6B95', '#FFB347', '#A8E6CF', '#85C1E9',
-  '#F7DC6F', '#C39BD3', '#F1948A', '#82E0AA',
-  '#7FB3D3', '#F8C471', '#FF9A9E', '#A29BFE',
-  '#FD79A8', '#6C5CE7',
-];
-
-const CONFETTI: { x: number; y: number; color: string; size: number; delay: number; dur: number }[] = [
-  { x: W * 0.05, y: H * 0.95, color: CONFETTI_COLORS[0],  size: 8,  delay: 0,   dur: 2800 },
-  { x: W * 0.15, y: H * 0.98, color: CONFETTI_COLORS[1],  size: 6,  delay: 200, dur: 2600 },
-  { x: W * 0.28, y: H * 0.92, color: CONFETTI_COLORS[2],  size: 10, delay: 100, dur: 3000 },
-  { x: W * 0.42, y: H * 0.96, color: CONFETTI_COLORS[3],  size: 7,  delay: 350, dur: 2700 },
-  { x: W * 0.58, y: H * 0.94, color: CONFETTI_COLORS[4],  size: 9,  delay: 80,  dur: 2900 },
-  { x: W * 0.72, y: H * 0.97, color: CONFETTI_COLORS[5],  size: 6,  delay: 260, dur: 2500 },
-  { x: W * 0.85, y: H * 0.93, color: CONFETTI_COLORS[6],  size: 8,  delay: 450, dur: 3100 },
-  { x: W * 0.93, y: H * 0.99, color: CONFETTI_COLORS[7],  size: 5,  delay: 150, dur: 2400 },
-  { x: W * 0.10, y: H * 0.88, color: CONFETTI_COLORS[8],  size: 7,  delay: 320, dur: 2750 },
-  { x: W * 0.35, y: H * 0.90, color: CONFETTI_COLORS[9],  size: 10, delay: 50,  dur: 3200 },
-  { x: W * 0.62, y: H * 0.91, color: CONFETTI_COLORS[10], size: 6,  delay: 400, dur: 2600 },
-  { x: W * 0.78, y: H * 0.89, color: CONFETTI_COLORS[11], size: 8,  delay: 220, dur: 2850 },
-  { x: W * 0.50, y: H * 0.99, color: CONFETTI_COLORS[12], size: 9,  delay: 500, dur: 2950 },
-  { x: W * 0.88, y: H * 0.86, color: CONFETTI_COLORS[13], size: 7,  delay: 370, dur: 2700 },
-];
-
-// ─── SVG illustration — Kawaii baby in a star ─────────────────────────────────
-
-function BabyStarIllustration() {
+// ─── Milk Bottle ─────────────────────────────────────────────────────────────
+function BottleIcon() {
   return (
-    <Svg width={200} height={200} viewBox="0 0 200 200">
-      {/* Star background */}
-      <Path
-        d="M100 10 L118 65 L176 65 L130 99 L148 154 L100 120 L52 154 L70 99 L24 65 L82 65 Z"
-        fill="#FFE4EE"
-        stroke="#FFB3C6"
-        strokeWidth={3}
-      />
-      {/* Star inner glow */}
-      <Path
-        d="M100 28 L113 68 L156 68 L122 92 L135 132 L100 108 L65 132 L78 92 L44 68 L87 68 Z"
-        fill="#FFF0F5"
-        opacity={0.7}
-      />
-
-      {/* Baby head */}
-      <Circle cx={100} cy={84} r={26} fill="#FFDAB9" />
-
-      {/* Rosy cheeks */}
-      <Circle cx={82}  cy={90} r={7} fill="#FFB3C6" opacity={0.6} />
-      <Circle cx={118} cy={90} r={7} fill="#FFB3C6" opacity={0.6} />
-
-      {/* Eyes */}
-      <Circle cx={90}  cy={82} r={4} fill="#1C1C3A" />
-      <Circle cx={110} cy={82} r={4} fill="#1C1C3A" />
-      {/* Eye shine */}
-      <Circle cx={92}  cy={80} r={1.5} fill="white" />
-      <Circle cx={112} cy={80} r={1.5} fill="white" />
-
-      {/* Smile */}
-      <Path
-        d="M92 92 Q100 100 108 92"
-        stroke="#E63B6F"
-        strokeWidth={2.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-
-      {/* Baby hair */}
-      <Path
-        d="M76 72 Q88 56 100 58 Q112 56 124 72"
-        stroke="#C8906A"
-        strokeWidth={3}
-        fill="none"
-        strokeLinecap="round"
-      />
-
-      {/* Baby swaddle body */}
-      <Ellipse cx={100} cy={125} rx={24} ry={18} fill="#FFE4EE" />
-      <Ellipse cx={100} cy={130} rx={20} ry={13} fill="#FFC8D8" />
-
-      {/* Tiny bow on top of head */}
-      <Path
-        d="M94 58 Q100 53 106 58 Q100 62 94 58Z"
-        fill="#E63B6F"
-        opacity={0.8}
-      />
-
-      {/* Mini stars around */}
-      <Path d="M30 30 L33 38 L40 38 L35 43 L37 51 L30 46 L23 51 L25 43 L20 38 L27 38Z"
-        fill="#F5A623" opacity={0.8} />
-      <Path d="M162 22 L164 28 L170 28 L165 32 L167 38 L162 34 L157 38 L159 32 L154 28 L160 28Z"
-        fill="#F5A623" opacity={0.7} />
-      <Path d="M168 155 L170 161 L176 161 L171 165 L173 171 L168 167 L163 171 L165 165 L160 161 L166 161Z"
-        fill="#E63B6F" opacity={0.6} />
+    <Svg width={44} height={60} viewBox="0 0 44 60">
+      <Defs>
+        <RadialGradient id="bGlass" cx="35%" cy="25%" r="65%">
+          <Stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.95" />
+          <Stop offset="100%" stopColor="#D6EFFF" stopOpacity="0.88" />
+        </RadialGradient>
+        <RadialGradient id="bCap" cx="40%" cy="30%" r="60%">
+          <Stop offset="0%"   stopColor="#FFE566" />
+          <Stop offset="100%" stopColor="#F5A623" />
+        </RadialGradient>
+      </Defs>
+      <Ellipse cx={22} cy={58} rx={12} ry={3}  fill="rgba(0,0,0,0.10)" />
+      <Path    d="M17 4 Q22 -3 27 4"            fill="#F5A623" />
+      <Rect    x={13} y={3}  width={18} height={10} rx={4.5} fill="url(#bCap)" />
+      <Rect    x={11} y={11} width={22} height={5}  rx={2.5} fill="#FFD166" />
+      <Rect    x={5}  y={14} width={34} height={41} rx={11}  fill="url(#bGlass)" />
+      <Rect    x={5}  y={28} width={34} height={27} rx={8}   fill="rgba(255,255,255,0.75)" />
+      <Rect    x={9}  y={16} width={6}  height={34} rx={3}   fill="rgba(255,255,255,0.55)" />
+      <Path    d="M31 32 L37 32 M31 38 L37 38 M31 44 L37 44"
+        stroke="rgba(100,160,230,0.4)" strokeWidth={1.5} strokeLinecap="round" />
     </Svg>
   );
 }
 
-// ─── Pulsing ring ─────────────────────────────────────────────────────────────
-
-function PulseRing({ delay, size, color }: { delay: number; size: number; color: string }) {
-  const scale   = useSharedValue(0.4);
-  const opacity = useSharedValue(0.7);
-
-  useEffect(() => {
-    scale.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1600, easing: Easing.out(Easing.ease) }),
-          withTiming(0.4, { duration: 0 }),
-        ),
-        -1,
-      ),
-    );
-    opacity.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(0, { duration: 1600, easing: Easing.out(Easing.ease) }),
-          withTiming(0.7, { duration: 0 }),
-        ),
-        -1,
-      ),
-    );
-  }, []);
-
-  const aStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity:   opacity.value,
-  }));
-
+// ─── Pacifier ────────────────────────────────────────────────────────────────
+function PacifierIcon() {
   return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: 2.5,
-          borderColor: color,
-        },
-        aStyle,
-      ]}
-    />
+    <Svg width={48} height={48} viewBox="0 0 48 48">
+      <Defs>
+        <RadialGradient id="pNip" cx="35%" cy="28%" r="65%">
+          <Stop offset="0%"   stopColor="#FFE566" />
+          <Stop offset="100%" stopColor="#F5A623" />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={24} cy={24} r={21} fill="none" stroke="#FF6B9D" strokeWidth={5} />
+      <Circle cx={24} cy={24} r={14} fill="none" stroke="#FF99BB" strokeWidth={2} opacity={0.6} />
+      <Ellipse cx={24} cy={24} rx={10} ry={8}   fill="url(#pNip)" />
+      <Ellipse cx={24} cy={24} rx={6.5} ry={5}  fill="#FFD166" />
+      <Circle  cx={20} cy={21} r={2.8}           fill="rgba(255,255,255,0.7)" />
+    </Svg>
   );
 }
 
-// ─── Single confetti dot ──────────────────────────────────────────────────────
-
-function ConfettiDot({
-  x, y, color, size, delay, dur,
-}: typeof CONFETTI[0]) {
-  const translateY = useSharedValue(0);
-  const opacity    = useSharedValue(0);
-  const rotate     = useSharedValue(0);
-
-  useEffect(() => {
-    opacity.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1,   { duration: 400 }),
-          withTiming(0.9, { duration: dur - 600 }),
-          withTiming(0,   { duration: 200 }),
-          withTiming(0,   { duration: 400 }),
-        ),
-        -1,
-      ),
-    );
-    translateY.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(-(H * 0.55), { duration: dur, easing: Easing.out(Easing.quad) }),
-          withTiming(0,           { duration: 0 }),
-        ),
-        -1,
-      ),
-    );
-    rotate.value = withDelay(
-      delay,
-      withRepeat(
-        withTiming(360, { duration: dur * 1.2, easing: Easing.linear }),
-        -1,
-      ),
-    );
-  }, []);
-
-  const aStyle = useAnimatedStyle(() => ({
-    opacity:   opacity.value,
-    transform: [
-      { translateY: translateY.value },
-      { rotate: `${rotate.value}deg` },
-    ],
-  }));
-
+// ─── Gold Star ───────────────────────────────────────────────────────────────
+function StarIcon({ size = 30, color = '#FFD84A' }: { size?: number; color?: string }) {
+  const h = size / 2;
+  const oR = h * 0.92, iR = h * 0.40;
+  const pts = Array.from({ length: 10 }, (_, i) => {
+    const r = i % 2 === 0 ? oR : iR;
+    const a = (i * 36 - 90) * (Math.PI / 180);
+    return `${h + r * Math.cos(a)},${h + r * Math.sin(a)}`;
+  }).join(' ');
   return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          left: x,
-          top:  y,
-          width:  size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-        },
-        aStyle,
-      ]}
-    />
+    <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <Path d={`M ${pts} Z`} fill="rgba(0,0,0,0.10)" transform="translate(1.5,2.5)" />
+      <Path d={`M ${pts} Z`} fill={color} />
+      <Path d={`M ${pts} Z`} fill="rgba(255,255,255,0.28)" />
+      <Circle cx={h} cy={h * 0.72} r={h * 0.22} fill="rgba(255,255,255,0.55)" />
+    </Svg>
+  );
+}
+
+// ─── BabyBloom logo — pink + purple two-tone with white glow ─────────────────
+function BabyBloomLogo() {
+  const fs   = Math.round(W * 0.125); // ~47 px on 375-wide screen
+  const base = {
+    fontWeight:       '900' as const,
+    textShadowColor:  'rgba(255,255,255,0.90)',
+    textShadowOffset: { width: 0, height: 0 } as const,
+    textShadowRadius: 10,
+    letterSpacing:    0.5,
+  };
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Text style={[base, { fontSize: fs, color: '#FF6BB8' }]}>Baby</Text>
+      <Text style={[base, { fontSize: fs, color: '#BB44FF' }]}>Bloom</Text>
+    </View>
+  );
+}
+
+// ─── Baby + huge fluffy cloud ─────────────────────────────────────────────────
+function BabyOnCloud({ isBlinking }: { isBlinking: boolean }) {
+  return (
+    <Svg width={W * 0.92} height={260} viewBox="0 0 320 260">
+      <Defs>
+        <RadialGradient id="skin" cx="36%" cy="28%" r="70%">
+          <Stop offset="0%"   stopColor="#FFF4E0" />
+          <Stop offset="52%"  stopColor="#FFCF96" />
+          <Stop offset="100%" stopColor="#F09555" />
+        </RadialGradient>
+        <RadialGradient id="skinD" cx="38%" cy="32%" r="62%">
+          <Stop offset="0%"   stopColor="#FFD4A0" />
+          <Stop offset="100%" stopColor="#E8875A" />
+        </RadialGradient>
+        <RadialGradient id="eye" cx="28%" cy="22%" r="72%">
+          <Stop offset="0%"   stopColor="#7A4A28" />
+          <Stop offset="58%"  stopColor="#3D1E0A" />
+          <Stop offset="100%" stopColor="#190904" />
+        </RadialGradient>
+        <RadialGradient id="cloudT" cx="44%" cy="14%" r="66%">
+          <Stop offset="0%"   stopColor="#FFFFFF" />
+          <Stop offset="68%"  stopColor="#FDF4FF" />
+          <Stop offset="100%" stopColor="#EED8FC" />
+        </RadialGradient>
+        <RadialGradient id="cloudB" cx="50%" cy="88%" r="55%">
+          <Stop offset="0%"   stopColor="#F8EEFF" />
+          <Stop offset="100%" stopColor="#E4C4F4" />
+        </RadialGradient>
+        <RadialGradient id="hair" cx="40%" cy="20%" r="66%">
+          <Stop offset="0%"   stopColor="#B46830" />
+          <Stop offset="100%" stopColor="#6B3A18" />
+        </RadialGradient>
+      </Defs>
+
+      {/* ── HUGE FLUFFY CLOUD ── */}
+      {/* cast shadow */}
+      <Ellipse cx={160} cy={256} rx={134} ry={9} fill="rgba(155,80,200,0.14)" />
+      {/* base fill */}
+      <Rect x={16} y={210} width={288} height={46} rx={23} fill="url(#cloudB)" />
+      {/* back puff row — slightly tinted */}
+      <Circle cx={68}  cy={210} r={34}  fill="#F2E6FF" />
+      <Circle cx={130} cy={200} r={42}  fill="#F2E6FF" />
+      <Circle cx={198} cy={200} r={42}  fill="#F2E6FF" />
+      <Circle cx={258} cy={210} r={34}  fill="#F2E6FF" />
+      {/* main front puff row — bright white */}
+      <Circle cx={38}  cy={222} r={36}  fill="url(#cloudT)" />
+      <Circle cx={84}  cy={206} r={48}  fill="url(#cloudT)" />
+      <Circle cx={136} cy={196} r={58}  fill="url(#cloudT)" />
+      <Circle cx={190} cy={200} r={54}  fill="url(#cloudT)" />
+      <Circle cx={240} cy={212} r={46}  fill="url(#cloudT)" />
+      <Circle cx={282} cy={222} r={36}  fill="url(#cloudT)" />
+      {/* gap filler */}
+      <Rect x={16} y={220} width={288} height={36} fill="url(#cloudT)" />
+      {/* bottom shadow rim */}
+      <Ellipse cx={160} cy={254} rx={132} ry={6} fill="rgba(195,140,230,0.18)" />
+
+      {/* ── BODY (just shoulders) ── */}
+      <Ellipse cx={78}  cy={178} rx={42} ry={32} fill="url(#skin)" />
+      <Ellipse cx={242} cy={178} rx={42} ry={32} fill="url(#skin)" />
+      <Rect    x={78}   y={158}  width={164} height={42} fill="url(#skin)" />
+
+      {/* ── LEFT ARM + HAND (gripping cloud) ── */}
+      <Path d="M68 178 Q46 194 34 206 Q38 218 52 218 Q62 211 72 201 Q80 206 90 206"
+        fill="url(#skin)" />
+      <Circle cx={40}  cy={212} r={19}  fill="url(#skinD)" />
+      <Circle cx={40}  cy={212} r={13}  fill="url(#skin)" />
+      <Circle cx={27}  cy={204} r={8}   fill="url(#skin)" />
+      <Circle cx={34}  cy={200} r={8}   fill="url(#skin)" />
+      <Circle cx={42}  cy={198} r={8}   fill="url(#skin)" />
+      <Circle cx={50}  cy={200} r={8}   fill="url(#skin)" />
+
+      {/* ── RIGHT ARM + HAND ── */}
+      <Path d="M252 178 Q274 194 286 206 Q282 218 268 218 Q258 211 248 201 Q240 206 230 206"
+        fill="url(#skin)" />
+      <Circle cx={280} cy={212} r={19}  fill="url(#skinD)" />
+      <Circle cx={280} cy={212} r={13}  fill="url(#skin)" />
+      <Circle cx={293} cy={204} r={8}   fill="url(#skin)" />
+      <Circle cx={286} cy={200} r={8}   fill="url(#skin)" />
+      <Circle cx={278} cy={198} r={8}   fill="url(#skin)" />
+      <Circle cx={270} cy={200} r={8}   fill="url(#skin)" />
+
+      {/* ── LITTLE FOOT peeking left (matches reference) ── */}
+      <Ellipse cx={22}  cy={232} rx={20} ry={15} fill="url(#skin)" />
+      <Circle  cx={8}   cy={226} r={6.5} fill="url(#skin)" />
+      <Circle  cx={15}  cy={221} r={6.5} fill="url(#skin)" />
+      <Circle  cx={23}  cy={219} r={6.5} fill="url(#skin)" />
+      <Circle  cx={32}  cy={221} r={6}   fill="url(#skin)" />
+
+      {/* ── HEAD ── */}
+      <Rect   x={136} y={105} width={48} height={46} rx={13} fill="url(#skin)" />
+      <Circle cx={160} cy={92} r={90}  fill="url(#skin)" />
+      {/* ears */}
+      <Circle cx={70}  cy={102} r={24} fill="url(#skinD)" />
+      <Circle cx={70}  cy={102} r={16} fill="url(#skin)" />
+      <Circle cx={250} cy={102} r={24} fill="url(#skinD)" />
+      <Circle cx={250} cy={102} r={16} fill="url(#skin)" />
+
+      {/* ── HAIR — brown tuft sweeping up (matches reference) ── */}
+      <Path d="M112 24 Q136 2 160 6 Q184 2 208 24 Q192 12 160 14 Q128 12 112 24Z"
+        fill="url(#hair)" />
+      <Path d="M112 24 Q128 -2 160 4 Q192 -2 208 24"
+        stroke="#7B4222" strokeWidth={7} fill="none" strokeLinecap="round" />
+      <Path d="M122 18 Q138 -4 160 2 Q182 -4 198 18"
+        stroke="#8B5030" strokeWidth={5} fill="none" strokeLinecap="round" />
+      {/* swoop tuft */}
+      <Path d="M152 6 Q160 -12 172 -6 Q178 -2 170 6"
+        fill="url(#hair)" />
+      {/* hair shine */}
+      <Path d="M142 10 Q158 3 174 9"
+        stroke="rgba(200,140,80,0.5)" strokeWidth={3.5} fill="none" strokeLinecap="round" />
+
+      {/* ── EYEBROWS — ultra thin, high, gentle ── */}
+      <Path d="M100 50 Q122 39 142 46"
+        stroke="#7B4222" strokeWidth={2.5} fill="none" strokeLinecap="round" />
+      <Path d="M178 46 Q198 39 220 50"
+        stroke="#7B4222" strokeWidth={2.5} fill="none" strokeLinecap="round" />
+
+      {/* ── EYES ── */}
+      {isBlinking ? (
+        <G>
+          {/* closed eyes with lashes */}
+          <Path d="M96 96 Q126 80 154 96"
+            stroke="#3D1A08" strokeWidth={5} fill="none" strokeLinecap="round" />
+          <Path d="M103 91 L101 84  M113 88 L113 81  M124 89 L126 82"
+            stroke="#3D1A08" strokeWidth={2.2} strokeLinecap="round" />
+          <Path d="M166 96 Q194 80 224 96"
+            stroke="#3D1A08" strokeWidth={5} fill="none" strokeLinecap="round" />
+          <Path d="M196 89 L194 82  M207 88 L209 81  M218 91 L220 84"
+            stroke="#3D1A08" strokeWidth={2.2} strokeLinecap="round" />
+        </G>
+      ) : (
+        <G>
+          {/* LEFT eye */}
+          <Ellipse cx={125} cy={97}  rx={31} ry={33} fill="white" />
+          <Circle  cx={127} cy={99}  r={25}           fill="url(#eye)" />
+          <Circle  cx={128} cy={100} r={16}           fill="#120604" />
+          {/* big anime sparkle highlight */}
+          <Circle  cx={116} cy={88}  r={11}           fill="white" />
+          <Circle  cx={136} cy={108} r={4}            fill="rgba(255,255,255,0.6)" />
+          <Path d="M96 83 L100 74  M108 80 L110 71  M120 78 L120 68"
+            stroke="#3D1A08" strokeWidth={2.5} strokeLinecap="round" />
+          {/* RIGHT eye */}
+          <Ellipse cx={195} cy={97}  rx={31} ry={33} fill="white" />
+          <Circle  cx={193} cy={99}  r={25}           fill="url(#eye)" />
+          <Circle  cx={192} cy={100} r={16}           fill="#120604" />
+          <Circle  cx={184} cy={88}  r={11}           fill="white" />
+          <Circle  cx={184} cy={108} r={4}            fill="rgba(255,255,255,0.6)" />
+          <Path d="M224 83 L220 74  M212 80 L210 71  M200 78 L200 68"
+            stroke="#3D1A08" strokeWidth={2.5} strokeLinecap="round" />
+        </G>
+      )}
+
+      {/* ── NOSE — two tiny dots ── */}
+      <Circle cx={153} cy={122} r={3.5} fill="#E08A50" opacity={0.65} />
+      <Circle cx={167} cy={122} r={3.5} fill="#E08A50" opacity={0.65} />
+
+      {/* ── PACIFIER — yellow, matches reference ── */}
+      <Circle  cx={160} cy={146} r={26} fill="none" stroke="#FFBD30" strokeWidth={6.5} />
+      <Circle  cx={160} cy={146} r={17} fill="none" stroke="#FFE080" strokeWidth={2.5} opacity={0.65} />
+      <Ellipse cx={160} cy={137} rx={15} ry={13}   fill="#FFD84A" />
+      <Ellipse cx={160} cy={137} rx={10} ry={8}    fill="#F5A820" />
+      <Circle  cx={154} cy={132} r={4.5}           fill="rgba(255,255,255,0.65)" />
+
+      {/* ── ROSY CHEEKS ── */}
+      <Circle cx={86}  cy={116} r={34} fill="#FFB3C6" opacity={0.30} />
+      <Circle cx={234} cy={116} r={34} fill="#FFB3C6" opacity={0.30} />
+      <Circle cx={82}  cy={108} r={12} fill="rgba(255,210,228,0.22)" />
+      <Circle cx={238} cy={108} r={12} fill="rgba(255,210,228,0.22)" />
+
+    </Svg>
+  );
+}
+
+// ─── Fluffy background / foreground cloud ─────────────────────────────────────
+function CloudShape({ w = 180, h = 78, tint = '#F8E8FF', opacity = 0.85 }: {
+  w?: number; h?: number; tint?: string; opacity?: number;
+}) {
+  const r  = h * 0.5;
+  const id = `cg_${w}_${h}`;
+  return (
+    <Svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <Defs>
+        <RadialGradient id={id} cx="50%" cy="14%" r="66%">
+          <Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={String(opacity)} />
+          <Stop offset="100%" stopColor={tint}    stopOpacity={String(opacity * 0.80)} />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={r * 0.68}  cy={h * 0.56} r={r * 0.72} fill={`url(#${id})`} />
+      <Circle cx={r * 1.52}  cy={h * 0.40} r={r * 0.90} fill={`url(#${id})`} />
+      <Circle cx={r * 2.52}  cy={h * 0.48} r={r * 0.82} fill={`url(#${id})`} />
+      <Circle cx={r * 3.28}  cy={h * 0.56} r={r * 0.66} fill={`url(#${id})`} />
+      <Rect   x={r * 0.14}   y={h * 0.55}  width={w - r * 0.28} height={h * 0.45} rx={r * 0.28}
+        fill={`url(#${id})`} />
+    </Svg>
+  );
+}
+
+// ─── Orbit item ───────────────────────────────────────────────────────────────
+function OrbitItem({
+  orbitAngle, phaseOffset, children, itemSize,
+}: {
+  orbitAngle: ReturnType<typeof useSharedValue<number>>;
+  phaseOffset: number;
+  children: React.ReactNode;
+  itemSize: number;
+}) {
+  const aStyle = useAnimatedStyle(() => {
+    'worklet';
+    const rad = ((orbitAngle.value + phaseOffset) * Math.PI) / 180;
+    const tx  = ORBIT_RX * Math.cos(rad);
+    const ty  = ORBIT_RY * Math.sin(rad);
+    return {
+      transform: [{ translateX: tx }, { translateY: ty }],
+      opacity: ty > 0 ? 0.50 : 1,
+      zIndex:  ty > 0 ? 0 : 3,
+    };
+  });
+  return (
+    <Animated.View style={[{
+      position: 'absolute',
+      width: itemSize, height: itemSize,
+      marginLeft: -itemSize / 2, marginTop: -itemSize / 2,
+      alignItems: 'center', justifyContent: 'center',
+    }, aStyle]}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// ─── Twinkling sparkle ────────────────────────────────────────────────────────
+function SparkleAt({ x, y, size, delay, color = '#FFD84A' }: {
+  x: number; y: number; size: number; delay: number; color?: string;
+}) {
+  const sc = useSharedValue(0.5);
+  const op = useSharedValue(0.3);
+  useEffect(() => {
+    sc.value = withDelay(delay, withRepeat(withSequence(
+      withTiming(1,   { duration: 700, easing: Easing.out(Easing.ease) }),
+      withTiming(0.5, { duration: 700, easing: Easing.in(Easing.ease) }),
+    ), -1));
+    op.value = withDelay(delay, withRepeat(withSequence(
+      withTiming(1,   { duration: 700 }),
+      withTiming(0.3, { duration: 700 }),
+    ), -1));
+  }, []);
+  const aStyle = useAnimatedStyle(() => ({
+    opacity: op.value,
+    transform: [{ scale: sc.value }],
+  }));
+  return (
+    <Animated.View style={[{ position: 'absolute', left: x, top: y }, aStyle]}>
+      <StarIcon size={size} color={color} />
+    </Animated.View>
   );
 }
 
 // ─── Welcome Screen ───────────────────────────────────────────────────────────
-
 export default function WelcomeScreen() {
   const { t }           = useTranslation();
   const { activeChild } = useChildStore();
   const name            = activeChild ? getChildDisplayName(activeChild) : 'Baby';
 
-  // ── Shared values ─────────────────────────────────────────────────────────
+  const [isBlinking, setIsBlinking] = useState(false);
 
-  // Card 3-D flip-in: starts tilted away (rotateX 45°), slides from below
-  const cardRotateX  = useSharedValue(45);
-  const cardTranslY  = useSharedValue(120);
-  const cardOpacity  = useSharedValue(0);
-  const cardScale    = useSharedValue(0.85);
-
-  // Illustration float
-  const illustScale  = useSharedValue(0);
-  const illustFloatY = useSharedValue(0);
-
-  // Title & subtitle
-  const titleOpacity = useSharedValue(0);
-  const titleScale   = useSharedValue(0.85);
-
-  const subOpacity   = useSharedValue(0);
-  const subScale     = useSharedValue(0.85);
-
-  // Tap-to-go hint
-  const hintOpacity  = useSharedValue(0);
-
-  // ── Kick off on mount ─────────────────────────────────────────────────────
+  const orbitAngle  = useSharedValue(0);
+  const babyY       = useSharedValue(0);
+  const babyS       = useSharedValue(0.75);
+  const headTilt    = useSharedValue(0);
+  const cloud1X     = useSharedValue(0);
+  const cloud2X     = useSharedValue(0);
+  const cloud3X     = useSharedValue(0);
+  const logoOp      = useSharedValue(0);
+  const logoSc      = useSharedValue(0.82);
+  const titleOp     = useSharedValue(0);
+  const titleY      = useSharedValue(26);
 
   useEffect(() => {
-    // 1. Card 3-D flip up (perspective effect via rotateX)
-    cardOpacity.value  = withTiming(1, { duration: 300 });
-    cardRotateX.value  = withSpring(0,  { damping: 14, stiffness: 90 });
-    cardTranslY.value  = withSpring(0,  { damping: 14, stiffness: 90 });
-    cardScale.value    = withSpring(1,  { damping: 12, stiffness: 100 });
-
-    // 2. Illustration spring in after 150 ms
-    illustScale.value  = withDelay(150, withSpring(1, { damping: 6, stiffness: 70 }));
-
-    // 3. Continuous float after initial settle
-    illustFloatY.value = withDelay(
-      700,
-      withRepeat(
-        withSequence(
-          withTiming(-10, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(  0, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1,
-        true,
-      ),
+    // Orbit
+    orbitAngle.value = withRepeat(
+      withTiming(360, { duration: ORBIT_DURATION, easing: Easing.linear }), -1,
     );
-
-    // 4. Title fade + scale
-    titleOpacity.value = withDelay(350, withTiming(1, { duration: 600 }));
-    titleScale.value   = withDelay(350, withSpring(1, { damping: 10, stiffness: 90 }));
-
-    // 5. Subtitle
-    subOpacity.value   = withDelay(650, withTiming(1, { duration: 600 }));
-    subScale.value     = withDelay(650, withSpring(1, { damping: 10, stiffness: 90 }));
-
-    // 6. Hint
-    hintOpacity.value  = withDelay(1400, withTiming(0.7, { duration: 600 }));
-
-    // 7. Auto-navigate
-    const timer = setTimeout(() => router.replace('/(tabs)'), 3200);
-    return () => clearTimeout(timer);
+    // Baby spring-in + bob
+    babyS.value = withSpring(1, { damping: 7, stiffness: 70 });
+    babyY.value = withDelay(600, withRepeat(withSequence(
+      withTiming(-14, { duration: 1900, easing: Easing.inOut(Easing.ease) }),
+      withTiming(  0, { duration: 1900, easing: Easing.inOut(Easing.ease) }),
+    ), -1, true));
+    // Head tilt
+    headTilt.value = withRepeat(withSequence(
+      withTiming( 3.5, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
+      withTiming(-3.5, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
+    ), -1, true);
+    // Cloud drifts
+    cloud1X.value = withRepeat(withSequence(
+      withTiming( 20, { duration: 4800, easing: Easing.inOut(Easing.ease) }),
+      withTiming(-20, { duration: 4800, easing: Easing.inOut(Easing.ease) }),
+    ), -1, true);
+    cloud2X.value = withDelay(1100, withRepeat(withSequence(
+      withTiming(-25, { duration: 5600, easing: Easing.inOut(Easing.ease) }),
+      withTiming( 25, { duration: 5600, easing: Easing.inOut(Easing.ease) }),
+    ), -1, true));
+    cloud3X.value = withDelay(600, withRepeat(withSequence(
+      withTiming( 16, { duration: 6400, easing: Easing.inOut(Easing.ease) }),
+      withTiming(-16, { duration: 6400, easing: Easing.inOut(Easing.ease) }),
+    ), -1, true));
+    // Logo pop-in
+    logoOp.value = withDelay(250, withTiming(1, { duration: 650 }));
+    logoSc.value = withDelay(250, withSpring(1, { damping: 10, stiffness: 90 }));
+    // Title slide-up
+    titleOp.value = withDelay(600, withTiming(1, { duration: 650 }));
+    titleY.value  = withDelay(600, withSpring(0, { damping: 12, stiffness: 80 }));
+    // Blink every ~3.2 s
+    const doBlink = () => { setIsBlinking(true); setTimeout(() => setIsBlinking(false), 160); };
+    const blinkTimer = setInterval(doBlink, 3200);
+    // 5-second auto-navigate
+    const navTimer = setTimeout(() => router.replace('/(tabs)'), 5000);
+    return () => { clearInterval(blinkTimer); clearTimeout(navTimer); };
   }, []);
 
-  // ── Animated styles ───────────────────────────────────────────────────────
-
-  const cardAStyle = useAnimatedStyle(() => ({
-    opacity:   cardOpacity.value,
+  const babyStyle  = useAnimatedStyle(() => ({
     transform: [
-      { perspective: 900 },
-      { rotateX:     `${cardRotateX.value}deg` },
-      { translateY:  cardTranslY.value },
-      { scale:       cardScale.value },
+      { scale:      babyS.value },
+      { translateY: babyY.value },
+      { rotate:     `${headTilt.value}deg` },
     ],
   }));
-
-  const illustAStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale:      illustScale.value },
-      { translateY: illustFloatY.value },
-    ],
+  const c1Style = useAnimatedStyle(() => ({ transform: [{ translateX: cloud1X.value }] }));
+  const c2Style = useAnimatedStyle(() => ({ transform: [{ translateX: cloud2X.value }] }));
+  const c3Style = useAnimatedStyle(() => ({ transform: [{ translateX: cloud3X.value }] }));
+  const logoStyle  = useAnimatedStyle(() => ({
+    opacity: logoOp.value, transform: [{ scale: logoSc.value }],
   }));
-
-  const titleAStyle = useAnimatedStyle(() => ({
-    opacity:   titleOpacity.value,
-    transform: [{ scale: titleScale.value }],
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: titleOp.value, transform: [{ translateY: titleY.value }],
   }));
-
-  const subAStyle = useAnimatedStyle(() => ({
-    opacity:   subOpacity.value,
-    transform: [{ scale: subScale.value }],
-  }));
-
-  const hintAStyle = useAnimatedStyle(() => ({
-    opacity: hintOpacity.value,
-  }));
-
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={{ flex: 1 }}
-      onPress={() => router.replace('/(tabs)')}
-    >
+    <TouchableOpacity activeOpacity={1} style={{ flex: 1 }} onPress={() => router.replace('/(tabs)')}>
       <LinearGradient
-        colors={['#1C1C3A', '#3D1F5A', '#1C1C3A']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        colors={['#FFAED8', '#E880D4', '#C464CE', '#9040BC']}
+        start={{ x: 0.3, y: 0 }}
+        end={{ x: 0.7, y: 1 }}
         style={st.screen}
       >
-        {/* ── Confetti dots ── */}
-        {CONFETTI.map((c, i) => <ConfettiDot key={i} {...c} />)}
+        {/* ── Sparkle stars scattered across sky ── */}
+        <SparkleAt x={W*0.06} y={H*0.05} size={20} delay={0}    color="#FFE580" />
+        <SparkleAt x={W*0.80} y={H*0.04} size={24} delay={280}  color="#FFD060" />
+        <SparkleAt x={W*0.14} y={H*0.29} size={15} delay={560}  color="#FFB8CC" />
+        <SparkleAt x={W*0.86} y={H*0.26} size={17} delay={840}  color="#FFE580" />
+        <SparkleAt x={W*0.04} y={H*0.69} size={14} delay={420}  color="#FFD060" />
+        <SparkleAt x={W*0.90} y={H*0.65} size={16} delay={700}  color="#FFB8CC" />
+        <SparkleAt x={W*0.50} y={H*0.03} size={13} delay={920}  color="#FFE580" />
+        <SparkleAt x={W*0.34} y={H*0.08} size={11} delay={160}  color="#FFFFFF" />
+        <SparkleAt x={W*0.66} y={H*0.09} size={12} delay={480}  color="#FFFFFF" />
 
-        {/* ── Pulse rings (centred) ── */}
-        <View style={st.ringWrap}>
-          <PulseRing delay={0}    size={260} color="rgba(230,59,111,0.5)" />
-          <PulseRing delay={540}  size={340} color="rgba(245,166,35,0.35)" />
-          <PulseRing delay={1080} size={420} color="rgba(230,59,111,0.2)" />
-        </View>
-
-        {/* ── 3-D card ── */}
-        <Animated.View style={[st.card, cardAStyle]}>
-
-          {/* Illustration container with glow */}
-          <View style={st.illustWrap}>
-            <View style={st.illustGlow} />
-            <Animated.View style={illustAStyle}>
-              <BabyStarIllustration />
-            </Animated.View>
-          </View>
-
-          {/* Divider sparkles */}
-          <View style={st.sparkleRow}>
-            {['✨','🌸','✨','🌸','✨'].map((s, i) => (
-              <Text key={i} style={st.sparkleChar}>{s}</Text>
-            ))}
-          </View>
-
-          {/* Title */}
-          <Animated.Text style={[st.title, titleAStyle]}>
-            {t('welcome.title', { name })}
-          </Animated.Text>
-
-          {/* Subtitle */}
-          <Animated.Text style={[st.subtitle, subAStyle]}>
-            {t('welcome.subtitle')}
-          </Animated.Text>
-
+        {/* ── Background clouds (behind baby) ── */}
+        <Animated.View style={[st.bgC1, c1Style]}>
+          <CloudShape w={210} h={88}  opacity={0.52} tint="#F8E4FF" />
+        </Animated.View>
+        <Animated.View style={[st.bgC2, c2Style]}>
+          <CloudShape w={145} h={60}  opacity={0.46} tint="#FFE4F8" />
+        </Animated.View>
+        <Animated.View style={[st.bgC3, c3Style]}>
+          <CloudShape w={170} h={70}  opacity={0.48} tint="#F4E0FF" />
         </Animated.View>
 
-        {/* ── Tap hint ── */}
-        <Animated.Text style={[st.tapHint, hintAStyle]}>
-          {t('welcome.skip', 'Tap anywhere to continue →')}
-        </Animated.Text>
+        {/* ── Center scene: orbit ellipse + items + baby ── */}
+        <View style={st.scene}>
+          {/* Glowing orbit ring */}
+          <Svg
+            width={ORBIT_RX * 2 + 48}
+            height={ORBIT_RY * 2 + 48}
+            style={st.orbitRing}
+            viewBox={`0 0 ${ORBIT_RX * 2 + 48} ${ORBIT_RY * 2 + 48}`}
+          >
+            {/* outer glow */}
+            <Ellipse
+              cx={ORBIT_RX + 24} cy={ORBIT_RY + 24}
+              rx={ORBIT_RX + 8}  ry={ORBIT_RY + 8}
+              fill="none"
+              stroke="rgba(255,200,240,0.16)"
+              strokeWidth={10}
+            />
+            {/* dashed ring */}
+            <Ellipse
+              cx={ORBIT_RX + 24} cy={ORBIT_RY + 24}
+              rx={ORBIT_RX}      ry={ORBIT_RY}
+              fill="none"
+              stroke="rgba(255,220,255,0.38)"
+              strokeWidth={2.5}
+              strokeDasharray="10,7"
+            />
+          </Svg>
+
+          {/* Orbit items */}
+          <OrbitItem orbitAngle={orbitAngle} phaseOffset={0}   itemSize={52}><BottleIcon /></OrbitItem>
+          <OrbitItem orbitAngle={orbitAngle} phaseOffset={72}  itemSize={36}><StarIcon size={36} color="#FFD84A" /></OrbitItem>
+          <OrbitItem orbitAngle={orbitAngle} phaseOffset={144} itemSize={52}><PacifierIcon /></OrbitItem>
+          <OrbitItem orbitAngle={orbitAngle} phaseOffset={216} itemSize={30}><StarIcon size={30} color="#FFE880" /></OrbitItem>
+          <OrbitItem orbitAngle={orbitAngle} phaseOffset={288} itemSize={34}><StarIcon size={34} color="#F5C842" /></OrbitItem>
+
+          {/* Baby */}
+          <Animated.View style={[st.babyWrap, babyStyle]}>
+            <BabyOnCloud isBlinking={isBlinking} />
+          </Animated.View>
+        </View>
+
+        {/* ── Foreground clouds — rendered after scene so they appear in front ── */}
+        <View style={st.frontClouds} pointerEvents="none">
+          <Animated.View style={[{ marginLeft: -45 }, c2Style]}>
+            <CloudShape w={250} h={112} opacity={0.94} tint="#EDD8F8" />
+          </Animated.View>
+          <Animated.View style={[{ marginRight: -45 }, c1Style]}>
+            <CloudShape w={220} h={98}  opacity={0.90} tint="#F4E4FF" />
+          </Animated.View>
+        </View>
+
+        {/* ── BabyBloom logo ── */}
+        <View style={st.logoWrap}>
+          <BabyBloomLogo />
+        </View>
+
+        {/* ── Title text ── */}
+        <Animated.View style={[st.titleWrap, titleStyle]}>
+          <Text style={st.welcomeTxt}>{t('welcome.title', { name })}</Text>
+          <Text style={st.subtitleTxt}>{t('welcome.subtitle', 'Your Parenting Companion')}</Text>
+          <Text style={st.hintTxt}>{t('welcome.skip', 'Tap anywhere to continue →')}</Text>
+        </Animated.View>
 
       </LinearGradient>
     </TouchableOpacity>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const st = StyleSheet.create({
   screen: {
-    flex: 1,
-    alignItems:      'center',
-    justifyContent:  'center',
-    overflow:        'hidden',
+    flex:           1,
+    alignItems:     'center',
+    overflow:       'hidden',
   },
 
-  // Centred ring holder
-  ringWrap: {
-    position:        'absolute',
-    alignItems:      'center',
-    justifyContent:  'center',
-  },
+  // bg clouds
+  bgC1: { position: 'absolute', top: H * 0.05, left: -28 },
+  bgC2: { position: 'absolute', top: H * 0.12, right: -16 },
+  bgC3: { position: 'absolute', top: H * 0.19, left: W * 0.24 },
 
-  // ── Main card ──────────────────────────────────────────────────────────────
-  card: {
-    width:           W * 0.85,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderRadius:    32,
-    alignItems:      'center',
-    paddingVertical: 36,
-    paddingHorizontal: 24,
-    borderWidth:     1.5,
-    borderColor:     'rgba(255,255,255,0.18)',
-    // Glass shadow
-    shadowColor:     Colors.primaryPink,
-    shadowOffset:    { width: 0, height: 8 },
-    shadowOpacity:   0.5,
-    shadowRadius:    24,
-    elevation:       16,
-  },
-
-  // Illustration
-  illustWrap: {
+  // center scene
+  scene: {
+    marginTop:      H * 0.06,
+    width:          W,
+    height:         H * 0.47,
     alignItems:     'center',
     justifyContent: 'center',
-    marginBottom:   8,
+    position:       'relative',
   },
-  illustGlow: {
-    position:        'absolute',
-    width:           180,
-    height:          180,
-    borderRadius:    90,
-    backgroundColor: Colors.primaryPink,
-    opacity:         0.15,
-    // Blur via shadow trick
-    shadowColor:     Colors.primaryPink,
-    shadowOffset:    { width: 0, height: 0 },
-    shadowOpacity:   1,
-    shadowRadius:    40,
-  },
+  orbitRing: { position: 'absolute' },
+  babyWrap:  { alignItems: 'center', justifyContent: 'center' },
 
-  // Sparkle row
-  sparkleRow: {
+  // front clouds (absolutely positioned so scene content shows through)
+  frontClouds: {
+    position:       'absolute',
+    top:            H * 0.68,
+    width:          W,
     flexDirection:  'row',
-    gap:            8,
-    marginVertical: 12,
-  },
-  sparkleChar: {
-    fontSize: 18,
+    justifyContent: 'space-between',
   },
 
-  // Title
-  title: {
-    fontSize:       28,
-    fontWeight:     '800',
-    color:          '#FFFFFF',
-    textAlign:      'center',
-    marginBottom:   12,
-    lineHeight:     38,
-    textShadowColor:  'rgba(230,59,111,0.6)',
+  // logo
+  logoWrap: {
+    alignItems:  'center',
+    marginTop:   -14,
+  },
+
+  // title text
+  titleWrap: {
+    alignItems:        'center',
+    paddingHorizontal: 28,
+    marginTop:         4,
+  },
+  welcomeTxt: {
+    fontSize:         22,
+    fontWeight:       '700',
+    color:            '#FFFFFF',
+    textAlign:        'center',
+    marginBottom:     4,
+    textShadowColor:  'rgba(100,20,140,0.55)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 10,
+    textShadowRadius: 8,
   },
-
-  // Subtitle
-  subtitle: {
-    fontSize:     15,
-    color:        'rgba(255,255,255,0.75)',
-    textAlign:    'center',
-    lineHeight:   24,
+  subtitleTxt: {
+    fontSize:         15,
+    fontWeight:       '500',
+    color:            'rgba(255,255,255,0.88)',
+    textAlign:        'center',
+    marginBottom:     10,
+    textShadowColor:  'rgba(80,0,100,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 5,
   },
-
-  // Tap hint
-  tapHint: {
-    position:     'absolute',
-    bottom:       52,
-    fontSize:     13,
-    color:        'rgba(255,255,255,0.7)',
-    fontWeight:   '500',
+  hintTxt: {
+    fontSize:      12,
+    color:         'rgba(255,255,255,0.60)',
+    fontWeight:    '500',
     letterSpacing: 0.3,
   },
 });
