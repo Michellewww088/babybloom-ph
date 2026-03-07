@@ -291,7 +291,14 @@
     "interval_check": "Check soon ⏰",
     "interval_alert": "Feed time! 🍼",
     "foods_tried": "Foods Tried",
-    "foods_tried_count": "{{count}} foods introduced so far"
+    "foods_tried_count": "{{count}} foods introduced so far",
+    "delete_title": "Delete this feed?",
+    "delete_body": "This entry will be permanently removed. This action cannot be undone.",
+    "timer_pause": "Pause",
+    "timer_resume": "Resume",
+    "timer_paused": "Paused",
+    "ai_disclaimer": "This analysis is based on WHO and DOH Philippines guidelines for general reference only. Please consult your Pediatrician for medical concerns.",
+    "daily_summary_label": "Today's Feeding Summary"
   },
   "common": {
     "loading": "Loading...",

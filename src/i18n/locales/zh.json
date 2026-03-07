@@ -291,7 +291,14 @@
     "interval_check": "快到时间了 ⏰",
     "interval_alert": "该喂奶了！🍼",
     "foods_tried": "已尝试的食物",
-    "foods_tried_count": "已引入 {{count}} 种食物"
+    "foods_tried_count": "已引入 {{count}} 种食物",
+    "delete_title": "删除这条喂食记录？",
+    "delete_body": "此记录将被永久删除，无法恢复。",
+    "timer_pause": "暂停",
+    "timer_resume": "继续",
+    "timer_paused": "已暂停",
+    "ai_disclaimer": "此分析基于WHO和菲律宾卫生部指南，仅供参考。如有医疗问题，请咨询您的儿科医生。",
+    "daily_summary_label": "今日喂食总结"
   },
   "common": {
     "loading": "加载中...",

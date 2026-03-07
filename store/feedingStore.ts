@@ -8,6 +8,12 @@ export type MilkType      = 'breast_milk' | 'formula';
 export type SolidsTexture = 'puree' | 'mashed' | 'soft_lumps' | 'finger_food';
 export type SolidsReaction = 'none' | 'mild' | 'allergic';
 
+/** A single pause/resume event recorded during a breastfeed timer session */
+export interface PauseInterval {
+  pausedAt:   string;   // ISO datetime — when pause was pressed
+  resumedAt?: string;   // ISO datetime — when resume was pressed (absent if currently paused)
+}
+
 export interface FeedingEntry {
   id:        string;
   childId:   string;
@@ -18,6 +24,7 @@ export interface FeedingEntry {
   // Breastfeed
   breastSide?:      BreastSide;
   durationMinutes?: number;
+  pauseIntervals?:  PauseInterval[];  // recorded pause/resume events from timer
 
   // Bottle
   milkType?:     MilkType;
@@ -45,13 +52,17 @@ interface FeedingStore {
   timerActive:    boolean;
   timerStartedAt: string | null;   // ISO datetime
   timerSide:      BreastSide | null;
+  timerPaused:    boolean;
+  timerPauseLog:  PauseInterval[];
 
   addEntry:    (entry: FeedingEntry) => void;
   updateEntry: (id: string, updates: Partial<FeedingEntry>) => void;
   deleteEntry: (id: string) => void;
 
-  startTimer: (side: BreastSide) => void;
-  stopTimer:  () => void;
+  startTimer:  (side: BreastSide) => void;
+  stopTimer:   () => void;
+  pauseTimer:  () => void;
+  resumeTimer: () => void;
 }
 
 export const useFeedingStore = create<FeedingStore>((set) => ({
@@ -60,6 +71,8 @@ export const useFeedingStore = create<FeedingStore>((set) => ({
   timerActive:    false,
   timerStartedAt: null,
   timerSide:      null,
+  timerPaused:    false,
+  timerPauseLog:  [],
 
   addEntry: (entry) =>
     set((state) => ({ entries: [entry, ...state.entries] })),
@@ -73,11 +86,41 @@ export const useFeedingStore = create<FeedingStore>((set) => ({
     set((state) => ({ entries: state.entries.filter((e) => e.id !== id) })),
 
   startTimer: (side) =>
-    set({ timerActive: true, timerStartedAt: new Date().toISOString(), timerSide: side }),
+    set({
+      timerActive:    true,
+      timerStartedAt: new Date().toISOString(),
+      timerSide:      side,
+      timerPaused:    false,
+      timerPauseLog:  [],
+    }),
 
   stopTimer: () =>
-    set({ timerActive: false, timerStartedAt: null, timerSide: null }),
+    set({ timerActive: false, timerStartedAt: null, timerSide: null, timerPaused: false, timerPauseLog: [] }),
+
+  pauseTimer: () =>
+    set((state) => ({
+      timerPaused:   true,
+      timerPauseLog: [
+        ...state.timerPauseLog,
+        { pausedAt: new Date().toISOString() },
+      ],
+    })),
+
+  resumeTimer: () =>
+    set((state) => ({
+      timerPaused:   false,
+      timerPauseLog: state.timerPauseLog.map((interval, idx) =>
+        idx === state.timerPauseLog.length - 1 && !interval.resumedAt
+          ? { ...interval, resumedAt: new Date().toISOString() }
+          : interval
+      ),
+    })),
 }));
+
+// Expose store in dev for browser preview testing
+if (typeof __DEV__ !== 'undefined' && __DEV__ && typeof window !== 'undefined') {
+  (window as any).__feedingStore = useFeedingStore;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -147,4 +190,38 @@ export function formatDuration(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+/**
+ * Compute active (non-paused) elapsed seconds from a running timer.
+ * Subtracts all pause durations from total wall-clock time.
+ */
+export function getActiveElapsedSeconds(
+  timerStartedAt: string,
+  pauseIntervals: PauseInterval[],
+  timerPaused: boolean,
+): number {
+  const now      = Date.now();
+  const startMs  = new Date(timerStartedAt).getTime();
+  const totalMs  = now - startMs;
+
+  const pausedMs = pauseIntervals.reduce((acc, interval) => {
+    if (!interval.resumedAt) {
+      // Still paused — count from pausedAt to now
+      return acc + (now - new Date(interval.pausedAt).getTime());
+    }
+    return acc + (new Date(interval.resumedAt).getTime() - new Date(interval.pausedAt).getTime());
+  }, 0);
+
+  return Math.max(0, Math.floor((totalMs - pausedMs) / 1000));
+}
+
+/** Format a timer event ISO timestamp as MM:SS relative to timerStartedAt */
+export function formatTimerMark(eventIso: string, timerStartedAt: string): string {
+  const secs = Math.max(0, Math.floor(
+    (new Date(eventIso).getTime() - new Date(timerStartedAt).getTime()) / 1000,
+  ));
+  const m = Math.floor(secs / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
 }

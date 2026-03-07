@@ -291,7 +291,14 @@
     "interval_check": "Tingnan na ✅",
     "interval_alert": "Oras na para pakainin! 🍼",
     "foods_tried": "Mga Pagkaing Natikman",
-    "foods_tried_count": "{{count}} pagkaing napakilala na"
+    "foods_tried_count": "{{count}} pagkaing napakilala na",
+    "delete_title": "Burahin ang pagkaing ito?",
+    "delete_body": "Permanenteng matatanggal ang talang ito. Hindi ito maaaring ibalik.",
+    "timer_pause": "I-pause",
+    "timer_resume": "Ituloy",
+    "timer_paused": "Naka-pause",
+    "ai_disclaimer": "Ang pagsusuring ito ay batay sa mga alituntunin ng WHO at DOH Philippines para sa pangkalahatang sanggunian lamang. Kumonsulta sa inyong Pediatrician para sa medikal na alalahanin.",
+    "daily_summary_label": "Buod ng Pagpapakain Ngayon"
   },
   "common": {
     "loading": "Naglo-load...",

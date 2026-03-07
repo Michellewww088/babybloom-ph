@@ -35,10 +35,16 @@ import Colors from '../constants/Colors';
 import {
   useFeedingStore,
   FeedingEntry, FeedType, BreastSide, MilkType, SolidsTexture, SolidsReaction,
+  PauseInterval,
   getEntriesForChild, getLastFeed, getTodayEntries,
   getSuggestedSide, formatDuration, timeAgoShort, minutesSince, getFoodsTriedByChild,
+  getActiveElapsedSeconds, formatTimerMark,
 } from '../store/feedingStore';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
+import {
+  analyzeOneFeed, analyzeDailyFeeding, getClaudeDailySummary,
+  FeedInsight,
+} from '../lib/feedingInsights';
 
 const { width: W } = Dimensions.get('window');
 const PAD = 16;
@@ -387,11 +393,11 @@ const tl = StyleSheet.create({
 // Feed entry row
 // ─────────────────────────────────────────────────────────────────────────────
 function FeedEntryRow({
-  entry, onEdit, onDelete,
+  entry, onEdit, onRequestDelete,
 }: {
-  entry: FeedingEntry;
-  onEdit: (e: FeedingEntry) => void;
-  onDelete: (id: string) => void;
+  entry:           FeedingEntry;
+  onEdit:          (e: FeedingEntry) => void;
+  onRequestDelete: (e: FeedingEntry) => void;
 }) {
   const { t } = useTranslation();
   const typeColor: Record<FeedType, string> = {
@@ -438,12 +444,7 @@ function FeedEntryRow({
         <View style={er.right}>
           <Text style={er.time}>{formatTime(entry.startedAt)}</Text>
           <TouchableOpacity
-            onPress={() =>
-              Alert.alert(t('feeding.delete'), t('feeding.delete_confirm'), [
-                { text: t('common.cancel'), style: 'cancel' },
-                { text: t('common.delete'), style: 'destructive', onPress: () => onDelete(entry.id) },
-              ])
-            }
+            onPress={() => onRequestDelete(entry)}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <IconDelete size={18} />
@@ -466,6 +467,276 @@ const er = StyleSheet.create({
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Delete Confirmation Modal — kawaii, replaces Alert.alert
+// ─────────────────────────────────────────────────────────────────────────────
+function DeleteConfirmModal({ visible, feedType, onCancel, onConfirm }: {
+  visible:   boolean;
+  feedType:  FeedType | null;
+  onCancel:  () => void;
+  onConfirm: () => void;
+}) {
+  const { t } = useTranslation();
+  const FeedIcon = feedType === 'breastfeed' ? IconBreastfeed
+    : feedType === 'bottle' ? IconBottle : IconSolids;
+  return (
+    <Modal visible={visible} animationType="fade" transparent onRequestClose={onCancel}>
+      <Pressable style={dc.overlay} onPress={onCancel}>
+        <Pressable style={dc.card} onPress={() => {}}>
+          <View style={dc.iconWrap}>
+            {FeedIcon && <FeedIcon size={52} />}
+            <View style={dc.sadBadge}><Text style={dc.sadEmoji}>😢</Text></View>
+          </View>
+          <Text style={dc.title}>{t('feeding.delete_title')}</Text>
+          <Text style={dc.body}>{t('feeding.delete_body')}</Text>
+          <View style={dc.btnRow}>
+            <TouchableOpacity style={dc.cancelBtn} onPress={onCancel} activeOpacity={0.8}>
+              <Text style={dc.cancelTxt}>{t('common.cancel')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={dc.deleteBtn} onPress={onConfirm} activeOpacity={0.85}>
+              <LinearGradient
+                colors={['#EF4444', '#DC2626']}
+                style={dc.deleteBtnGrad}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              >
+                <IconDelete size={16} />
+                <Text style={dc.deleteTxt}>{t('common.delete')}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+const dc = StyleSheet.create({
+  overlay:       { flex: 1, backgroundColor: 'rgba(28,28,58,0.55)', alignItems: 'center', justifyContent: 'center', padding: 32 },
+  card:          { backgroundColor: '#fff', borderRadius: 28, padding: 28, alignItems: 'center', width: '100%', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 20, elevation: 10 },
+  iconWrap:      { position: 'relative', marginBottom: 16 },
+  sadBadge:      { position: 'absolute', bottom: -4, right: -4, width: 24, height: 24, borderRadius: 12, backgroundColor: '#FEF2F2', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  sadEmoji:      { fontSize: 13 },
+  title:         { fontSize: 18, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginBottom: 8 },
+  body:          { fontSize: 13, color: Colors.midGray, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
+  btnRow:        { flexDirection: 'row', gap: 12, width: '100%' },
+  cancelBtn:     { flex: 1, borderRadius: 16, borderWidth: 2, borderColor: Colors.primaryPink, paddingVertical: 14, alignItems: 'center', backgroundColor: Colors.softPink },
+  cancelTxt:     { fontSize: 14, fontWeight: '800', color: Colors.primaryPink },
+  deleteBtn:     { flex: 1, borderRadius: 16, overflow: 'hidden' },
+  deleteBtnGrad: { flexDirection: 'row', gap: 6, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
+  deleteTxt:     { fontSize: 14, fontWeight: '800', color: '#fff' },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Timer Timeline — pause/resume dot track shown below the breastfeed timer
+// ─────────────────────────────────────────────────────────────────────────────
+function TimerTimeline({ timerStartedAt, pauseIntervals, activeSeconds }: {
+  timerStartedAt: string;
+  pauseIntervals: PauseInterval[];
+  activeSeconds:  number;
+}) {
+  const totalWallSecs = Math.max(
+    1,
+    Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000),
+  );
+  if (totalWallSecs < 5) return null;
+
+  const trackW = W - PAD * 2 - 48;
+
+  function frac(isoDate: string) {
+    const secs = Math.floor((new Date(isoDate).getTime() - new Date(timerStartedAt).getTime()) / 1000);
+    return Math.min(Math.max(secs / totalWallSecs, 0), 1);
+  }
+
+  return (
+    <View style={ttl.wrap}>
+      <View style={[ttl.track, { width: trackW }]}>
+        {/* Start dot */}
+        <View style={[ttl.dot, ttl.dotStart, { left: 0 }]}>
+          <Text style={[ttl.lbl, { left: -8 }]}>0:00</Text>
+        </View>
+
+        {/* Pause / Resume dots */}
+        {pauseIntervals.map((interval, idx) => {
+          const pl = frac(interval.pausedAt) * trackW;
+          return (
+            <React.Fragment key={idx}>
+              <View style={[ttl.dot, ttl.dotPause, { left: pl }]}>
+                <Text style={[ttl.lbl, ttl.lblGold, { left: -18 }]}>
+                  ⏸{formatTimerMark(interval.pausedAt, timerStartedAt)}
+                </Text>
+              </View>
+              {interval.resumedAt && (
+                <View style={[ttl.dot, ttl.dotResume, { left: frac(interval.resumedAt) * trackW }]}>
+                  <Text style={[ttl.lbl, ttl.lblMint, { left: -16 }]}>
+                    ▶{formatTimerMark(interval.resumedAt, timerStartedAt)}
+                  </Text>
+                </View>
+              )}
+            </React.Fragment>
+          );
+        })}
+
+        {/* Current position */}
+        <View style={[ttl.dot, ttl.dotCurrent, { left: trackW }]}>
+          <Text style={[ttl.lbl, ttl.lblPink, { left: -10 }]}>
+            {Math.floor(activeSeconds / 60).toString().padStart(2, '0')}:
+            {(activeSeconds % 60).toString().padStart(2, '0')}
+          </Text>
+        </View>
+      </View>
+      <Text style={ttl.activeLbl}>Active nursing: {formatDuration(Math.max(1, Math.round(activeSeconds / 60)))}</Text>
+    </View>
+  );
+}
+const ttl = StyleSheet.create({
+  wrap:       { marginTop: 10, marginBottom: 6, paddingHorizontal: 12 },
+  track:      { height: 4, backgroundColor: Colors.softPink, borderRadius: 2, position: 'relative', marginBottom: 28 },
+  dot:        { position: 'absolute', top: -6, width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: '#fff' },
+  dotStart:   { backgroundColor: Colors.mint },
+  dotPause:   { backgroundColor: Colors.gold },
+  dotResume:  { backgroundColor: Colors.mint },
+  dotCurrent: { backgroundColor: Colors.primaryPink },
+  lbl:        { position: 'absolute', top: 18, fontSize: 8, color: Colors.midGray, fontWeight: '700', width: 36, textAlign: 'center' },
+  lblGold:    { color: Colors.gold, width: 46 },
+  lblMint:    { color: Colors.mint, width: 42 },
+  lblPink:    { color: Colors.primaryPink, width: 36 },
+  activeLbl:  { fontSize: 10, color: Colors.midGray, fontWeight: '700', textAlign: 'center', marginTop: 4 },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Per-Feed Insight Card — shown after saving a feed
+// ─────────────────────────────────────────────────────────────────────────────
+function PerFeedInsightCard({ insight, onDismiss }: {
+  insight:   FeedInsight;
+  onDismiss: () => void;
+}) {
+  const bgMap: Record<FeedInsight['type'], [string, string]> = {
+    good:    [Colors.softMint, '#D1FAE5'],
+    tip:     [Colors.softGold, '#FEF3C7'],
+    warning: ['#FEF2F2', '#FEE2E2'],
+  };
+  const colorMap: Record<FeedInsight['type'], string> = {
+    good: Colors.mint, tip: Colors.gold, warning: '#EF4444',
+  };
+  const emojiMap: Record<FeedInsight['type'], string> = {
+    good: '✅', tip: '💡', warning: '⚠️',
+  };
+  const tc = colorMap[insight.type];
+  return (
+    <LinearGradient colors={bgMap[insight.type]} style={pf.card} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+      <View style={pf.row}>
+        <Text style={pf.emoji}>{emojiMap[insight.type]}</Text>
+        <View style={pf.body}>
+          <Text style={[pf.headline, { color: tc }]}>{insight.headline}</Text>
+          <Text style={pf.detail}>{insight.detail}</Text>
+        </View>
+        <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={pf.dismiss}>✕</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={pf.source}>Source: {insight.source}</Text>
+    </LinearGradient>
+  );
+}
+const pf = StyleSheet.create({
+  card:     { marginHorizontal: PAD, borderRadius: 18, padding: 14, marginBottom: 4 },
+  row:      { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  emoji:    { fontSize: 20, marginTop: 2 },
+  body:     { flex: 1 },
+  headline: { fontSize: 13, fontWeight: '800', marginBottom: 4 },
+  detail:   { fontSize: 12, color: Colors.dark, lineHeight: 18, fontWeight: '500' },
+  source:   { fontSize: 10, color: Colors.midGray, fontWeight: '600', marginTop: 8, fontStyle: 'italic' },
+  dismiss:  { fontSize: 13, color: Colors.midGray, fontWeight: '700' },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Daily AI Summary Card — WHO-based analysis of today's feeding pattern
+// ─────────────────────────────────────────────────────────────────────────────
+function DailySummaryCard({ todayEntries, childAgeMonths, childName }: {
+  todayEntries:   FeedingEntry[];
+  childAgeMonths: number;
+  childName:      string;
+}) {
+  const { t } = useTranslation();
+  const [expanded, setExpanded]     = useState(false);
+  const [claudeText, setClaudeText] = useState<string | null>(null);
+  const [loading, setLoading]       = useState(false);
+
+  const summary = useMemo(
+    () => analyzeDailyFeeding(todayEntries, childAgeMonths, childName),
+    [todayEntries.length, childAgeMonths, childName],
+  );
+
+  // Try Claude API when there are >= 2 feeds (don't hammer on every second)
+  useEffect(() => {
+    if (todayEntries.length < 2) return;
+    setLoading(true);
+    getClaudeDailySummary(summary, childName, childAgeMonths)
+      .then(setClaudeText)
+      .finally(() => setLoading(false));
+  }, [todayEntries.length]);
+
+  const scoreColor = { great: Colors.mint, good: Colors.gold, needs_attention: Colors.primaryPink }[summary.overallScore];
+
+  if (todayEntries.length === 0) return null;
+
+  return (
+    <View style={ds.card}>
+      <TouchableOpacity style={ds.headerRow} onPress={() => setExpanded(!expanded)} activeOpacity={0.8}>
+        <View style={[ds.dot, { backgroundColor: scoreColor }]} />
+        <Text style={ds.line} numberOfLines={2}>
+          {loading ? 'Ate AI is analyzing...' : (claudeText?.split('\n')[0] ?? summary.summaryLine)}
+        </Text>
+        <Text style={ds.chevron}>{expanded ? '▲' : '▽'}</Text>
+      </TouchableOpacity>
+
+      {expanded && (
+        <View style={ds.body}>
+          {summary.insights.map((ins, idx) => {
+            const tc = ins.type === 'good' ? Colors.mint : ins.type === 'tip' ? Colors.gold : '#EF4444';
+            return (
+              <View key={idx} style={ds.insightRow}>
+                <Text style={ds.insightEmoji}>{ins.type === 'good' ? '✅' : ins.type === 'tip' ? '💡' : '⚠️'}</Text>
+                <View style={ds.insightBody}>
+                  <Text style={[ds.insightHead, { color: tc }]}>{ins.headline}</Text>
+                  <Text style={ds.insightDetail}>{ins.detail}</Text>
+                  <Text style={ds.insightSource}>— {ins.source}</Text>
+                </View>
+              </View>
+            );
+          })}
+
+          {claudeText && !loading && (
+            <View style={ds.claudeBox}>
+              <Text style={ds.claudeLabel}>🤖 Ate AI</Text>
+              <Text style={ds.claudeText}>{claudeText}</Text>
+            </View>
+          )}
+
+          <Text style={ds.disclaimer}>{t('feeding.ai_disclaimer')}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+const ds = StyleSheet.create({
+  card:          { marginHorizontal: PAD, backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  headerRow:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dot:           { width: 10, height: 10, borderRadius: 5 },
+  line:          { flex: 1, fontSize: 13, fontWeight: '700', color: Colors.dark, lineHeight: 19 },
+  chevron:       { fontSize: 12, color: Colors.midGray },
+  body:          { marginTop: 12, gap: 10 },
+  insightRow:    { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
+  insightEmoji:  { fontSize: 16, marginTop: 1 },
+  insightBody:   { flex: 1 },
+  insightHead:   { fontSize: 12, fontWeight: '800', marginBottom: 2 },
+  insightDetail: { fontSize: 11, color: Colors.midGray, lineHeight: 17, fontWeight: '500' },
+  insightSource: { fontSize: 9, color: Colors.midGray, fontStyle: 'italic', marginTop: 2 },
+  claudeBox:     { backgroundColor: Colors.softPink, borderRadius: 12, padding: 10, marginTop: 4 },
+  claudeLabel:   { fontSize: 10, fontWeight: '800', color: Colors.primaryPink, textTransform: 'uppercase', marginBottom: 4 },
+  claudeText:    { fontSize: 12, color: Colors.dark, lineHeight: 18, fontWeight: '500', fontStyle: 'italic' },
+  disclaimer:    { fontSize: 10, color: Colors.midGray, fontStyle: 'italic', lineHeight: 15, marginTop: 4 },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Add / Edit Feed Modal
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -479,7 +750,7 @@ interface ModalProps {
   lastFeed:       FeedingEntry | null;
   allEntries:     FeedingEntry[];
   onClose:        () => void;
-  onSaved:        () => void;
+  onSaved:        (entry: FeedingEntry) => void;
 }
 
 function AddFeedModal({
@@ -487,7 +758,11 @@ function AddFeedModal({
   allergies, lastFeed, allEntries, onClose, onSaved,
 }: ModalProps) {
   const { t }            = useTranslation();
-  const { addEntry, updateEntry, timerActive, timerStartedAt, timerSide, startTimer, stopTimer } = useFeedingStore();
+  const {
+    addEntry, updateEntry,
+    timerActive, timerStartedAt, timerSide, timerPaused, timerPauseLog,
+    startTimer, stopTimer, pauseTimer, resumeTimer,
+  } = useFeedingStore();
 
   // Tab
   const [tab, setTab] = useState<FeedType>('breastfeed');
@@ -557,21 +832,20 @@ function AddFeedModal({
     }
   }, [visible, editingEntry]);
 
-  // Live timer
+  // Live timer — shows active (non-paused) elapsed seconds
   useEffect(() => {
-    if (timerActive && timerStartedAt) {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerActive && timerStartedAt && !timerPaused) {
       const tick = () => {
-        const secs = Math.floor((Date.now() - new Date(timerStartedAt).getTime()) / 1000);
-        setTimerSeconds(secs);
+        setTimerSeconds(getActiveElapsedSeconds(timerStartedAt, timerPauseLog, timerPaused));
       };
       tick();
       timerRef.current = setInterval(tick, 1000);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+    } else if (!timerActive) {
       setTimerSeconds(0);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [timerActive, timerStartedAt]);
+  }, [timerActive, timerStartedAt, timerPaused, timerPauseLog]);
 
   // Allergen check on food change
   useEffect(() => {
@@ -607,6 +881,7 @@ function AddFeedModal({
     const extra: Partial<FeedingEntry> = tab === 'breastfeed' ? {
       breastSide:      side,
       durationMinutes: durationMins ? parseInt(durationMins, 10) : undefined,
+      pauseIntervals:  timerPauseLog.length > 0 ? timerPauseLog : undefined,
     } : tab === 'bottle' ? {
       milkType,
       formulaBrand: milkType === 'formula' ? (customBrand || formulaBrand || undefined) : undefined,
@@ -632,7 +907,7 @@ function AddFeedModal({
     }
 
     if (timerActive) stopTimer();
-    onSaved();
+    onSaved(entry);
     onClose();
   }
 
@@ -676,7 +951,7 @@ function AddFeedModal({
                   isFirstFood: false,
                 };
                 addEntry(entry);
-                onSaved();
+                onSaved(entry);
                 onClose();
               }}
             >
@@ -775,6 +1050,29 @@ function AddFeedModal({
                     />
                   </View>
                 </View>
+
+                {/* Pause / Resume button — shown while timer is running */}
+                {timerActive && (
+                  <TouchableOpacity
+                    style={[m.pauseBtn, timerPaused && m.resumeBtn]}
+                    onPress={timerPaused ? resumeTimer : pauseTimer}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[m.pauseBtnTxt, timerPaused && m.resumeBtnTxt]}>
+                      {timerPaused ? `▶ ${t('feeding.timer_resume')}` : `⏸ ${t('feeding.timer_pause')}`}
+                    </Text>
+                    {timerPaused && <Text style={m.pausedBadge}>{t('feeding.timer_paused')}</Text>}
+                  </TouchableOpacity>
+                )}
+
+                {/* Timer timeline — pause/resume markers */}
+                {timerActive && timerStartedAt && (
+                  <TimerTimeline
+                    timerStartedAt={timerStartedAt}
+                    pauseIntervals={timerPauseLog}
+                    activeSeconds={timerSeconds}
+                  />
+                )}
               </View>
             )}
 
@@ -1018,6 +1316,11 @@ const m = StyleSheet.create({
   timerRow:       { flexDirection: 'row', gap: 10, alignItems: 'center' },
   timerBtn:       { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 14, borderWidth: 2, borderColor: Colors.primaryPink, paddingVertical: 9, paddingHorizontal: 14, flex: 1, justifyContent: 'center' },
   timerBtnTxt:    { fontSize: 13, fontWeight: '700', color: Colors.primaryPink },
+  pauseBtn:       { borderRadius: 14, borderWidth: 2, borderColor: Colors.gold, backgroundColor: Colors.softGold, paddingVertical: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  resumeBtn:      { borderColor: Colors.mint, backgroundColor: Colors.softMint },
+  pauseBtnTxt:    { fontSize: 13, fontWeight: '800', color: '#92400E' },
+  resumeBtnTxt:   { color: '#065F46' },
+  pausedBadge:    { fontSize: 10, fontWeight: '700', color: Colors.midGray, backgroundColor: Colors.softGold, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
   durInput:       { width: 80, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, alignItems: 'center' },
   input:          { borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark, backgroundColor: '#FAFAFA' },
   notesInput:     { minHeight: 72, textAlignVertical: 'top' },
@@ -1119,9 +1422,11 @@ export default function FeedingLogScreen() {
   const { activeChild } = useChildStore();
   const { entries, deleteEntry, timerActive } = useFeedingStore();
 
-  const [filter, setFilter]         = useState<'today' | 'week' | 'month'>('today');
-  const [modalVisible, setModal]    = useState(false);
-  const [editingEntry, setEditing]  = useState<FeedingEntry | null>(null);
+  const [filter, setFilter]               = useState<'today' | 'week' | 'month'>('today');
+  const [modalVisible, setModal]          = useState(false);
+  const [editingEntry, setEditing]        = useState<FeedingEntry | null>(null);
+  const [deleteTarget, setDeleteTarget]   = useState<FeedingEntry | null>(null);
+  const [lastSavedInsight, setLastSavedInsight] = useState<FeedInsight | null>(null);
 
   const childId    = activeChild?.id ?? '';
   const childName  = activeChild ? getChildDisplayName(activeChild) : 'Baby';
@@ -1161,6 +1466,14 @@ export default function FeedingLogScreen() {
 
   const openAdd  = useCallback(() => { setEditing(null); setModal(true); }, []);
   const openEdit = useCallback((e: FeedingEntry) => { setEditing(e); setModal(true); }, []);
+  const handleRequestDelete  = useCallback((e: FeedingEntry) => setDeleteTarget(e), []);
+  const handleConfirmDelete  = useCallback(() => {
+    if (deleteTarget) { deleteEntry(deleteTarget.id); setDeleteTarget(null); }
+  }, [deleteTarget, deleteEntry]);
+  const handleSavedEntry = useCallback((entry: FeedingEntry) => {
+    const insight = analyzeOneFeed(entry, ageMonths);
+    if (insight) setLastSavedInsight(insight);
+  }, [ageMonths]);
 
   // Expose in dev for browser preview testing
   useEffect(() => {
@@ -1235,6 +1548,20 @@ export default function FeedingLogScreen() {
           childName={childName}
         />
 
+        {/* Per-feed insight card — appears after saving a feed */}
+        {lastSavedInsight && (
+          <PerFeedInsightCard insight={lastSavedInsight} onDismiss={() => setLastSavedInsight(null)} />
+        )}
+
+        {/* Daily AI summary card */}
+        {filter === 'today' && (
+          <DailySummaryCard
+            todayEntries={todayEntries}
+            childAgeMonths={ageMonths}
+            childName={childName}
+          />
+        )}
+
         {/* Daily timeline (today only) */}
         {filter === 'today' && <DailyTimeline entries={todayEntries} />}
 
@@ -1261,7 +1588,7 @@ export default function FeedingLogScreen() {
                 {data.map((entry, idx) => (
                   <View key={entry.id}>
                     {idx > 0 && <View style={scr.divider} />}
-                    <FeedEntryRow entry={entry} onEdit={openEdit} onDelete={deleteEntry} />
+                    <FeedEntryRow entry={entry} onEdit={openEdit} onRequestDelete={handleRequestDelete} />
                   </View>
                 ))}
               </View>
@@ -1292,7 +1619,15 @@ export default function FeedingLogScreen() {
         lastFeed={lastFeed}
         allEntries={entries}
         onClose={() => setModal(false)}
-        onSaved={() => {}}
+        onSaved={handleSavedEntry}
+      />
+
+      {/* Delete confirmation modal */}
+      <DeleteConfirmModal
+        visible={!!deleteTarget}
+        feedType={deleteTarget?.feedType ?? null}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
       />
     </View>
   );
