@@ -1,12 +1,8 @@
 import { useEffect } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity,
-  StyleSheet, Image, Modal, Dimensions,
+  StyleSheet, Image, Dimensions,
 } from 'react-native';
-import Animated, {
-  useSharedValue, withSpring, withTiming, withDelay,
-  withRepeat, withSequence, useAnimatedStyle,
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 
@@ -32,121 +28,12 @@ const DEFAULT_AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// ── Sparkle positions ──────────────────────────────────────────────────────────
-
-const SPARKLES = [
-  { x: W * 0.07, y: H * 0.10, delay: 80,  emoji: '✨' },
-  { x: W * 0.82, y: H * 0.08, delay: 260, emoji: '🌟' },
-  { x: W * 0.03, y: H * 0.46, delay: 170, emoji: '✨' },
-  { x: W * 0.87, y: H * 0.40, delay: 350, emoji: '⭐' },
-  { x: W * 0.20, y: H * 0.73, delay: 210, emoji: '✨' },
-  { x: W * 0.76, y: H * 0.70, delay: 300, emoji: '🌟' },
-  { x: W * 0.46, y: H * 0.05, delay: 140, emoji: '⭐' },
-  { x: W * 0.62, y: H * 0.82, delay: 230, emoji: '✨' },
-];
-
-// ── Stable sparkle (module-level so it never remounts) ────────────────────────
-
-function SparkleEmoji({ x, y, delay, emoji }: { x: number; y: number; delay: number; emoji: string }) {
-  const opacity = useSharedValue(0);
-  const scale   = useSharedValue(0.3);
-
-  useEffect(() => {
-    opacity.value = withDelay(delay, withRepeat(
-      withSequence(withTiming(1, { duration: 550 }), withTiming(0.1, { duration: 650 })),
-      -1, true,
-    ));
-    scale.value = withDelay(delay, withRepeat(
-      withSequence(withTiming(1.3, { duration: 550 }), withTiming(0.5, { duration: 650 })),
-      -1, true,
-    ));
-  }, []);
-
-  const aStyle = useAnimatedStyle(() => ({
-    opacity:   opacity.value,
-    transform: [{ scale: scale.value }],
-  }));
-
-  return (
-    <Animated.Text style={[wm.sparkle, { left: x, top: y }, aStyle]}>
-      {emoji}
-    </Animated.Text>
-  );
-}
-
-// ── Welcome Modal ─────────────────────────────────────────────────────────────
-// Displayed as a full-screen overlay — avoids any route-navigation issues.
-
-function WelcomeModal({ name, onDismiss }: { name: string; onDismiss: () => void }) {
-  const { t } = useTranslation();
-
-  const emojiScale   = useSharedValue(0);
-  const titleOpacity = useSharedValue(0);
-  const titleY       = useSharedValue(28);
-  const subOpacity   = useSharedValue(0);
-  const subY         = useSharedValue(18);
-
-  useEffect(() => {
-    emojiScale.value   = withSpring(1, { damping: 6, stiffness: 70 });
-    titleOpacity.value = withDelay(400, withTiming(1, { duration: 700 }));
-    titleY.value       = withDelay(400, withTiming(0, { duration: 700 }));
-    subOpacity.value   = withDelay(900, withTiming(1, { duration: 600 }));
-    subY.value         = withDelay(900, withTiming(0, { duration: 600 }));
-
-    const timer = setTimeout(onDismiss, 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const emojiStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: emojiScale.value }],
-  }));
-  const titleStyle = useAnimatedStyle(() => ({
-    opacity: titleOpacity.value, transform: [{ translateY: titleY.value }],
-  }));
-  const subStyle = useAnimatedStyle(() => ({
-    opacity: subOpacity.value, transform: [{ translateY: subY.value }],
-  }));
-
-  return (
-    <LinearGradient
-      colors={['#FFE4EE', '#FFF8E8', '#FFE4EE']}
-      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-      style={wm.screen}
-    >
-      {SPARKLES.map((sp, i) => (
-        <SparkleEmoji key={i} x={sp.x} y={sp.y} delay={sp.delay} emoji={sp.emoji} />
-      ))}
-
-      <View style={wm.content}>
-        <Animated.Text style={[wm.babyEmoji, emojiStyle]}>👶</Animated.Text>
-
-        <View style={wm.flowerRow}>
-          <Text style={wm.flowerEmoji}>🌸</Text>
-          <Text style={wm.flowerEmoji}>🍼</Text>
-          <Text style={wm.flowerEmoji}>🌸</Text>
-        </View>
-
-        <Animated.Text style={[wm.title, titleStyle]}>
-          {t('welcome.title', { name })}
-        </Animated.Text>
-
-        <Animated.Text style={[wm.subtitle, subStyle]}>
-          {t('welcome.subtitle')}
-        </Animated.Text>
-      </View>
-
-      <TouchableOpacity style={wm.skipBtn} onPress={onDismiss} activeOpacity={0.75}>
-        <Text style={wm.skipText}>{t('welcome.skip')}</Text>
-      </TouchableOpacity>
-    </LinearGradient>
-  );
-}
 
 // ── Home Screen ───────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
   const { t }                                         = useTranslation();
-  const { activeChild, showWelcomeModal, clearWelcomeModal } = useChildStore();
+  const { activeChild } = useChildStore();
 
   const hour     = new Date().getHours();
   const greeting =
@@ -171,20 +58,6 @@ export default function HomeScreen() {
 
   return (
     <View style={s.screen}>
-
-      {/* ── Welcome Modal overlay (shown after first child save) ── */}
-      <Modal
-        visible={showWelcomeModal}
-        transparent={false}
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={clearWelcomeModal}
-      >
-        <WelcomeModal
-          name={babyName || 'Baby'}
-          onDismiss={clearWelcomeModal}
-        />
-      </Modal>
 
       {/* ── Child Switcher ── */}
       <ChildSwitcher />
@@ -407,34 +280,3 @@ const s = StyleSheet.create({
   featureLabel: { fontSize: 11, fontWeight: '700', color: Colors.primaryPink, textAlign: 'center', lineHeight: 15 },
 });
 
-// ── Welcome Modal Styles ───────────────────────────────────────────────────────
-
-const wm = StyleSheet.create({
-  screen: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
-  sparkle: { position: 'absolute', fontSize: 22 },
-
-  content: { alignItems: 'center', paddingHorizontal: 36 },
-
-  babyEmoji: { fontSize: 96, marginBottom: 8 },
-
-  flowerRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
-  flowerEmoji: { fontSize: 22 },
-
-  title: {
-    fontSize: 30, fontWeight: '800', color: Colors.dark,
-    textAlign: 'center', marginBottom: 14, lineHeight: 38,
-  },
-  subtitle: {
-    fontSize: 16, color: Colors.midGray,
-    textAlign: 'center', lineHeight: 26, paddingHorizontal: 8,
-  },
-
-  skipBtn: {
-    position: 'absolute', bottom: 52,
-    paddingHorizontal: 28, paddingVertical: 12,
-    borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1.5, borderColor: Colors.primaryPink,
-  },
-  skipText: { color: Colors.primaryPink, fontWeight: '700', fontSize: 14 },
-});
