@@ -34,6 +34,10 @@ import {
   useChildStore, Child,
   getChildDisplayName, getChildAgeVerbose,
 } from '../../store/childStore';
+import {
+  useFeedingStore,
+  getLastFeed, getTodayEntries, timeAgoShort,
+} from '../../store/feedingStore';
 
 const { width: W } = Dimensions.get('window');
 const PAD      = 16;
@@ -441,13 +445,6 @@ function HeroBanner({ child }: { child: Child }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Quick Stats Strip — 4 chips with kawaii SVG icons
 // ─────────────────────────────────────────────────────────────────────────────
-const QS_DATA = [
-  { id: 'fed',     label: 'Last Fed',     value: '—',    accent: Colors.primaryPink },
-  { id: 'sleep',   label: 'Sleep Today',  value: '—',    accent: '#7C3AED'          },
-  { id: 'vaccine', label: 'Next Vaccine', value: '—',    accent: Colors.blue        },
-  { id: 'weight',  label: 'Weight',       value: '— kg', accent: Colors.mint        },
-] as const;
-
 function QsIcon({ id, size }: { id: string; size: number }) {
   if (id === 'fed')     return <IconBottle  size={size} />;
   if (id === 'sleep')   return <IconMoon    size={size} />;
@@ -456,22 +453,47 @@ function QsIcon({ id, size }: { id: string; size: number }) {
 }
 
 function QuickStatsStrip() {
+  const { t }           = useTranslation();
+  const { activeChild } = useChildStore();
+  const { entries }     = useFeedingStore();
+  const childId         = activeChild?.id ?? '';
+
+  const lastFeed    = getLastFeed(entries, childId);
+  const todayFeeds  = getTodayEntries(entries, childId);
+  const lastFedVal  = lastFeed ? timeAgoShort(lastFeed.startedAt) : '—';
+  const feedsToday  = todayFeeds.length > 0 ? `${todayFeeds.length}x today` : '—';
+
+  const weight = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '— kg';
+
+  const QS_DATA = [
+    { id: 'fed',     label: t('home.last_fed'),     value: lastFedVal,  accent: Colors.primaryPink, sub: feedsToday },
+    { id: 'sleep',   label: t('home.sleep_today'),  value: '—',         accent: '#7C3AED',          sub: '' },
+    { id: 'vaccine', label: t('home.next_vaccine'), value: '—',         accent: Colors.blue,        sub: '' },
+    { id: 'weight',  label: t('home.weight'),       value: weight,      accent: Colors.mint,        sub: '' },
+  ];
+
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={qs.row}
     >
-      {QS_DATA.map(({ id, label, value, accent }) => (
-        <View key={id} style={[qs.chip, { borderLeftColor: accent }]}>
+      {QS_DATA.map(({ id, label, value, accent, sub }) => (
+        <TouchableOpacity
+          key={id}
+          style={[qs.chip, { borderLeftColor: accent }]}
+          onPress={() => id === 'fed' ? router.push('/feeding-log') : undefined}
+          activeOpacity={id === 'fed' ? 0.7 : 1}
+        >
           <View style={[qs.iconWrap, { backgroundColor: accent + '22' }]}>
             <QsIcon id={id} size={28} />
           </View>
           <View>
             <Text style={qs.chipLabel}>{label}</Text>
             <Text style={[qs.chipValue, { color: accent }]}>{value}</Text>
+            {!!sub && <Text style={[qs.chipSub, { color: accent }]}>{sub}</Text>}
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );
@@ -600,6 +622,9 @@ function FeatureIconGrid() {
             key={id}
             style={{ width: FEAT_W }}
             activeOpacity={0.82}
+            onPress={() => {
+              if (id === 'feeding_log') router.push('/feeding-log');
+            }}
           >
             <LinearGradient
               colors={gradColors}
@@ -836,6 +861,7 @@ const qs = StyleSheet.create({
   iconWrap:   { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   chipLabel:  { fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginBottom: 3 },
   chipValue:  { fontSize: 15, fontWeight: '800' },
+  chipSub:    { fontSize: 10, fontWeight: '700', marginTop: 1 },
 });
 
 // Growth snapshot

@@ -98,6 +98,11 @@ export const useChildStore = create<ChildStore>((set) => ({
     }),
 }));
 
+// Expose store in dev for browser console testing
+if (typeof __DEV__ !== 'undefined' && __DEV__ && typeof window !== 'undefined') {
+  (window as any).__childStore = useChildStore;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Display name: nickname → firstName → 'Baby' */
