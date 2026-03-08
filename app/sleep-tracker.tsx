@@ -486,6 +486,7 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
 // ─────────────────────────────────────────────────────────────────────────────
 
 function SleepTimeline24h({ entries }: { entries: SleepEntry[] }) {
+  const { t } = useTranslation();
   const W  = 320;
   const H  = 28;
   const completed = entries.filter((e) => !!e.endedAt);
@@ -505,7 +506,7 @@ function SleepTimeline24h({ entries }: { entries: SleepEntry[] }) {
   return (
     <View style={{ marginTop: 10 }}>
       <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginBottom: 4 }}>
-        24H TIMELINE
+        {t('sleep.timeline_label')}
       </Text>
       <Svg width={W} height={H}>
         {/* Background track */}
@@ -589,13 +590,13 @@ function ActiveTimerCard({
       {/* Type badge */}
       <View style={act.typeBadge}>
         <Text style={act.typeBadgeText}>
-          {isNight ? '🌙 Night Sleep' : '☀️ Nap'}
+          {isNight ? `🌙 ${t('sleep.night_sleep')}` : `☀️ ${t('sleep.nap')}`}
         </Text>
       </View>
 
       {/* Big timer */}
       <Text style={act.timerText}>{formatHHMMSS(seconds)}</Text>
-      <Text style={act.startedLabel}>Started at {formatTimePH(startedAt)}</Text>
+      <Text style={act.startedLabel}>{t('sleep.timer_started_at', { time: formatTimePH(startedAt) })}</Text>
 
       {/* Stop button */}
       <TouchableOpacity style={act.stopBtn} onPress={onStop} activeOpacity={0.85}>
@@ -758,22 +759,22 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
       <View style={dsc.statsRow}>
         <View style={dsc.statItem}>
           <Text style={dsc.statVal}>{summary.totalHours.toFixed(1)}h</Text>
-          <Text style={dsc.statLbl}>Total</Text>
+          <Text style={dsc.statLbl}>{t('sleep.stat_total')}</Text>
         </View>
         <View style={dsc.statDivider} />
         <View style={dsc.statItem}>
           <Text style={dsc.statVal}>{summary.targetMin}–{summary.targetMax}h</Text>
-          <Text style={dsc.statLbl}>WHO Target</Text>
+          <Text style={dsc.statLbl}>{t('sleep.who_target')}</Text>
         </View>
         <View style={dsc.statDivider} />
         <View style={dsc.statItem}>
           <Text style={dsc.statVal}>{summary.napCount}</Text>
-          <Text style={dsc.statLbl}>Naps</Text>
+          <Text style={dsc.statLbl}>{t('sleep.summary.nap_count')}</Text>
         </View>
         <View style={dsc.statDivider} />
         <View style={dsc.statItem}>
           <Text style={dsc.statVal}>{formatSleepDuration(summary.longestStretchMinutes)}</Text>
-          <Text style={dsc.statLbl}>Longest</Text>
+          <Text style={dsc.statLbl}>{t('sleep.stat_longest')}</Text>
         </View>
       </View>
 
@@ -781,7 +782,7 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
       {summary.sleepDebtMinutes < 0 && (
         <View style={dsc.debtRow}>
           <Text style={dsc.debtText}>
-            💤 Short by {formatSleepDuration(Math.abs(summary.sleepDebtMinutes))} today — try an earlier bedtime
+            {t('sleep.debt_short', { duration: formatSleepDuration(Math.abs(summary.sleepDebtMinutes)) })}
           </Text>
         </View>
       )}
@@ -804,12 +805,12 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
           {/* AI narrative */}
           {loading && (
             <View style={dsc.aiRow}>
-              <Text style={dsc.aiLoading}>✨ Ate AI is thinking…</Text>
+              <Text style={dsc.aiLoading}>{t('sleep.ai_thinking')}</Text>
             </View>
           )}
           {aiText && (
             <View style={dsc.aiRow}>
-              <Text style={dsc.aiLabel}>✨ Ate AI says:</Text>
+              <Text style={dsc.aiLabel}>{t('sleep.ai_says')}</Text>
               <Text style={dsc.aiText}>{aiText}</Text>
             </View>
           )}
@@ -870,9 +871,9 @@ function SleepEntryRow({ entry, onRequestDelete }: { entry: SleepEntry; onReques
     entry.quality === 'restless'         ? Colors.softGold  :
     entry.quality === 'frequent_waking'  ? '#FEE2E2'        : Colors.border;
   const qualityText =
-    entry.quality === 'restful'          ? { color: Colors.mint,  label: '😴 Restful'        } :
-    entry.quality === 'restless'         ? { color: '#92400E',    label: '😕 Restless'        } :
-    entry.quality === 'frequent_waking'  ? { color: '#991B1B',    label: '😣 Frequent Waking' } :
+    entry.quality === 'restful'          ? { color: Colors.mint,  label: t('sleep.quality_restful')   } :
+    entry.quality === 'restless'         ? { color: '#92400E',    label: t('sleep.quality_restless')  } :
+    entry.quality === 'frequent_waking'  ? { color: '#991B1B',    label: t('sleep.quality_frequent')  } :
     null;
 
   return (
@@ -893,7 +894,7 @@ function SleepEntryRow({ entry, onRequestDelete }: { entry: SleepEntry; onReques
         </View>
         <Text style={er.timeRange}>
           {formatTimePH(entry.startedAt)}
-          {entry.endedAt ? ` → ${formatTimePH(entry.endedAt)}` : ' → still sleeping…'}
+          {entry.endedAt ? ` → ${formatTimePH(entry.endedAt)}` : ` ${t('sleep.still_sleeping')}`}
         </Text>
         {qualityText && (
           <View style={[er.qualBadge, { backgroundColor: qualityBg }]}>
@@ -1048,10 +1049,10 @@ function AddSleepModal({ visible, onClose, onSaved, prefillStart, prefillType }:
                 {timerActive ? (
                   <View style={{ alignItems: 'center', gap: 8 }}>
                     <Text style={{ fontSize: 11, color: Colors.lightGray, fontWeight: '700' }}>
-                      SLEEP IN PROGRESS
+                      {t('sleep.timer_active')}
                     </Text>
                     <Text style={mod.timerDisplay}>{formatHHMMSS(timerSeconds)}</Text>
-                    <Text style={mod.timerSub}>Started {formatTimePH(timerStartedAt!)}</Text>
+                    <Text style={mod.timerSub}>{t('sleep.timer_started_at', { time: formatTimePH(timerStartedAt!) })}</Text>
                   </View>
                 ) : (
                   <TouchableOpacity onPress={handleStartTimer} activeOpacity={0.85}>
@@ -1070,10 +1071,10 @@ function AddSleepModal({ visible, onClose, onSaved, prefillStart, prefillType }:
             {/* Prefill timer stop: show start/end recap */}
             {prefillStart && (
               <View style={mod.prefillRow}>
-                <Text style={mod.prefillLabel}>Started</Text>
+                <Text style={mod.prefillLabel}>{t('sleep.start_time')}</Text>
                 <Text style={mod.prefillVal}>{formatTimePH(prefillStart)}</Text>
                 <Text style={mod.prefillArrow}>→</Text>
-                <Text style={mod.prefillLabel}>Now</Text>
+                <Text style={mod.prefillLabel}>{t('sleep.prefill_now')}</Text>
                 <Text style={mod.prefillVal}>{formatTimePH(new Date().toISOString())}</Text>
               </View>
             )}
@@ -1244,7 +1245,7 @@ export default function SleepTrackerScreen() {
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={s.headerTitle}>{t('sleep.title')} 😴</Text>
           {activeChild && (
-            <Text style={s.headerSub}>{childName} · {ageMonths}mo</Text>
+            <Text style={s.headerSub}>{childName} · {t('sleep.age_months', { age: ageMonths })}</Text>
           )}
         </View>
         <TouchableOpacity
@@ -1291,7 +1292,7 @@ export default function SleepTrackerScreen() {
                 <Text style={s.startSleepEmoji}>🌙</Text>
                 <View>
                   <Text style={s.startSleepText}>{t('sleep.start_sleep')}</Text>
-                  <Text style={s.startSleepSub}>Tap to start tracking</Text>
+                  <Text style={s.startSleepSub}>{t('sleep.tap_to_start')}</Text>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -1309,17 +1310,17 @@ export default function SleepTrackerScreen() {
         <View style={s.statsStrip}>
           <View style={s.statChip}>
             <Text style={s.statChipVal}>{todaySleepH}h</Text>
-            <Text style={s.statChipLbl}>Today</Text>
+            <Text style={s.statChipLbl}>{t('sleep.filters.today')}</Text>
           </View>
           <View style={s.statDivider} />
           <View style={s.statChip}>
             <Text style={s.statChipVal}>{targetMinH}–{targetMinH + 3}h</Text>
-            <Text style={s.statChipLbl}>WHO Target</Text>
+            <Text style={s.statChipLbl}>{t('sleep.who_target')}</Text>
           </View>
           <View style={s.statDivider} />
           <View style={s.statChip}>
             <Text style={s.statChipVal}>{todayEntries.filter((e) => e.sleepType === 'nap').length}</Text>
-            <Text style={s.statChipLbl}>Naps</Text>
+            <Text style={s.statChipLbl}>{t('sleep.summary.nap_count')}</Text>
           </View>
         </View>
 
@@ -1367,7 +1368,7 @@ export default function SleepTrackerScreen() {
           <View style={s.empty}>
             <Text style={{ fontSize: 48 }}>😴</Text>
             <Text style={s.emptyTitle}>{t('sleep.no_entries')}</Text>
-            <Text style={s.emptySub}>Track baby's first snooze by tapping the moon button above.</Text>
+            <Text style={s.emptySub}>{t('sleep.empty_sub')}</Text>
           </View>
         ) : (
           groupedEntries.map(({ header, data }) => (
