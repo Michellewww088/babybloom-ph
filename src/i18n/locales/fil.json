@@ -361,6 +361,21 @@
     "who_target": "Target ng WHO",
     "weekly_chart_title": "Tulog Ngayong Linggo",
     "analytics_title": "Pagsusuri ng Tulog",
+    "chart": {
+      "days_on_target": "araw sa target",
+      "avg_per_day": "avg / araw",
+      "who_range": "target ng WHO",
+      "min_hours": "min {{hours}}h",
+      "legend_on_target": "Nasa target ✓",
+      "legend_almost": "Malapit na",
+      "legend_too_short": "Kulang pa",
+      "legend_nap": "Idlip (itaas)",
+      "guide_title": "Paano basahin:",
+      "guide_line1": "Bawat haligi = kabuuang tulog sa isang araw. Numero sa itaas = kabuuang oras (hal. \"8h\").",
+      "guide_line2": "Madilim = tulog sa gabi · lila sa itaas = idlip sa umaga/hapon.",
+      "guide_line3": "Dilaw na putol-putol na linya = minimum ng WHO ({{hours}}h/araw para sa edad ng sanggol).",
+      "guide_line4": "Berde = mahusay · Dilaw = malapit na · Pula = kailangan pa ng tulog."
+    },
     "ai_summary_label": "Buod ng Tulog Ngayon",
     "ai_disclaimer": "Ang pagsusuring ito ay batay sa mga alituntunin ng WHO at DOH Philippines para sa pangkalahatang sanggunian lamang. Kumonsulta sa inyong Pediatrician para sa mga medikal na alalahanin.",
     "tips": {

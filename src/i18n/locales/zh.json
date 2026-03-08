@@ -361,6 +361,21 @@
     "who_target": "WHO目标",
     "weekly_chart_title": "本周睡眠",
     "analytics_title": "睡眠分析",
+    "chart": {
+      "days_on_target": "天达标",
+      "avg_per_day": "每日均值",
+      "who_range": "WHO范围",
+      "min_hours": "最少{{hours}}小时",
+      "legend_on_target": "已达标 ✓",
+      "legend_almost": "接近目标",
+      "legend_too_short": "睡眠不足",
+      "legend_nap": "小睡（顶部）",
+      "guide_title": "如何读图：",
+      "guide_line1": "每个柱子 = 当天总睡眠。上方数字 = 总小时数（如 8h）。",
+      "guide_line2": "深色 = 夜间睡眠 · 紫色顶部 = 白天小睡。",
+      "guide_line3": "黄色虚线 = WHO最低标准（宝宝年龄对应{{hours}}小时/天）。",
+      "guide_line4": "绿色 = 很好 · 黄色 = 接近目标 · 粉色 = 需要更多睡眠。"
+    },
     "ai_summary_label": "今日睡眠总结",
     "ai_disclaimer": "此分析基于WHO和菲律宾卫生部指南，仅供参考。请咨询您的儿科医生以获取医疗建议。",
     "tips": {

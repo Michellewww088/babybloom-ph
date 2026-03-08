@@ -361,6 +361,21 @@
     "who_target": "WHO Target",
     "weekly_chart_title": "This Week's Sleep",
     "analytics_title": "Sleep Analysis",
+    "chart": {
+      "days_on_target": "days on target",
+      "avg_per_day": "avg / day",
+      "who_range": "WHO range",
+      "min_hours": "min {{hours}}h",
+      "legend_on_target": "On target ✓",
+      "legend_almost": "Almost there",
+      "legend_too_short": "Too short",
+      "legend_nap": "Nap (top)",
+      "guide_title": "How to read:",
+      "guide_line1": "Each bar = one day's total sleep. Number above = total hours (e.g. \"8h\").",
+      "guide_line2": "Dark = night sleep · purple top = daytime naps.",
+      "guide_line3": "Yellow dashed line = WHO minimum ({{hours}}h/day for baby's age).",
+      "guide_line4": "Green = great · Yellow = getting there · Pink = needs more rest."
+    },
     "ai_summary_label": "Today's Sleep Summary",
     "ai_disclaimer": "This analysis is based on WHO and DOH Philippines guidelines for general reference only. Please consult your Pediatrician for medical concerns.",
     "tips": {

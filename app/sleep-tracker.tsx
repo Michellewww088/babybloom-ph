@@ -200,6 +200,7 @@ function IconSunSmall({ size = 18, active = false }: { size?: number; active?: b
 // ─────────────────────────────────────────────────────────────────────────────
 
 function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: number }) {
+  const { t } = useTranslation();
   const W        = 320;
   const H        = 182;
   const PAD_L    = 36;   // Y-axis label room
@@ -271,7 +272,7 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
             </Text>
             <Text style={{ fontSize: 13, color: Colors.lightGray, fontWeight: '600', marginBottom: 2 }}>/7</Text>
           </View>
-          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>days on target</Text>
+          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>{t('sleep.chart.days_on_target')}</Text>
         </View>
 
         <View style={{ width: 1, backgroundColor: '#DDD8F5' }} />
@@ -280,7 +281,7 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
           <Text style={{ fontSize: 24, fontWeight: '800', color: NIGHT_COLOR, lineHeight: 28 }}>
             {avgHoursStr}
           </Text>
-          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>avg / day</Text>
+          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>{t('sleep.chart.avg_per_day')}</Text>
         </View>
 
         <View style={{ width: 1, backgroundColor: '#DDD8F5' }} />
@@ -290,7 +291,7 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
             {targetMin}–{targetMin + 3}
             <Text style={{ fontSize: 13 }}>h</Text>
           </Text>
-          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>WHO range</Text>
+          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>{t('sleep.chart.who_range')}</Text>
         </View>
       </View>
 
@@ -351,7 +352,7 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
             x={W - PAD_R + 4} y={PAD_T + targetY + 4}
             fontSize={9} fill="#92400E"
             textAnchor="start" fontWeight="700"
-          >min {targetMin}h</SvgText>
+          >{t('sleep.chart.min_hours', { hours: targetMin })}</SvgText>
 
           {/* ── Bars ────────────────────────────────────────────────────── */}
           {data.map((day, i) => {
@@ -451,11 +452,11 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
       {/* ── Legend ───────────────────────────────────────────────────────── */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginTop: 6 }}>
         {([
-          { color: Colors.mint,        label: '✓ On target' },
-          { color: Colors.gold,        label: '↑ Almost there' },
-          { color: Colors.primaryPink, label: '↓ Too short' },
-          { color: NAP_COLOR,          label: '🟣 Nap (top)' },
-        ] as const).map(({ color, label }) => (
+          { color: Colors.mint,        label: t('sleep.chart.legend_on_target') },
+          { color: Colors.gold,        label: t('sleep.chart.legend_almost') },
+          { color: Colors.primaryPink, label: t('sleep.chart.legend_too_short') },
+          { color: NAP_COLOR,          label: t('sleep.chart.legend_nap') },
+        ]).map(({ color, label }) => (
           <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: color, opacity: label.includes('Nap') ? 0.75 : 1 }} />
             <Text style={{ fontSize: 10, color: Colors.midGray, fontWeight: '600' }}>{label}</Text>
@@ -469,11 +470,11 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
         padding: 10, marginTop: 10,
       }}>
         <Text style={{ fontSize: 10, color: '#78350F', lineHeight: 16 }}>
-          <Text style={{ fontWeight: '700' }}>📊 How to read: </Text>
-          Each bar = one day's total sleep. The number above is the total hours (e.g. "8h").
-          {'\n'}Dark portion = night sleep · purple top = daytime naps.
-          {'\n'}🎯 Yellow dashed line = WHO minimum ({targetMin}h/day for baby's age).
-          {'\n'}Green = great · Yellow = getting there · Pink = needs more rest.
+          <Text style={{ fontWeight: '700' }}>📊 {t('sleep.chart.guide_title')} </Text>
+          {t('sleep.chart.guide_line1')}
+          {'\n'}{t('sleep.chart.guide_line2')}
+          {'\n'}🎯 {t('sleep.chart.guide_line3', { hours: targetMin })}
+          {'\n'}{t('sleep.chart.guide_line4')}
         </Text>
       </View>
     </View>
