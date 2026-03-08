@@ -18,7 +18,7 @@ import React, { useState, useRef } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal,
   TextInput, StyleSheet, Dimensions, Alert, Platform,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, Share,
 } from 'react-native';
 import Svg, {
   Path, Circle, Line, Polyline,
@@ -415,6 +415,66 @@ function statusIcon(st: string) {
   return '⚠️';
 }
 
+// ─── Demo report builder (no API key required) ────────────────────────────────
+function buildDemoReport(
+  name: string, ageM: number, sex: Sex,
+  wR: ReturnType<typeof getWHOPercentile> | null,
+  hR: ReturnType<typeof getWHOPercentile> | null,
+  hdR: ReturnType<typeof getWHOPercentile> | null,
+  wTrend: string,
+): GrowthReport {
+  const classify = (pct?: number): 'Normal' | 'Watch' | 'Low' | 'High' => {
+    if (pct === undefined) return 'Normal';
+    if (pct >= 15 && pct <= 85) return 'Normal';
+    if (pct >= 5  && pct <= 97) return 'Watch';
+    return pct < 5 ? 'Low' : 'High';
+  };
+  const overall = (classify(wR?.percentile) === 'Normal' && classify(hR?.percentile) === 'Normal') ? 'great' : 'good';
+  const wPct  = wR  ? Math.round(wR.percentile)  : null;
+  const hPct  = hR  ? Math.round(hR.percentile)  : null;
+  const hdPct = hdR ? Math.round(hdR.percentile) : null;
+  const isBF  = ageM < 6;
+  return {
+    overallSummary:
+      `${name} is growing ${overall === 'great' ? 'beautifully' : 'steadily'}! At ${ageM} month${ageM !== 1 ? 's' : ''} old, ` +
+      `${wPct ? `weight is at the ${wPct}th percentile` : 'measurements look good'} — ` +
+      (wTrend.includes('gaining') ? `great weight gain trend, keep up the wonderful feeding routine! 🌟` : `continue regular well-baby checkups to track progress. 💪`),
+    overallStatus: overall,
+    weight: {
+      status: classify(wR?.percentile),
+      explanation: wPct
+        ? `${name}'s weight is at the ${wPct}th percentile — meaning ${wPct} out of 100 babies of the same age and gender weigh less. ` +
+          (wPct >= 15 && wPct <= 85 ? `This is in the healthy range — great news! 🟢` : wPct >= 5 ? `Slightly outside typical range — worth monitoring at next visit. 🟡` : `Please consult your Pediatrician for guidance. 🔴`)
+        : 'No weight recorded yet. Tap + Add to log a measurement.',
+    },
+    height: {
+      status: classify(hR?.percentile),
+      explanation: hPct
+        ? `Height/length is at the ${hPct}th percentile for this age and gender. ` +
+          (hPct >= 15 && hPct <= 85 ? `Growing at a healthy rate according to WHO Multicentre Growth Reference Study! 🟢` : `Check with your Pedia at the next checkup. 🟡`)
+        : 'No height recorded yet. Add it for a complete analysis.',
+    },
+    head: {
+      status: classify(hdR?.percentile),
+      explanation: hdPct
+        ? `Head circumference at the ${hdPct}th percentile is a good sign of brain and cognitive development. ` +
+          (hdPct >= 5 && hdPct <= 97 ? `Within the normal range — brain growth looks on track! 🟢` : `Mention this measurement to your Pediatrician. 🟡`)
+        : 'No head circumference recorded. This helps assess brain development.',
+    },
+    healthInsights:
+      `Overall, ${name}'s growth pattern shows consistent, healthy development. ` +
+      `The measurements suggest ${isBF ? 'breast milk or formula is providing excellent nutrition' : 'complementary feeding is going well alongside breast milk'}. ` +
+      `Regular well-baby checkups every 1–3 months help catch any concerns early and keep vaccinations on schedule.`,
+    parentGuidance: [
+      isBF
+        ? `Continue exclusive breastfeeding — DOH Philippines recommends it for the first 6 months. Breastfeed on demand, 8–12 times per day.`
+        : `At ${ageM} months, offer 3–4 solid meals daily alongside breast milk. Great Philippine superfoods: lugaw, kamote, kalabasa, saging, and malunggay!`,
+      `Track feeding and sleep in BabyBloom PH. For ${ageM}-month-olds, expect ${ageM < 3 ? '14–17' : ageM < 6 ? '12–16' : '12–15'} hours of total sleep per day.`,
+      `Next well-baby checkup: the PPS schedule recommends visits at 2, 4, 6, 9, 12, 15, 18, and 24 months. Your next vaccine may also be due soon — check the Vaccines tab!`,
+    ],
+  };
+}
+
 // ─── AI Growth Analysis ───────────────────────────────────────────────────────
 function AIGrowthSection({ records, childName, ageMonths, sex }: {
   records: GrowthRecord[]; childName: string; ageMonths: number; sex: Sex;
@@ -439,13 +499,18 @@ function AIGrowthSection({ records, childName, ageMonths, sex }: {
     ? (latest.weightKg > prevW ? `gaining well (+${(latest.weightKg - prevW).toFixed(2)}kg since last)` : `slight decrease — monitor`)
     : 'only one measurement';
 
+  const [isDemo,   setIsDemo]  = useState(false);
+
   const doFetch = async () => {
     if (fetched.current) return;
     fetched.current = true;
     setLoad(true);
     const apiKey = (process.env as any).EXPO_PUBLIC_CLAUDE_API_KEY;
-    if (!apiKey) {
-      setRawText('Set EXPO_PUBLIC_CLAUDE_API_KEY in your .env to unlock Ate AI insights! 🌱');
+    if (!apiKey || apiKey === 'your_claude_api_key_here') {
+      // Demo mode — build a report from actual measurements without calling the API
+      await new Promise(r => setTimeout(r, 900)); // brief loading feel
+      setReport(buildDemoReport(childName, ageMonths, sex, wR, hR, hdR, wTrend));
+      setIsDemo(true);
       setLoad(false); return;
     }
 
@@ -560,6 +625,17 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
           {/* ── Structured 4-section report ── */}
           {!load && report && (
             <>
+              {/* Demo badge */}
+              {isDemo && (
+                <View style={aig.demoBadge}>
+                  <Text style={aig.demoIcon}>🤖</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={aig.demoTitle}>Demo Preview</Text>
+                    <Text style={aig.demoSub}>Add <Text style={{ fontWeight: '800' }}>EXPO_PUBLIC_CLAUDE_API_KEY</Text> to .env.local for live Ate AI analysis</Text>
+                  </View>
+                </View>
+              )}
+
               {/* SECTION 1 — Overall Summary */}
               <View style={[aig.overallBanner, { backgroundColor: theme?.bg }]}>
                 <Text style={aig.overallIcon}>{theme?.icon}</Text>
@@ -879,42 +955,90 @@ export default function GrowthAnalysisScreen() {
         {/* Export / Share Report */}
         <TouchableOpacity
           style={ex.btn} activeOpacity={0.8}
-          onPress={() => {
+          onPress={async () => {
+            const dateStr = new Date().toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+            const sep = '─'.repeat(36);
             const lines: string[] = [
-              `📋 BabyBloom PH — Growth Report`,
-              `Baby: ${name}  |  Age: ${ageM} months  |  Gender: ${sex}`,
-              `Date: ${new Date().toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+              `🌸 BabyBloom PH — Growth Report`,
+              sep,
+              `Baby   : ${name}`,
+              `Age    : ${ageM} months`,
+              `Gender : ${sex === 'female' ? 'Girl 💗' : 'Boy 💙'}`,
+              `Date   : ${dateStr}`,
               ``,
-              `── LATEST MEASUREMENTS ──`,
+              `📏 LATEST MEASUREMENTS`,
+              sep,
             ];
-            if (latest?.weightKg) {
-              const r = getWHOPercentile(sex, 'weight', corrected, latest.weightKg);
-              lines.push(`Weight: ${latest.weightKg} kg  |  ${Math.round(r.percentile)}th percentile  (${r.label})`);
+
+            const addMetric = (label: string, val: number | undefined, unit: string, metric: GrowthMetric, dec: number) => {
+              if (!val) return;
+              const r = getWHOPercentile(sex, metric, corrected, val);
+              const zone = r.percentile >= 15 && r.percentile <= 85 ? '🟢 Normal'
+                         : r.percentile >= 5  && r.percentile <= 97 ? '🟡 Monitor'
+                         : '🔴 See Pedia';
+              lines.push(`${label.padEnd(16)}: ${val.toFixed(dec)} ${unit}`);
+              lines.push(`${'Percentile'.padEnd(16)}: ${Math.round(r.percentile)}th  ${zone}`);
+              lines.push(``);
+            };
+            addMetric('Weight',     latest?.weightKg,           'kg', 'weight', 2);
+            addMetric('Height',     latest?.heightCm,           'cm', 'height', 1);
+            addMetric('Head Circ.', latest?.headCircumferenceCm,'cm', 'head',   1);
+
+            if (latest?.measuredAt) {
+              lines.push(`Measured   : ${new Date(latest.measuredAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}`);
             }
-            if (latest?.heightCm) {
-              const r = getWHOPercentile(sex, 'height', corrected, latest.heightCm);
-              lines.push(`Height: ${latest.heightCm} cm  |  ${Math.round(r.percentile)}th percentile  (${r.label})`);
+            lines.push(`Total logs : ${records.length} measurement${records.length !== 1 ? 's' : ''}`);
+
+            if (records.length > 1) {
+              lines.push(``, `📈 GROWTH HISTORY (last ${Math.min(records.length, 5)})`);
+              lines.push(sep);
+              [...records].reverse().slice(0, 5).forEach((r) => {
+                const d = new Date(r.measuredAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+                const parts = [];
+                if (r.weightKg)            parts.push(`${r.weightKg}kg`);
+                if (r.heightCm)            parts.push(`${r.heightCm}cm`);
+                if (r.headCircumferenceCm) parts.push(`HC ${r.headCircumferenceCm}cm`);
+                lines.push(`${d}  |  ${parts.join('  ·  ')}`);
+              });
             }
-            if (latest?.headCircumferenceCm) {
-              const r = getWHOPercentile(sex, 'head', corrected, latest.headCircumferenceCm);
-              lines.push(`Head circ.: ${latest.headCircumferenceCm} cm  |  ${Math.round(r.percentile)}th percentile`);
+
+            lines.push(``, `📊 PERCENTILE GUIDE`);
+            lines.push(sep);
+            lines.push(`🟢 p15–p85  Healthy range`);
+            lines.push(`🟡 p5–p15 or p85–p97  Monitor`);
+            lines.push(`🔴 <p5 or >p97  Consult Pediatrician`);
+            lines.push(``, sep);
+            lines.push(`Generated by BabyBloom PH 🌸`);
+            lines.push(`WHO Multicentre Growth Reference Study standards`);
+            lines.push(`⚕️  This is general information.`);
+            lines.push(`   Please consult your Pedia for medical concerns.`);
+
+            const reportText = lines.join('\n');
+            const title      = `${name}'s Growth Report — BabyBloom PH`;
+
+            if (Platform.OS === 'web') {
+              const nav = navigator as any;
+              if (nav.share) {
+                try { await nav.share({ title, text: reportText }); return; } catch {}
+              }
+              if (nav.clipboard?.writeText) {
+                try {
+                  await nav.clipboard.writeText(reportText);
+                  Alert.alert('✅ Copied!', 'Growth report copied to clipboard.\nPaste it into WhatsApp, Messenger, or email to share with your Pedia!');
+                } catch {
+                  // Clipboard blocked (document not focused) — show inline
+                  Alert.alert(title, reportText, [{ text: 'OK' }]);
+                }
+              } else {
+                Alert.alert(title, reportText, [{ text: 'OK' }]);
+              }
+            } else {
+              try {
+                await Share.share({ title, message: reportText });
+              } catch {
+                Alert.alert(title, reportText, [{ text: 'OK' }]);
+              }
             }
-            if (latest?.measuredAt) lines.push(`Measured on: ${new Date(latest.measuredAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}`);
-            lines.push(``, `Total records: ${records.length}`);
-            lines.push(``, `── PERCENTILE GUIDE ──`);
-            lines.push(`🟢 p15–p85 = Healthy Range`);
-            lines.push(`🟡 p5–p15 or p85–p97 = Monitor`);
-            lines.push(`🔴 <p5 or >p97 = Consult Pediatrician`);
-            lines.push(``, `Generated by BabyBloom PH 🌸  |  WHO MGRS standards`);
-            lines.push(`[This is general information. Please consult your Pedia for medical concerns.]`);
-            Alert.alert(
-              '📄 Growth Report Summary',
-              lines.join('\n'),
-              [
-                { text: 'Copy & Share', onPress: () => Alert.alert('Tip', 'Long-press the text above to copy it, then paste into any messaging app to share with your Pediatrician.') },
-                { text: 'OK', style: 'cancel' },
-              ],
-            );
           }}
         >
           <Text style={ex.txt}>{t('growth.export_pdf')} 📤</Text>
@@ -1003,6 +1127,11 @@ const pl = StyleSheet.create({
 const aig = StyleSheet.create({
   // wrapper card
   wrapper:       { backgroundColor: '#FFFFFF', borderRadius: 20, marginHorizontal: PAD, marginBottom: 12, overflow: 'hidden', shadowColor: '#7C3AED', shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: '#EDE9FE' },
+  // demo badge
+  demoBadge:     { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#F5F3FF', borderRadius: 12, margin: 12, marginBottom: 0, padding: 10, borderWidth: 1, borderColor: '#DDD6FE' },
+  demoIcon:      { fontSize: 22 },
+  demoTitle:     { fontSize: 12, fontWeight: '800', color: '#7C3AED', letterSpacing: 0.5 },
+  demoSub:       { fontSize: 11, color: '#6B7280', marginTop: 1 },
   // collapsible header
   hdrRow:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
   hdrLeft:       { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
