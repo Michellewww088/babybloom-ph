@@ -161,6 +161,12 @@ export default function LoginScreen() {
               >
                 <Text style={[s.devSkipText, { color: Colors.gold }]}>🍼 Dev: Preview Feeding Log</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.devSkip, { borderColor: '#7C3AED' }]}
+                onPress={() => router.replace('/sleep-tracker')}
+              >
+                <Text style={[s.devSkipText, { color: '#7C3AED' }]}>😴 Dev: Preview Sleep Tracker</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>

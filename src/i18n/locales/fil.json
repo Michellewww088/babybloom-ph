@@ -321,6 +321,53 @@
     "months": "buwan",
     "years": "taon",
     "ago": "nakaraang",
-    "unknown": "Hindi alam"
+    "unknown": "Hindi alam",
+    "notes": "Mga Tala"
+  },
+  "sleep": {
+    "title": "Tracker ng Tulog",
+    "add_entry": "Magdagdag ng Tulog",
+    "edit_entry": "I-edit ang Tulog",
+    "no_entries": "Wala pang tala ng tulog 😴",
+    "start_sleep": "Simulan ang Timer ng Tulog",
+    "stop_sleep": "Gising na! ☀️",
+    "timer_mode": "Timer",
+    "manual_mode": "Manual na Pagpasok",
+    "sleep_type": "Uri ng Tulog",
+    "night_sleep": "Gabi",
+    "nap": "Idlip",
+    "quality": "Kalidad ng Tulog",
+    "restful": "Mahimbing",
+    "restless": "Makulimlim",
+    "frequent_waking": "Madalas Gumising",
+    "start_time": "Oras ng Simula",
+    "end_time": "Oras ng Katapusan",
+    "duration": "Tagal",
+    "notes_placeholder": "Mga tala tungkol sa tulog na ito…",
+    "save": "I-save ang Tulog",
+    "delete_title": "Burahin ang talang ito ng tulog?",
+    "delete_body": "Permanenteng matatanggal ang talang ito. Hindi ito maaaring ibalik.",
+    "filters": {
+      "today": "Ngayon",
+      "week": "Linggong Ito",
+      "month": "Buwang Ito"
+    },
+    "summary": {
+      "total": "Kabuuang Tulog",
+      "average": "Pang-araw-araw",
+      "longest": "Pinakamahaba",
+      "nap_count": "Idlip"
+    },
+    "who_target": "Target ng WHO",
+    "weekly_chart_title": "Tulog Ngayong Linggo",
+    "analytics_title": "Pagsusuri ng Tulog",
+    "ai_summary_label": "Buod ng Tulog Ngayon",
+    "ai_disclaimer": "Ang pagsusuring ito ay batay sa mga alituntunin ng WHO at DOH Philippines para sa pangkalahatang sanggunian lamang. Kumonsulta sa inyong Pediatrician para sa mga medikal na alalahanin.",
+    "tips": {
+      "0_3": "Ang mga bagong silang ay nangangailangan ng 14–17 oras ng tulog bawat araw (WHO).",
+      "4_11": "Sa edad na ito, kailangan ng 12–15 oras bawat araw kasama ang 2–3 na idlip.",
+      "12_23": "Ang mga batang mag-iisang taon ay nangangailangan ng 11–14 oras. Isang idlip sa tanghali ang ideal.",
+      "24_plus": "Ang inyong anak ay nangangailangan ng 11–14 oras ng tulog bawat araw."
+    }
   }
 }

@@ -321,6 +321,53 @@
     "months": "个月",
     "years": "岁",
     "ago": "前",
-    "unknown": "未知"
+    "unknown": "未知",
+    "notes": "备注"
+  },
+  "sleep": {
+    "title": "睡眠追踪",
+    "add_entry": "添加睡眠记录",
+    "edit_entry": "编辑睡眠记录",
+    "no_entries": "还没有睡眠记录 😴",
+    "start_sleep": "开始睡眠计时",
+    "stop_sleep": "醒来啦！☀️",
+    "timer_mode": "计时器",
+    "manual_mode": "手动输入",
+    "sleep_type": "睡眠类型",
+    "night_sleep": "夜间睡眠",
+    "nap": "午睡/小睡",
+    "quality": "睡眠质量",
+    "restful": "安稳",
+    "restless": "不安稳",
+    "frequent_waking": "频繁醒来",
+    "start_time": "开始时间",
+    "end_time": "结束时间",
+    "duration": "时长",
+    "notes_placeholder": "关于这次睡眠的备注…",
+    "save": "保存睡眠记录",
+    "delete_title": "删除这条睡眠记录？",
+    "delete_body": "此记录将被永久删除，无法恢复。",
+    "filters": {
+      "today": "今天",
+      "week": "本周",
+      "month": "本月"
+    },
+    "summary": {
+      "total": "总睡眠",
+      "average": "每日平均",
+      "longest": "最长连续",
+      "nap_count": "小睡次数"
+    },
+    "who_target": "WHO目标",
+    "weekly_chart_title": "本周睡眠",
+    "analytics_title": "睡眠分析",
+    "ai_summary_label": "今日睡眠总结",
+    "ai_disclaimer": "此分析基于WHO和菲律宾卫生部指南，仅供参考。请咨询您的儿科医生以获取医疗建议。",
+    "tips": {
+      "0_3": "新生儿每天需要14–17小时的睡眠（WHO标准）。",
+      "4_11": "这个年龄段每天需要12–15小时睡眠，包括2–3次小睡。",
+      "12_23": "幼儿需要11–14小时睡眠。午后一次小睡最理想。",
+      "24_plus": "您的孩子每天需要11–14小时睡眠。规律的就寝时间很重要。"
+    }
   }
 }

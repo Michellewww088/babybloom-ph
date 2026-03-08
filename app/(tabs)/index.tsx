@@ -38,6 +38,10 @@ import {
   useFeedingStore,
   getLastFeed, getTodayEntries, timeAgoShort,
 } from '../../store/feedingStore';
+import {
+  useSleepStore,
+  formatSleepDuration,
+} from '../../store/sleepStore';
 
 const { width: W } = Dimensions.get('window');
 const PAD      = 16;
@@ -456,6 +460,7 @@ function QuickStatsStrip() {
   const { t }           = useTranslation();
   const { activeChild } = useChildStore();
   const { entries }     = useFeedingStore();
+  const sleepStore      = useSleepStore();
   const childId         = activeChild?.id ?? '';
 
   const lastFeed    = getLastFeed(entries, childId);
@@ -463,11 +468,15 @@ function QuickStatsStrip() {
   const lastFedVal  = lastFeed ? timeAgoShort(lastFeed.startedAt) : '—';
   const feedsToday  = todayFeeds.length > 0 ? `${todayFeeds.length}x today` : '—';
 
-  const weight = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '— kg';
+  const weight        = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '— kg';
+  const sleepMins     = sleepStore.getTodaySleepMinutes(childId);
+  const sleepVal      = sleepMins > 0 ? formatSleepDuration(sleepMins) : '—';
+  const sleepNaps     = sleepStore.getTodayEntries(childId).filter((e) => e.sleepType === 'nap').length;
+  const sleepSub      = sleepNaps > 0 ? `${sleepNaps} nap${sleepNaps > 1 ? 's' : ''}` : '';
 
   const QS_DATA = [
     { id: 'fed',     label: t('home.last_fed'),     value: lastFedVal,  accent: Colors.primaryPink, sub: feedsToday },
-    { id: 'sleep',   label: t('home.sleep_today'),  value: '—',         accent: '#7C3AED',          sub: '' },
+    { id: 'sleep',   label: t('home.sleep_today'),  value: sleepVal,    accent: '#7C3AED',          sub: sleepSub  },
     { id: 'vaccine', label: t('home.next_vaccine'), value: '—',         accent: Colors.blue,        sub: '' },
     { id: 'weight',  label: t('home.weight'),       value: weight,      accent: Colors.mint,        sub: '' },
   ];
@@ -623,7 +632,8 @@ function FeatureIconGrid() {
             style={{ width: FEAT_W }}
             activeOpacity={0.82}
             onPress={() => {
-              if (id === 'feeding_log') router.push('/feeding-log');
+              if (id === 'feeding_log')   router.push('/feeding-log');
+              if (id === 'sleep_tracker') router.push('/sleep-tracker');
             }}
           >
             <LinearGradient
@@ -650,6 +660,31 @@ function FeatureIconGrid() {
 // 5. Insights Card — weekly summary with SVG icons
 // ─────────────────────────────────────────────────────────────────────────────
 function InsightsCard() {
+  const { activeChild } = useChildStore();
+  const { entries }     = useFeedingStore();
+  const sleepStore      = useSleepStore();
+  const childId         = activeChild?.id ?? '';
+
+  // Weekly feeding totals
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+  const weekFeeds  = entries.filter((e) => e.childId === childId && new Date(e.startedAt) >= cutoff);
+  const weekVolume = weekFeeds.reduce((s, e) => s + (e.volumeMl ?? 0), 0);
+  const feedLabel  = weekFeeds.length > 0
+    ? `${weekFeeds.length} feeds  •  ${weekVolume > 0 ? `${weekVolume}ml` : '—'}`
+    : '— feeds  •  — ml';
+
+  // Weekly sleep totals
+  const weekSleep      = sleepStore.getWeekEntries(childId);
+  const weekSleepMins  = weekSleep.reduce((s, e) => {
+    if (!e.endedAt) return s;
+    return s + Math.round((new Date(e.endedAt).getTime() - new Date(e.startedAt).getTime()) / 60_000);
+  }, 0);
+  const weekSleepHours = (weekSleepMins / 60).toFixed(1);
+  const avgSleepH      = weekSleep.length > 0 ? (weekSleepMins / 60 / 7).toFixed(1) : '—';
+  const sleepLabel     = weekSleepMins > 0
+    ? `${weekSleepHours}h total  •  ${avgSleepH}h/day avg`
+    : '— hours  •  — avg/day';
+
   return (
     <View style={ic.card}>
       <View style={ic.titleRow}>
@@ -658,26 +693,26 @@ function InsightsCard() {
       </View>
 
       {/* Row 1: Feeds */}
-      <View style={ic.row}>
+      <TouchableOpacity style={ic.row} onPress={() => router.push('/feeding-log')} activeOpacity={0.8}>
         <View style={[ic.iconCircle, { backgroundColor: Colors.softPink }]}>
           <IconBottle size={22} />
         </View>
         <View style={ic.rowText}>
           <Text style={ic.rowLabel}>TOTAL FEEDS</Text>
-          <Text style={ic.rowValue}>— feeds  •  — ml</Text>
+          <Text style={ic.rowValue}>{feedLabel}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Row 2: Sleep */}
-      <View style={[ic.row, ic.rowBorder]}>
+      <TouchableOpacity style={[ic.row, ic.rowBorder]} onPress={() => router.push('/sleep-tracker')} activeOpacity={0.8}>
         <View style={[ic.iconCircle, { backgroundColor: '#EDE9FE' }]}>
           <IconMoon size={22} />
         </View>
         <View style={ic.rowText}>
           <Text style={ic.rowLabel}>TOTAL SLEEP</Text>
-          <Text style={ic.rowValue}>— hours  •  — avg/day</Text>
+          <Text style={ic.rowValue}>{sleepLabel}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Row 3: Upcoming */}
       <View style={[ic.row, ic.rowBorder]}>

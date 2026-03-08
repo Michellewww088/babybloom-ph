@@ -321,6 +321,53 @@
     "months": "months",
     "years": "years",
     "ago": "ago",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "notes": "Notes"
+  },
+  "sleep": {
+    "title": "Sleep Tracker",
+    "add_entry": "Add Sleep Entry",
+    "edit_entry": "Edit Sleep Entry",
+    "no_entries": "No sleep entries yet 😴",
+    "start_sleep": "Start Sleep Timer",
+    "stop_sleep": "Wake Up! ☀️",
+    "timer_mode": "Timer",
+    "manual_mode": "Manual Entry",
+    "sleep_type": "Sleep Type",
+    "night_sleep": "Night Sleep",
+    "nap": "Nap",
+    "quality": "Sleep Quality",
+    "restful": "Restful",
+    "restless": "Restless",
+    "frequent_waking": "Frequent Waking",
+    "start_time": "Start Time",
+    "end_time": "End Time",
+    "duration": "Duration",
+    "notes_placeholder": "Any notes about this sleep…",
+    "save": "Save Sleep Entry",
+    "delete_title": "Delete this sleep entry?",
+    "delete_body": "This entry will be permanently removed. This action cannot be undone.",
+    "filters": {
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month"
+    },
+    "summary": {
+      "total": "Total Sleep",
+      "average": "Daily Average",
+      "longest": "Longest Stretch",
+      "nap_count": "Naps"
+    },
+    "who_target": "WHO Target",
+    "weekly_chart_title": "This Week's Sleep",
+    "analytics_title": "Sleep Analysis",
+    "ai_summary_label": "Today's Sleep Summary",
+    "ai_disclaimer": "This analysis is based on WHO and DOH Philippines guidelines for general reference only. Please consult your Pediatrician for medical concerns.",
+    "tips": {
+      "0_3": "Newborns need 14–17 hours of sleep per day (WHO). Short wake windows of 45–60 minutes are normal.",
+      "4_11": "Babies this age need 12–15 hours daily including 2–3 naps. Watch for sleep cues like eye rubbing.",
+      "12_23": "Toddlers need 11–14 hours. One midday nap is ideal. Consistent bedtime routines help greatly.",
+      "24_plus": "Your child needs 11–14 hours of sleep daily. A consistent bedtime of 7–8 PM supports school readiness."
+    }
   }
 }
