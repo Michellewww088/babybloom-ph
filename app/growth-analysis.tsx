@@ -49,6 +49,20 @@ interface DotInfo {
   color: string;
 }
 
+interface MetricReport {
+  status: 'Normal' | 'Low' | 'High' | 'Watch';
+  explanation: string;
+}
+interface GrowthReport {
+  overallSummary:  string;
+  overallStatus:   'great' | 'good' | 'watch';
+  weight:          MetricReport;
+  height:          MetricReport;
+  head:            MetricReport;
+  healthInsights:  string;
+  parentGuidance:  string[];
+}
+
 // ─── WHO Growth Chart ─────────────────────────────────────────────────────────
 function WHOGrowthChart({
   records, ageMonths, sex, metric, onDotPress, activeDotId,
@@ -345,16 +359,73 @@ function MeasurementModal({
   );
 }
 
+// ─── Percentile Visual Bar ────────────────────────────────────────────────────
+function PercentileBar({ percentile, color }: { percentile: number; color: string }) {
+  const BAR_W  = W - PAD * 2 - 64;
+  const clamped = Math.max(0, Math.min(100, percentile));
+  const markerLeft = (clamped / 100) * BAR_W - 8; // centre the 16px circle
+
+  return (
+    <View style={{ marginVertical: 8 }}>
+      {/* Zone colour bar */}
+      <View style={{ flexDirection: 'row', height: 10, borderRadius: 6, overflow: 'hidden', width: BAR_W }}>
+        <View style={{ width: BAR_W * 0.05,  backgroundColor: '#FCA5A5' }} />
+        <View style={{ width: BAR_W * 0.10,  backgroundColor: '#FDE68A' }} />
+        <View style={{ width: BAR_W * 0.70,  backgroundColor: '#6EE7B7' }} />
+        <View style={{ width: BAR_W * 0.12,  backgroundColor: '#FDE68A' }} />
+        <View style={{ width: BAR_W * 0.03,  backgroundColor: '#FCA5A5' }} />
+      </View>
+      {/* Marker circle */}
+      <View style={{
+        position: 'absolute', left: Math.max(0, markerLeft), top: -3,
+        width: 16, height: 16, borderRadius: 8,
+        backgroundColor: color, borderWidth: 2.5, borderColor: '#FFFFFF',
+        shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 3, elevation: 4,
+      }} />
+      {/* Percentile label */}
+      <Text style={{
+        position: 'absolute', left: Math.max(0, markerLeft - 6), top: 15,
+        fontSize: 10, fontWeight: '800', color,
+      }}>p{Math.round(clamped)}</Text>
+      {/* Zone labels */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, width: BAR_W }}>
+        <Text style={{ fontSize: 8, color: '#FCA5A5', fontWeight: '800' }}>Low</Text>
+        <Text style={{ fontSize: 8, color: '#27AE7A', fontWeight: '800', marginLeft: 14 }}>Healthy (p15–p85)</Text>
+        <Text style={{ fontSize: 8, color: '#FCA5A5', fontWeight: '800' }}>High</Text>
+      </View>
+    </View>
+  );
+}
+
+function statusIcon(st: string) {
+  if (st === 'Normal') return '✅';
+  if (st === 'Watch')  return '🟡';
+  return '⚠️';
+}
+
 // ─── AI Growth Analysis ───────────────────────────────────────────────────────
 function AIGrowthSection({ records, childName, ageMonths, sex }: {
   records: GrowthRecord[]; childName: string; ageMonths: number; sex: Sex;
 }) {
-  const { t }             = useTranslation();
-  const [text, setText]   = useState<string | null>(null);
-  const [load, setLoad]   = useState(false);
-  const [open, setOpen]   = useState(false);
-  const fetched           = useRef(false);
-  const latest            = records.length > 0 ? records[records.length - 1] : null;
+  const { t }                         = useTranslation();
+  const [report,   setReport]         = useState<GrowthReport | null>(null);
+  const [rawText,  setRawText]        = useState<string | null>(null);
+  const [load,     setLoad]           = useState(false);
+  const [open,     setOpen]           = useState(false);
+  const fetched                       = useRef(false);
+  const latest                        = records.length > 0 ? records[records.length - 1] : null;
+
+  // WHO percentiles for latest record
+  const wR  = latest?.weightKg             ? getWHOPercentile(sex, 'weight', ageMonths, latest.weightKg)             : null;
+  const hR  = latest?.heightCm             ? getWHOPercentile(sex, 'height', ageMonths, latest.heightCm)             : null;
+  const hdR = latest?.headCircumferenceCm  ? getWHOPercentile(sex, 'head',   ageMonths, latest.headCircumferenceCm)  : null;
+
+  // Weight trend
+  const sortedW = records.filter((r) => r.weightKg !== undefined);
+  const prevW   = sortedW.length >= 2 ? sortedW[sortedW.length - 2].weightKg : undefined;
+  const wTrend  = latest?.weightKg && prevW
+    ? (latest.weightKg > prevW ? `gaining well (+${(latest.weightKg - prevW).toFixed(2)}kg since last)` : `slight decrease — monitor`)
+    : 'only one measurement';
 
   const doFetch = async () => {
     if (fetched.current) return;
@@ -362,51 +433,212 @@ function AIGrowthSection({ records, childName, ageMonths, sex }: {
     setLoad(true);
     const apiKey = (process.env as any).EXPO_PUBLIC_CLAUDE_API_KEY;
     if (!apiKey) {
-      setText('Set EXPO_PUBLIC_CLAUDE_API_KEY in your .env to unlock Ate AI growth insights! 🌱');
+      setRawText('Set EXPO_PUBLIC_CLAUDE_API_KEY in your .env to unlock Ate AI insights! 🌱');
       setLoad(false); return;
     }
-    const wR = latest?.weightKg ? getWHOPercentile(sex, 'weight', ageMonths, latest.weightKg) : null;
-    const hR = latest?.heightCm ? getWHOPercentile(sex, 'height', ageMonths, latest.heightCm) : null;
-    const prompt = `You are Ate AI, a warm baby health assistant for Filipino parents using BabyBloom PH.
-Write a personalized 3-sentence growth analysis for ${childName} (${ageMonths} months, ${sex}).
 
-Latest measurements:
-- Weight: ${latest?.weightKg ? `${latest.weightKg}kg → ${wR?.percentile}th percentile (${wR?.label})` : 'not recorded'}
-- Height: ${latest?.heightCm ? `${latest.heightCm}cm → ${hR?.percentile}th percentile (${hR?.label})` : 'not recorded'}
-- Head circumference: ${latest?.headCircumferenceCm ? `${latest.headCircumferenceCm}cm` : 'not recorded'}
+    const prompt = `You are Ate AI, a warm baby health assistant for BabyBloom PH (Philippines). You are like a caring older sister to Filipino parents.
+
+Generate a detailed, parent-friendly growth report for ${childName}.
+
+Baby Information:
+- Name: ${childName}
+- Age: ${ageMonths} months old
+- Gender: ${sex}
+
+Latest Measurements vs WHO Standards:
+- Weight: ${latest?.weightKg ? `${latest.weightKg}kg → ~${wR ? Math.round(wR.percentile) : '?'}th percentile (${wR?.label ?? 'unknown'})` : 'not recorded'}
+- Height/Length: ${latest?.heightCm ? `${latest.heightCm}cm → ~${hR ? Math.round(hR.percentile) : '?'}th percentile (${hR?.label ?? 'unknown'})` : 'not recorded'}
+- Head Circumference: ${latest?.headCircumferenceCm ? `${latest.headCircumferenceCm}cm → ~${hdR ? Math.round(hdR.percentile) : '?'}th percentile` : 'not recorded'}
+- Weight trend: ${wTrend}
 - Total measurements recorded: ${records.length}
 
-Be warm, specific, encouraging. Follow WHO MGRS standards. If any value is in watch/red zone, gently recommend consulting their Pediatrician. Max 3 sentences.
-End with: [This is general information. Please consult your Pedia for medical concerns.]`;
+Return ONLY a valid JSON object — no markdown, no backticks, no text outside JSON:
+{
+  "overallSummary": "2-3 warm sentences about the baby's overall growth, using the actual measurements.",
+  "overallStatus": "great",
+  "weight": {
+    "status": "Normal",
+    "explanation": "2 sentences about weight in parent-friendly language. Explain what the percentile means — e.g., heavier than X out of 100 babies the same age and gender."
+  },
+  "height": {
+    "status": "Normal",
+    "explanation": "2 sentences about height in parent-friendly language."
+  },
+  "head": {
+    "status": "Normal",
+    "explanation": "2 sentences about head circumference and what it suggests about brain development."
+  },
+  "healthInsights": "2-3 sentences about what these measurements together suggest about the baby's overall development.",
+  "parentGuidance": ["Practical and specific tip 1 relevant to this age", "Practical tip 2 (feeding or activity)", "Practical tip 3 (when to see the Pedia)"]
+}
+
+Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watch. Be warm and reassuring. No medical diagnoses. Keep it simple.`;
+
     try {
       const res  = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 220, messages: [{ role: 'user', content: prompt }] }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001', max_tokens: 750,
+          messages: [{ role: 'user', content: prompt }],
+        }),
       });
       const data = await res.json();
-      setText(data?.content?.[0]?.text?.trim() ?? null);
-    } catch { setText('Ate AI is unavailable right now. Check your network connection.'); }
+      const txt  = data?.content?.[0]?.text?.trim() ?? '';
+      // Strip any markdown code fences if present
+      const clean = txt.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '').trim();
+      try { setReport(JSON.parse(clean) as GrowthReport); }
+      catch { setRawText(txt || 'Unable to parse AI response. Please try again.'); }
+    } catch {
+      setRawText('Ate AI is unavailable right now. Check your network connection.');
+    }
     setLoad(false);
   };
 
+  // Overall status colour theming
+  const OVERALL_THEME: Record<string, { bg: string; text: string; icon: string }> = {
+    great: { bg: '#E0F7EF', text: Colors.mint,         icon: '🌟' },
+    good:  { bg: '#FFF8E8', text: Colors.gold,         icon: '😊' },
+    watch: { bg: '#FFE4EE', text: Colors.primaryPink,  icon: '⚠️' },
+  };
+  const theme = report ? (OVERALL_THEME[report.overallStatus] ?? OVERALL_THEME.good) : null;
+
+  // Per-metric config
+  const METRICS = [
+    { key: 'weight' as const, label: 'Weight',              emoji: '⚖️', pR: wR,  val: latest?.weightKg,            unit: 'kg', dec: 2 },
+    { key: 'height' as const, label: 'Height / Length',     emoji: '📏', pR: hR,  val: latest?.heightCm,             unit: 'cm', dec: 1 },
+    { key: 'head'   as const, label: 'Head Circumference',  emoji: '🧠', pR: hdR, val: latest?.headCircumferenceCm,  unit: 'cm', dec: 1 },
+  ];
+
   return (
-    <LinearGradient colors={['#F5F3FF', '#EDE9FE']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={aig.card}>
-      <TouchableOpacity style={aig.hdr} onPress={() => { setOpen(!open); if (!open) doFetch(); }} activeOpacity={0.8}>
-        <Text style={aig.title}>{t('growth.ai_analysis_title')}</Text>
+    <View style={aig.wrapper}>
+      {/* ── Collapsible header ── */}
+      <TouchableOpacity
+        style={aig.hdrRow}
+        onPress={() => { setOpen(!open); if (!open && !fetched.current) doFetch(); }}
+        activeOpacity={0.8}
+      >
+        <View style={aig.hdrLeft}>
+          <LinearGradient colors={['#C4B5FD', '#7C3AED']} style={aig.hdrGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <Text style={{ fontSize: 18 }}>✨</Text>
+          </LinearGradient>
+          <View>
+            <Text style={aig.hdrTitle}>{t('growth.ai_analysis_title')}</Text>
+            <Text style={aig.hdrSub}>Powered by Ate AI · WHO standards</Text>
+          </View>
+        </View>
         <Text style={aig.chevron}>{open ? '▲' : '▼'}</Text>
       </TouchableOpacity>
+
       {open && (
         <View style={aig.body}>
-          {load
-            ? <Text style={aig.loading}>{t('growth.ai_loading')}</Text>
-            : text
-            ? <Text style={aig.text}>{text}</Text>
-            : <Text style={aig.empty}>{latest ? 'Tap to load Ate AI analysis…' : 'Add at least one measurement to unlock AI analysis.'}</Text>
-          }
+          {/* Loading */}
+          {load && (
+            <View style={aig.loadRow}>
+              <Text style={aig.loadTxt}>🧠 {t('growth.ai_loading')}</Text>
+            </View>
+          )}
+
+          {/* ── Structured 4-section report ── */}
+          {!load && report && (
+            <>
+              {/* SECTION 1 — Overall Summary */}
+              <View style={[aig.overallBanner, { backgroundColor: theme?.bg }]}>
+                <Text style={aig.overallIcon}>{theme?.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[aig.overallLabel, { color: theme?.text }]}>OVERALL GROWTH SUMMARY</Text>
+                  <Text style={aig.overallText}>{report.overallSummary}</Text>
+                </View>
+              </View>
+
+              {/* SECTION 2 — Per-metric detail */}
+              <Text style={aig.sectionHdr}>📊 DETAILED ANALYSIS</Text>
+              {METRICS.map(({ key, label, emoji, pR, val, unit, dec }) => {
+                const mr  = report[key];
+                const st  = mr?.status ?? 'Normal';
+                const stC = st === 'Normal' ? Colors.mint : st === 'Watch' ? Colors.gold : Colors.primaryPink;
+                const stB = st === 'Normal' ? Colors.softMint : st === 'Watch' ? Colors.softGold : Colors.softPink;
+                return (
+                  <View key={key} style={aig.metricCard}>
+                    <View style={aig.metricTop}>
+                      <Text style={aig.metricEmoji}>{emoji}</Text>
+                      <Text style={aig.metricLabel}>{label}</Text>
+                      <View style={[aig.statusBadge, { backgroundColor: stB }]}>
+                        <Text style={[aig.statusTxt, { color: stC }]}>{statusIcon(st)} {st}</Text>
+                      </View>
+                    </View>
+                    {val !== undefined && pR ? (
+                      <>
+                        <Text style={[aig.metricVal, { color: stC }]}>{val.toFixed(dec)} {unit}</Text>
+                        <PercentileBar percentile={pR.percentile} color={pR.color} />
+                        <Text style={aig.pctNote}>
+                          {`${childName} is at the `}
+                          <Text style={{ fontWeight: '800', color: stC }}>{Math.round(pR.percentile)}th percentile</Text>
+                          {` — ${
+                            pR.percentile >= 15 && pR.percentile <= 85
+                              ? `within the healthy range for babies this age 🟢`
+                              : pR.percentile >= 5 && pR.percentile <= 97
+                              ? `slightly outside the typical range — worth monitoring 🟡`
+                              : `outside the typical range — please consult your Pediatrician 🔴`
+                          }`}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={aig.pctNote}>No measurement recorded yet.</Text>
+                    )}
+                    <Text style={aig.metricExpl}>{mr?.explanation}</Text>
+                  </View>
+                );
+              })}
+
+              {/* SECTION 3 — Health Insights */}
+              <View style={aig.insightCard}>
+                <Text style={aig.sectionHdr}>💡 HEALTH INSIGHTS</Text>
+                <Text style={aig.insightTxt}>{report.healthInsights}</Text>
+              </View>
+
+              {/* SECTION 4 — Parent Guidance */}
+              <View style={aig.guidanceCard}>
+                <Text style={aig.sectionHdr}>👩‍👧 PARENT GUIDANCE</Text>
+                {(report.parentGuidance ?? []).map((tip, i) => (
+                  <View key={i} style={aig.tipRow}>
+                    <View style={aig.tipNum}><Text style={aig.tipNumTxt}>{i + 1}</Text></View>
+                    <Text style={aig.tipTxt}>{tip}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* WHO disclaimer */}
+              <View style={aig.disclaimer}>
+                <Text style={aig.disclaimerTxt}>
+                  📋 Based on WHO Multicentre Growth Reference Study (MGRS) standards.{'\n'}[This is general information. Please consult your Pedia for medical concerns.]
+                </Text>
+              </View>
+            </>
+          )}
+
+          {/* Fallback — raw text if JSON parse failed */}
+          {!load && !report && rawText && (
+            <View style={aig.rawWrap}>
+              <Text style={aig.rawTxt}>{rawText}</Text>
+            </View>
+          )}
+
+          {/* Empty state */}
+          {!load && !report && !rawText && (
+            <Text style={aig.emptyTxt}>
+              {latest ? 'Something went wrong. Close and tap again to retry.' : 'Add at least one measurement to unlock AI analysis.'}
+            </Text>
+          )}
         </View>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -632,10 +864,48 @@ export default function GrowthAnalysisScreen() {
         {/* History */}
         <HistoryTable records={records} metric={tab} onEdit={(r) => { setEditRec(r); setModal(true); }} />
 
-        {/* Export PDF */}
-        <TouchableOpacity style={ex.btn} activeOpacity={0.8}
-          onPress={() => Alert.alert('Coming Soon', 'PDF export will be available in a future update. For now you can take a screenshot to share with your Pediatrician.')}>
-          <Text style={ex.txt}>{t('growth.export_pdf')}</Text>
+        {/* Export / Share Report */}
+        <TouchableOpacity
+          style={ex.btn} activeOpacity={0.8}
+          onPress={() => {
+            const lines: string[] = [
+              `📋 BabyBloom PH — Growth Report`,
+              `Baby: ${name}  |  Age: ${ageM} months  |  Gender: ${sex}`,
+              `Date: ${new Date().toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+              ``,
+              `── LATEST MEASUREMENTS ──`,
+            ];
+            if (latest?.weightKg) {
+              const r = getWHOPercentile(sex, 'weight', corrected, latest.weightKg);
+              lines.push(`Weight: ${latest.weightKg} kg  |  ${Math.round(r.percentile)}th percentile  (${r.label})`);
+            }
+            if (latest?.heightCm) {
+              const r = getWHOPercentile(sex, 'height', corrected, latest.heightCm);
+              lines.push(`Height: ${latest.heightCm} cm  |  ${Math.round(r.percentile)}th percentile  (${r.label})`);
+            }
+            if (latest?.headCircumferenceCm) {
+              const r = getWHOPercentile(sex, 'head', corrected, latest.headCircumferenceCm);
+              lines.push(`Head circ.: ${latest.headCircumferenceCm} cm  |  ${Math.round(r.percentile)}th percentile`);
+            }
+            if (latest?.measuredAt) lines.push(`Measured on: ${new Date(latest.measuredAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}`);
+            lines.push(``, `Total records: ${records.length}`);
+            lines.push(``, `── PERCENTILE GUIDE ──`);
+            lines.push(`🟢 p15–p85 = Healthy Range`);
+            lines.push(`🟡 p5–p15 or p85–p97 = Monitor`);
+            lines.push(`🔴 <p5 or >p97 = Consult Pediatrician`);
+            lines.push(``, `Generated by BabyBloom PH 🌸  |  WHO MGRS standards`);
+            lines.push(`[This is general information. Please consult your Pedia for medical concerns.]`);
+            Alert.alert(
+              '📄 Growth Report Summary',
+              lines.join('\n'),
+              [
+                { text: 'Copy & Share', onPress: () => Alert.alert('Tip', 'Long-press the text above to copy it, then paste into any messaging app to share with your Pediatrician.') },
+                { text: 'OK', style: 'cancel' },
+              ],
+            );
+          }}
+        >
+          <Text style={ex.txt}>{t('growth.export_pdf')} 📤</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
@@ -719,14 +989,53 @@ const pl = StyleSheet.create({
 });
 
 const aig = StyleSheet.create({
-  card:    { borderRadius: 20, marginHorizontal: PAD, marginBottom: 12, overflow: 'hidden', shadowColor: '#7C3AED', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
-  hdr:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
-  title:   { fontSize: 14, fontWeight: '800', color: '#4C1D95' },
-  chevron: { fontSize: 12, color: '#7C3AED' },
-  body:    { paddingHorizontal: 16, paddingBottom: 16 },
-  loading: { fontSize: 13, color: '#7C3AED', fontStyle: 'italic' },
-  text:    { fontSize: 13, color: Colors.dark, lineHeight: 20 },
-  empty:   { fontSize: 12, color: Colors.lightGray, fontStyle: 'italic' },
+  // wrapper card
+  wrapper:       { backgroundColor: '#FFFFFF', borderRadius: 20, marginHorizontal: PAD, marginBottom: 12, overflow: 'hidden', shadowColor: '#7C3AED', shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: '#EDE9FE' },
+  // collapsible header
+  hdrRow:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
+  hdrLeft:       { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  hdrGrad:       { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  hdrTitle:      { fontSize: 14, fontWeight: '800', color: '#4C1D95' },
+  hdrSub:        { fontSize: 10, color: '#7C3AED', fontWeight: '600', marginTop: 1 },
+  chevron:       { fontSize: 12, color: '#7C3AED', fontWeight: '800' },
+  // body
+  body:          { paddingHorizontal: 16, paddingBottom: 20 },
+  // loading
+  loadRow:       { paddingVertical: 16, alignItems: 'center' },
+  loadTxt:       { fontSize: 13, color: '#7C3AED', fontStyle: 'italic' },
+  // section 1 — overall summary banner
+  overallBanner: { borderRadius: 16, padding: 14, flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginBottom: 16 },
+  overallIcon:   { fontSize: 28 },
+  overallLabel:  { fontSize: 9, fontWeight: '800', letterSpacing: 0.8, marginBottom: 4 },
+  overallText:   { fontSize: 13, color: Colors.dark, lineHeight: 20 },
+  // section header
+  sectionHdr:    { fontSize: 10, fontWeight: '800', color: Colors.midGray, letterSpacing: 0.8, marginBottom: 10, marginTop: 4 },
+  // metric cards
+  metricCard:    { backgroundColor: Colors.background, borderRadius: 14, padding: 14, marginBottom: 10 },
+  metricTop:     { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  metricEmoji:   { fontSize: 18 },
+  metricLabel:   { fontSize: 13, fontWeight: '800', color: Colors.dark, flex: 1 },
+  statusBadge:   { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  statusTxt:     { fontSize: 11, fontWeight: '800' },
+  metricVal:     { fontSize: 22, fontWeight: '900', marginBottom: 2 },
+  pctNote:       { fontSize: 12, color: Colors.midGray, lineHeight: 18, marginTop: 2, marginBottom: 6 },
+  metricExpl:    { fontSize: 12, color: Colors.dark, lineHeight: 19, marginTop: 6, fontStyle: 'italic' },
+  // section 3 — insights
+  insightCard:   { backgroundColor: Colors.softBlue, borderRadius: 14, padding: 14, marginBottom: 10 },
+  insightTxt:    { fontSize: 13, color: Colors.dark, lineHeight: 20 },
+  // section 4 — guidance
+  guidanceCard:  { backgroundColor: Colors.softMint, borderRadius: 14, padding: 14, marginBottom: 10 },
+  tipRow:        { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },
+  tipNum:        { width: 22, height: 22, borderRadius: 11, backgroundColor: Colors.mint, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  tipNumTxt:     { fontSize: 11, fontWeight: '900', color: '#FFFFFF' },
+  tipTxt:        { fontSize: 13, color: Colors.dark, lineHeight: 19, flex: 1 },
+  // disclaimer
+  disclaimer:    { backgroundColor: '#F3F4F6', borderRadius: 12, padding: 12, marginTop: 4 },
+  disclaimerTxt: { fontSize: 11, color: Colors.midGray, lineHeight: 17, fontStyle: 'italic' },
+  // fallback
+  rawWrap:       { padding: 4 },
+  rawTxt:        { fontSize: 13, color: Colors.dark, lineHeight: 20 },
+  emptyTxt:      { fontSize: 12, color: Colors.lightGray, fontStyle: 'italic', paddingVertical: 8, textAlign: 'center' },
 });
 
 const ht = StyleSheet.create({
