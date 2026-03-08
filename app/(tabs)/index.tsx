@@ -18,7 +18,8 @@
 import React, { useState, useCallback } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Image,
-  StyleSheet, Dimensions, RefreshControl,
+  StyleSheet, Dimensions, RefreshControl, Modal,
+  TextInput, Alert, Platform, KeyboardAvoidingView,
 } from 'react-native';
 import Svg, {
   Path, Circle, Ellipse, Line, Polyline, Rect,
@@ -42,6 +43,11 @@ import {
   useSleepStore,
   formatSleepDuration,
 } from '../../store/sleepStore';
+import { useGrowthStore } from '../../store/growthStore';
+import {
+  getWHOPercentile,
+  getCorrectedAgeMonths,
+} from '../../lib/who-growth';
 
 const { width: W } = Dimensions.get('window');
 const PAD      = 16;
@@ -295,9 +301,10 @@ function IconWeight({ size = 28 }: { size?: number }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Mini Sparkline
 // ─────────────────────────────────────────────────────────────────────────────
-function MiniSparkLine({ width = 120, hasData = false }: { width?: number; hasData?: boolean }) {
+function MiniSparkLine({ width = 120, data }: { width?: number; data?: number[] }) {
   const h = 44;
-  if (!hasData) {
+  const pts = data && data.length >= 2 ? data : null;
+  if (!pts) {
     return (
       <Svg width={width} height={h}>
         <Line x1="4" y1={h - 6} x2={width - 4} y2={h - 6}
@@ -308,8 +315,8 @@ function MiniSparkLine({ width = 120, hasData = false }: { width?: number; hasDa
       </Svg>
     );
   }
-  const pts = [3.2, 4.1, 5.0, 5.6, 6.2];
-  const minV = 2.5, maxV = 8;
+  const minV = Math.min(...pts) * 0.95;
+  const maxV = Math.max(...pts) * 1.05;
   const toX  = (i: number) => 8 + (i / (pts.length - 1)) * (width - 16);
   const toY  = (v: number) => 4 + (1 - (v - minV) / (maxV - minV)) * (h - 10);
   const poly = pts.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
@@ -468,7 +475,11 @@ function QuickStatsStrip() {
   const lastFedVal  = lastFeed ? timeAgoShort(lastFeed.startedAt) : '—';
   const feedsToday  = todayFeeds.length > 0 ? `${todayFeeds.length}x today` : '—';
 
-  const weight        = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '— kg';
+  const growthStore   = useGrowthStore();
+  const latestGrowth  = growthStore.getLatest(childId);
+  const weight        = latestGrowth?.weightKg
+    ? `${latestGrowth.weightKg} kg`
+    : (activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '— kg');
   const sleepMins     = sleepStore.getTodaySleepMinutes(childId);
   const sleepVal      = sleepMins > 0 ? formatSleepDuration(sleepMins) : '—';
   const sleepNaps     = sleepStore.getTodayEntries(childId).filter((e) => e.sleepType === 'nap').length;
@@ -509,58 +520,241 @@ function QuickStatsStrip() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Growth Snapshot Card
+// 3. Growth Snapshot Card (with real WHO data + add-measurement modal)
 // ─────────────────────────────────────────────────────────────────────────────
 function GrowthSnapshotCard() {
+  const { t }           = useTranslation();
   const { activeChild } = useChildStore();
-  const hasMeasurements = false;
+  const growthStore     = useGrowthStore();
+  const childId         = activeChild?.id ?? '';
 
-  const weight = activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '—';
-  const height = activeChild?.birthHeight ? `${activeChild.birthHeight} cm` : '—';
+  // Modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [mWeight,   setMWeight]   = useState('');
+  const [mHeight,   setMHeight]   = useState('');
+  const [mHead,     setMHead]     = useState('');
+  const [mNotes,    setMNotes]    = useState('');
+  const [mDate,     setMDate]     = useState(
+    new Date().toISOString().slice(0, 10),
+  );
+
+  // Real data
+  const latest    = growthStore.getLatest(childId);
+  const sparkData = growthStore.getLastNWeights(childId, 5).map((r) => r.kg);
+
+  // Child age in months (with preterm correction)
+  const ageMonths = (() => {
+    if (!activeChild?.birthday) return 0;
+    const msAge = Date.now() - new Date(activeChild.birthday).getTime();
+    const rawMonths = msAge / (1000 * 60 * 60 * 24 * 30.44);
+    return getCorrectedAgeMonths(rawMonths, activeChild.gestationalAge ?? undefined);
+  })();
+  const sex = (activeChild?.sex === 'male' || activeChild?.sex === 'female')
+    ? activeChild.sex : 'male';
+
+  // WHO percentile for weight
+  const wPct = latest?.weightKg
+    ? getWHOPercentile(sex, 'weight', ageMonths, latest.weightKg)
+    : null;
+
+  // Display values
+  const weightVal = latest?.weightKg
+    ? `${latest.weightKg} kg`
+    : (activeChild?.birthWeight ? `${activeChild.birthWeight} kg` : '—');
+  const heightVal = latest?.heightCm
+    ? `${latest.heightCm} cm`
+    : (activeChild?.birthHeight ? `${activeChild.birthHeight} cm` : '—');
+  const headVal   = latest?.headCircumferenceCm
+    ? `${latest.headCircumferenceCm} cm`
+    : '—';
+
+  // Badge styling based on percentile zone
+  const badgeBg   = wPct ? wPct.bgColor : Colors.softMint;
+  const badgeFg   = wPct ? wPct.color   : Colors.mint;
+  const badgeTxt  = wPct
+    ? `${wPct.label}  •  p${Math.round(wPct.percentile)}`
+    : t('growth.add_to_update');
+
+  // Save measurement
+  const handleSave = () => {
+    const w  = parseFloat(mWeight);
+    const h  = parseFloat(mHeight);
+    const hd = parseFloat(mHead);
+    if (!mWeight && !mHeight && !mHead) {
+      Alert.alert(t('growth.error_title'), t('growth.error_empty'));
+      return;
+    }
+    growthStore.addRecord({
+      id:                   `gr_${Date.now()}`,
+      childId,
+      measuredAt:           mDate,
+      weightKg:             isNaN(w)  ? undefined : w,
+      heightCm:             isNaN(h)  ? undefined : h,
+      headCircumferenceCm:  isNaN(hd) ? undefined : hd,
+      notes:                mNotes || undefined,
+      createdAt:            new Date().toISOString(),
+    });
+    setModalVisible(false);
+    setMWeight(''); setMHeight(''); setMHead(''); setMNotes('');
+    setMDate(new Date().toISOString().slice(0, 10));
+  };
 
   return (
-    <View style={gc.card}>
-      <View style={gc.row}>
-        <Text style={gc.title}>Growth Snapshot 📈</Text>
-        <TouchableOpacity><Text style={gc.link}>View Full Analysis →</Text></TouchableOpacity>
-      </View>
-
-      {/* 3 stat boxes */}
-      <View style={gc.statsRow}>
-        {[
-          { label: 'Weight',    value: weight },
-          { label: 'Height',    value: height },
-          { label: 'Head Circ.', value: '—'   },
-        ].map(({ label, value }) => (
-          <LinearGradient
-            key={label}
-            colors={[Colors.softPink, '#FFD6E8']}
-            style={gc.statBox}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          >
-            <Text style={gc.statNum}>{value}</Text>
-            <Text style={gc.statLbl}>{label}</Text>
-          </LinearGradient>
-        ))}
-      </View>
-
-      {/* WHO badge */}
-      <View style={gc.percentRow}>
-        <View style={[gc.badge, { backgroundColor: Colors.softMint }]}>
-          <Text style={[gc.badgeText, { color: Colors.mint }]}>🟢 Normal</Text>
+    <>
+      <View style={gc.card}>
+        <View style={gc.row}>
+          <Text style={gc.title}>{t('growth.snapshot_title')} 📈</Text>
+          <TouchableOpacity onPress={() => router.push('/growth-analysis')} activeOpacity={0.75}>
+            <Text style={gc.link}>{t('growth.view_full')} →</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={gc.percentNote}>WHO percentile · add measurement to update</Text>
+
+        {/* 3 stat boxes */}
+        <View style={gc.statsRow}>
+          {[
+            { label: t('growth.weight'),    value: weightVal },
+            { label: t('growth.height'),    value: heightVal },
+            { label: t('growth.head_circ'), value: headVal   },
+          ].map(({ label, value }) => (
+            <LinearGradient
+              key={label}
+              colors={[Colors.softPink, '#FFD6E8']}
+              style={gc.statBox}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            >
+              <Text style={gc.statNum}>{value}</Text>
+              <Text style={gc.statLbl}>{label}</Text>
+            </LinearGradient>
+          ))}
+        </View>
+
+        {/* WHO badge + Add button */}
+        <View style={gc.percentRow}>
+          <View style={[gc.badge, { backgroundColor: badgeBg }]}>
+            <Text style={[gc.badgeText, { color: badgeFg }]}>
+              {wPct ? (wPct.percentile >= 15 && wPct.percentile <= 85 ? '🟢' : wPct.percentile >= 5 && wPct.percentile <= 97 ? '🟡' : '🔴') : '⬜'} {badgeTxt}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={gc.addBtn}
+            onPress={() => setModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={gc.addBtnText}>{t('growth.add_measurement')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Sparkline */}
+        <View style={gc.sparkWrap}>
+          <Text style={gc.sparkLabel}>{t('growth.last_5_weights')}</Text>
+          <MiniSparkLine width={CARD_W - 48} data={sparkData.length >= 2 ? sparkData : undefined} />
+        </View>
+
+        <Text style={gc.aiText}>
+          ✨ {latest
+            ? t('growth.ai_summary_prompt')
+            : t('growth.ai_add_prompt')}
+        </Text>
       </View>
 
-      {/* Sparkline */}
-      <View style={gc.sparkWrap}>
-        <MiniSparkLine width={CARD_W - 48} hasData={hasMeasurements} />
-      </View>
+      {/* ── Add Measurement Modal ── */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={mm.container}>
+            {/* Header */}
+            <View style={mm.header}>
+              <TouchableOpacity onPress={() => setModalVisible(false)} activeOpacity={0.7}>
+                <Text style={mm.cancel}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+              <Text style={mm.title}>{t('growth.modal_title')}</Text>
+              <TouchableOpacity onPress={handleSave} activeOpacity={0.8}>
+                <Text style={mm.save}>{t('common.save')}</Text>
+              </TouchableOpacity>
+            </View>
 
-      <Text style={gc.aiText}>
-        ✨ Add your baby's measurements to get an AI growth analysis from Ate AI.
-      </Text>
-    </View>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={mm.body} keyboardShouldPersistTaps="handled">
+              {/* Date */}
+              <Text style={mm.label}>{t('growth.modal_date')}</Text>
+              <TextInput
+                style={mm.input}
+                value={mDate}
+                onChangeText={setMDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={Colors.lightGray}
+                keyboardType="numbers-and-punctuation"
+              />
+
+              {/* Weight */}
+              <Text style={mm.label}>{t('growth.modal_weight')}</Text>
+              <View style={mm.inputRow}>
+                <TextInput
+                  style={[mm.input, mm.inputFlex]}
+                  value={mWeight}
+                  onChangeText={setMWeight}
+                  placeholder={t('growth.modal_weight_placeholder')}
+                  placeholderTextColor={Colors.lightGray}
+                  keyboardType="decimal-pad"
+                />
+                <Text style={mm.unit}>kg</Text>
+              </View>
+
+              {/* Height */}
+              <Text style={mm.label}>{t('growth.modal_height')}</Text>
+              <View style={mm.inputRow}>
+                <TextInput
+                  style={[mm.input, mm.inputFlex]}
+                  value={mHeight}
+                  onChangeText={setMHeight}
+                  placeholder={t('growth.modal_height_placeholder')}
+                  placeholderTextColor={Colors.lightGray}
+                  keyboardType="decimal-pad"
+                />
+                <Text style={mm.unit}>cm</Text>
+              </View>
+
+              {/* Head */}
+              <Text style={mm.label}>{t('growth.modal_head')}</Text>
+              <View style={mm.inputRow}>
+                <TextInput
+                  style={[mm.input, mm.inputFlex]}
+                  value={mHead}
+                  onChangeText={setMHead}
+                  placeholder={t('growth.modal_head_placeholder')}
+                  placeholderTextColor={Colors.lightGray}
+                  keyboardType="decimal-pad"
+                />
+                <Text style={mm.unit}>cm</Text>
+              </View>
+
+              {/* Notes */}
+              <Text style={mm.label}>{t('growth.modal_notes')}</Text>
+              <TextInput
+                style={[mm.input, mm.inputMulti]}
+                value={mNotes}
+                onChangeText={setMNotes}
+                placeholder={t('growth.modal_notes_placeholder')}
+                placeholderTextColor={Colors.lightGray}
+                multiline
+                numberOfLines={3}
+              />
+
+              {/* WHO tip */}
+              <View style={mm.tip}>
+                <Text style={mm.tipText}>💡 {t('growth.who_tip')}</Text>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 }
 
@@ -632,8 +826,9 @@ function FeatureIconGrid() {
             style={{ width: FEAT_W }}
             activeOpacity={0.82}
             onPress={() => {
-              if (id === 'feeding_log')   router.push('/feeding-log');
-              if (id === 'sleep_tracker') router.push('/sleep-tracker');
+              if (id === 'feeding_log')    router.push('/feeding-log');
+              if (id === 'sleep_tracker')  router.push('/sleep-tracker');
+              if (id === 'insights')       router.push('/growth-analysis');
             }}
           >
             <LinearGradient
@@ -915,11 +1110,43 @@ const gc = StyleSheet.create({
   statNum:      { fontSize: 16, fontWeight: '800', color: Colors.dark },
   statLbl:      { fontSize: 9, color: Colors.midGray, fontWeight: '700', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.4 },
   percentRow:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  badge:        { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
-  badgeText:    { fontSize: 12, fontWeight: '700' },
+  badge:        { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, flex: 1 },
+  badgeText:    { fontSize: 11, fontWeight: '700' },
   percentNote:  { fontSize: 10, color: Colors.lightGray, flex: 1 },
+  addBtn:       { backgroundColor: Colors.softPink, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
+  addBtnText:   { fontSize: 12, fontWeight: '800', color: Colors.primaryPink },
   sparkWrap:    { marginBottom: 10 },
+  sparkLabel:   { fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
   aiText:       { fontSize: 12, color: Colors.lightGray, fontStyle: 'italic', lineHeight: 18 },
+});
+
+// Add Measurement Modal
+const mm = StyleSheet.create({
+  container:  { flex: 1, backgroundColor: Colors.background },
+  header:     {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1, borderBottomColor: Colors.border,
+  },
+  title:      { fontSize: 16, fontWeight: '800', color: Colors.dark },
+  cancel:     { fontSize: 15, color: Colors.midGray, fontWeight: '600' },
+  save:       { fontSize: 15, color: Colors.primaryPink, fontWeight: '800' },
+  body:       { padding: 16, paddingBottom: 60 },
+  label:      { fontSize: 13, fontWeight: '700', color: Colors.dark, marginTop: 16, marginBottom: 6 },
+  input:      {
+    backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1.5,
+    borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12,
+    fontSize: 15, color: Colors.dark,
+  },
+  inputRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  inputFlex:  { flex: 1 },
+  unit:       { fontSize: 14, fontWeight: '700', color: Colors.midGray, width: 28 },
+  inputMulti: { height: 80, textAlignVertical: 'top' },
+  tip:        {
+    marginTop: 20, backgroundColor: Colors.softBlue, borderRadius: 14, padding: 14,
+  },
+  tipText:    { fontSize: 12, color: Colors.blue, lineHeight: 18 },
 });
 
 // Feature grid
