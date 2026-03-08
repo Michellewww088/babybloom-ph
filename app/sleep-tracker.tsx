@@ -13,7 +13,7 @@ import {
   Animated, Modal, Platform, Pressable, ScrollView,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
-import Svg, { Circle, Defs, Line, LinearGradient as SvgGrad, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient as SvgGrad, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
 
 import Colors                              from '../constants/Colors';
 import { analyzeOneSleep, analyzeDailySleep, DailySleepSummary, getClaudeSleepSummary, SleepInsight } from '../lib/sleepInsights';
@@ -195,99 +195,286 @@ function IconSunSmall({ size = 18, active = false }: { size?: number; active?: b
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Weekly Bar Chart (custom SVG — 7 days, stacked night+nap, WHO reference line)
+// Weekly Bar Chart — BMAD redesign: clear Y-axis, color-coded bars, value
+// labels, summary header, and reading guide so parents always understand it
 // ─────────────────────────────────────────────────────────────────────────────
 
 function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: number }) {
   const W        = 320;
-  const H        = 120;
-  const BAR_W    = 28;
-  const PAD_L    = 36;
-  const PAD_B    = 28;
-  const chartH   = H - PAD_B;
-  const chartW   = W - PAD_L;
-  const maxMins  = Math.max(...data.map((d) => d.totalMinutes), targetMin * 60 + 60);
-  const scale    = (mins: number) => (mins / maxMins) * chartH;
-  const targetY  = chartH - scale(targetMin * 60);
+  const H        = 182;
+  const PAD_L    = 36;   // Y-axis label room
+  const PAD_T    = 22;   // value labels above bars
+  const PAD_B    = 22;   // day labels below bars
+  const PAD_R    = 46;   // WHO target label room
+  const chartW   = W - PAD_L - PAD_R;
+  const chartH   = H - PAD_T - PAD_B;
+  const barSlotW = chartW / 7;
+  const barW     = Math.min(22, barSlotW * 0.62);
+
+  // Y scale — leave buffer above target so the label never clips
+  const maxDataMins = Math.max(...data.map((d) => d.totalMinutes), 0);
+  const maxMins     = Math.max(maxDataMins, (targetMin + 4) * 60);
+  const scaleY      = (mins: number) => chartH - (mins / maxMins) * chartH;
+  const targetY     = scaleY(targetMin * 60);
+
+  // Y grid ticks — pick a sensible set that covers the range
+  const yTicks = [0, 4, 8, 12, 16, 20].filter((h) => h * 60 <= maxMins + 120);
+
+  // Summary stats (outside SVG)
+  const today        = new Date().toISOString().split('T')[0];
+  const daysOnTarget = data.filter((d) => d.totalMinutes >= targetMin * 60).length;
+  const daysWithData = data.filter((d) => d.totalMinutes > 0).length;
+  const avgMins      = daysWithData > 0
+    ? data.filter((d) => d.totalMinutes > 0).reduce((s, d) => s + d.totalMinutes, 0) / daysWithData
+    : 0;
+  const avgHoursStr  = daysWithData > 0 ? `${(avgMins / 60).toFixed(1)}h` : '—';
+
+  // Color-code bars by WHO target adherence
+  const getBarGradId = (mins: number) => {
+    if (mins <= 0)              return '';
+    if (mins >= targetMin * 60) return 'wbcGood';   // ≥ min target → green
+    if (mins >= targetMin * 48) return 'wbcAmber';  // ≥ 80% target → amber
+    return 'wbcRed';                                 // < 80% target → pink
+  };
+  const getBarHexColor = (mins: number) => {
+    if (mins <= 0)              return Colors.lightGray;
+    if (mins >= targetMin * 60) return Colors.mint;
+    if (mins >= targetMin * 48) return Colors.gold;
+    return Colors.primaryPink;
+  };
+
+  // Format label for top of bar ("8h", "8.5h", "10h")
+  const fmtHours = (mins: number): string => {
+    if (mins <= 0) return '';
+    const rounded = Math.round(mins / 30) / 2; // nearest 0.5 h
+    return `${rounded}h`;
+  };
+
+  // Summary header colour
+  const scoreColor =
+    daysOnTarget >= 5 ? Colors.mint :
+    daysOnTarget >= 3 ? Colors.gold :
+    Colors.primaryPink;
 
   return (
-    <View style={{ alignItems: 'center' }}>
-      <Svg width={W} height={H}>
-        {/* Y-axis label */}
-        <Defs>
-          <SvgGrad id="nightBar" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={NIGHT_COLOR} />
-            <Stop offset="1" stopColor="#4338CA" />
-          </SvgGrad>
-          <SvgGrad id="napBar" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={NAP_COLOR} />
-            <Stop offset="1" stopColor="#A78BFA" />
-          </SvgGrad>
-        </Defs>
+    <View>
+      {/* ── Summary Stats Header ─────────────────────────────────────────── */}
+      <View style={{
+        flexDirection: 'row', justifyContent: 'space-around',
+        backgroundColor: '#F5F3FF', borderRadius: 14,
+        paddingVertical: 10, paddingHorizontal: 6, marginBottom: 10,
+      }}>
+        <View style={{ alignItems: 'center', minWidth: 68 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: scoreColor, lineHeight: 28 }}>
+              {daysOnTarget}
+            </Text>
+            <Text style={{ fontSize: 13, color: Colors.lightGray, fontWeight: '600', marginBottom: 2 }}>/7</Text>
+          </View>
+          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>days on target</Text>
+        </View>
 
-        {/* WHO target dashed line */}
-        {[0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 264, 272, 280].map((x, i) =>
-          x + 4 <= chartW
-            ? <Line key={i} x1={PAD_L + x} y1={targetY} x2={PAD_L + x + 4} y2={targetY} stroke="#F59E0B" strokeWidth={1.5} />
-            : null,
-        )}
+        <View style={{ width: 1, backgroundColor: '#DDD8F5' }} />
 
-        {/* Bars */}
-        {data.map((day, i) => {
-          const x       = PAD_L + i * ((chartW) / 7) + (chartW / 7 - BAR_W) / 2;
-          const nightH  = scale(day.nightMinutes);
-          const napH    = scale(day.napMinutes);
-          const nightY  = chartH - nightH;
-          const napY    = nightY - napH;
-          const isEmpty = day.totalMinutes === 0;
-
-          return (
-            <React.Fragment key={day.date}>
-              {!isEmpty && nightH > 2 && (
-                <Rect x={x} y={nightY} width={BAR_W} height={nightH} rx={4} fill="url(#nightBar)" />
-              )}
-              {!isEmpty && napH > 2 && (
-                <Rect x={x} y={napY} width={BAR_W} height={napH} rx={4} fill="url(#napBar)" opacity={0.85} />
-              )}
-              {isEmpty && (
-                <Rect x={x + 8} y={chartH - 4} width={BAR_W - 16} height={4} rx={2} fill={Colors.border} />
-              )}
-              {/* X label */}
-              <Path
-                d={`M${x + BAR_W / 2} ${chartH + 6} L${x + BAR_W / 2} ${chartH + 8}`}
-                stroke={Colors.border} strokeWidth={1}
-              />
-            </React.Fragment>
-          );
-        })}
-
-        {/* X axis */}
-        <Line x1={PAD_L} y1={chartH} x2={W} y2={chartH} stroke={Colors.border} strokeWidth={1} />
-      </Svg>
-
-      {/* X axis labels below SVG */}
-      <View style={{ flexDirection: 'row', width: W, paddingLeft: PAD_L }}>
-        {data.map((d) => (
-          <Text key={d.date} style={{ flex: 1, textAlign: 'center', fontSize: 10, color: Colors.lightGray, fontWeight: '700' }}>
-            {d.label}
+        <View style={{ alignItems: 'center', minWidth: 68 }}>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: NIGHT_COLOR, lineHeight: 28 }}>
+            {avgHoursStr}
           </Text>
+          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>avg / day</Text>
+        </View>
+
+        <View style={{ width: 1, backgroundColor: '#DDD8F5' }} />
+
+        <View style={{ alignItems: 'center', minWidth: 68 }}>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: Colors.midGray, lineHeight: 28 }}>
+            {targetMin}–{targetMin + 3}
+            <Text style={{ fontSize: 13 }}>h</Text>
+          </Text>
+          <Text style={{ fontSize: 10, color: Colors.lightGray, fontWeight: '600' }}>WHO range</Text>
+        </View>
+      </View>
+
+      {/* ── SVG Chart ────────────────────────────────────────────────────── */}
+      <View style={{ alignItems: 'center' }}>
+        <Svg width={W} height={H}>
+          <Defs>
+            {/* Three bar gradients — green / amber / pink */}
+            <SvgGrad id="wbcGood" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor="#2DD4A3" />
+              <Stop offset="100%" stopColor={Colors.mint} />
+            </SvgGrad>
+            <SvgGrad id="wbcAmber" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor="#FBBF24" />
+              <Stop offset="100%" stopColor={Colors.gold} />
+            </SvgGrad>
+            <SvgGrad id="wbcRed" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor="#F87171" />
+              <Stop offset="100%" stopColor={Colors.primaryPink} />
+            </SvgGrad>
+            {/* Nap overlay gradient (always purple, semi-transparent) */}
+            <SvgGrad id="wbcNap" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor={NAP_COLOR} stopOpacity="0.9" />
+              <Stop offset="100%" stopColor="#A78BFA" stopOpacity="0.65" />
+            </SvgGrad>
+          </Defs>
+
+          {/* ── Y-axis gridlines + hour labels ──────────────────────────── */}
+          {yTicks.map((h) => {
+            const y = PAD_T + scaleY(h * 60);
+            if (y > PAD_T + chartH + 1) return null;
+            return (
+              <React.Fragment key={`yt-${h}`}>
+                <Line
+                  x1={PAD_L - 4} y1={y}
+                  x2={W - PAD_R} y2={y}
+                  stroke={h === 0 ? '#C5C3D8' : '#ECEAF6'}
+                  strokeWidth={h === 0 ? 1 : 0.75}
+                  strokeDasharray={h === 0 ? '0' : '3,4'}
+                />
+                <SvgText
+                  x={PAD_L - 7} y={y + 4}
+                  fontSize={9} fill={Colors.lightGray}
+                  textAnchor="end" fontWeight="600"
+                >{h}h</SvgText>
+              </React.Fragment>
+            );
+          })}
+
+          {/* ── WHO minimum target line (amber dashes + label) ─────────── */}
+          <Line
+            x1={PAD_L} y1={PAD_T + targetY}
+            x2={W - PAD_R} y2={PAD_T + targetY}
+            stroke="#F59E0B" strokeWidth={1.5}
+            strokeDasharray="5,4"
+          />
+          <SvgText
+            x={W - PAD_R + 4} y={PAD_T + targetY + 4}
+            fontSize={9} fill="#92400E"
+            textAnchor="start" fontWeight="700"
+          >min {targetMin}h</SvgText>
+
+          {/* ── Bars ────────────────────────────────────────────────────── */}
+          {data.map((day, i) => {
+            const slotX   = PAD_L + i * barSlotW;
+            const barX    = slotX + (barSlotW - barW) / 2;
+            const isToday = day.date === today;
+
+            const nightPx = (day.nightMinutes / maxMins) * chartH;
+            const napPx   = (day.napMinutes   / maxMins) * chartH;
+            const nightY  = PAD_T + chartH - nightPx;
+            const napY    = nightY - napPx;
+
+            const gradId   = getBarGradId(day.totalMinutes);
+            const hexColor = getBarHexColor(day.totalMinutes);
+            const label    = fmtHours(day.totalMinutes);
+            // Value label sits 5px above the top of the tallest stack
+            const topY = napPx > 2 ? napY : nightPx > 2 ? nightY : PAD_T + chartH;
+            const lblY = topY - 5;
+
+            return (
+              <React.Fragment key={day.date}>
+                {/* Today: subtle lavender column highlight */}
+                {isToday && (
+                  <Rect
+                    x={slotX + 1} y={PAD_T - 2}
+                    width={barSlotW - 2} height={chartH + 4}
+                    rx={6} fill="#EDE9FE" opacity={0.45}
+                  />
+                )}
+
+                {/* Night-sleep bar (carries the colour grade) */}
+                {nightPx > 2 && (
+                  <Rect
+                    x={barX} y={nightY}
+                    width={barW} height={nightPx}
+                    rx={5}
+                    fill={gradId ? `url(#${gradId})` : hexColor}
+                  />
+                )}
+
+                {/* Nap bar stacked on top */}
+                {napPx > 2 && (
+                  <Rect
+                    x={barX} y={napY}
+                    width={barW} height={napPx}
+                    rx={5}
+                    fill="url(#wbcNap)"
+                  />
+                )}
+
+                {/* Empty-day tick */}
+                {day.totalMinutes === 0 && (
+                  <Rect
+                    x={barX + barW / 2 - 2} y={PAD_T + chartH - 4}
+                    width={4} height={4}
+                    rx={2} fill={Colors.lightGray} opacity={0.35}
+                  />
+                )}
+
+                {/* ── Value label (colour-coded hours) ─────────────────── */}
+                {label !== '' && (
+                  <SvgText
+                    x={barX + barW / 2}
+                    y={lblY}
+                    fontSize={8}
+                    fill={hexColor}
+                    textAnchor="middle"
+                    fontWeight="800"
+                  >{label}</SvgText>
+                )}
+
+                {/* ── X-axis day label ─────────────────────────────────── */}
+                <SvgText
+                  x={slotX + barSlotW / 2}
+                  y={PAD_T + chartH + 15}
+                  fontSize={isToday ? 11 : 10}
+                  fill={isToday ? NIGHT_COLOR : Colors.lightGray}
+                  textAnchor="middle"
+                  fontWeight={isToday ? '800' : '600'}
+                >{day.label}</SvgText>
+
+                {/* Today dot */}
+                {isToday && (
+                  <Circle
+                    cx={slotX + barSlotW / 2}
+                    cy={PAD_T + chartH + 20}
+                    r={2.5}
+                    fill={NIGHT_COLOR}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </Svg>
+      </View>
+
+      {/* ── Legend ───────────────────────────────────────────────────────── */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginTop: 6 }}>
+        {([
+          { color: Colors.mint,        label: '✓ On target' },
+          { color: Colors.gold,        label: '↑ Almost there' },
+          { color: Colors.primaryPink, label: '↓ Too short' },
+          { color: NAP_COLOR,          label: '🟣 Nap (top)' },
+        ] as const).map(({ color, label }) => (
+          <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: color, opacity: label.includes('Nap') ? 0.75 : 1 }} />
+            <Text style={{ fontSize: 10, color: Colors.midGray, fontWeight: '600' }}>{label}</Text>
+          </View>
         ))}
       </View>
 
-      {/* Legend */}
-      <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: NIGHT_COLOR }} />
-          <Text style={{ fontSize: 10, color: Colors.midGray, fontWeight: '600' }}>Night</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: NAP_COLOR, opacity: 0.8 }} />
-          <Text style={{ fontSize: 10, color: Colors.midGray, fontWeight: '600' }}>Nap</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <View style={{ width: 10, height: 2, backgroundColor: '#F59E0B', marginTop: 4 }} />
-          <Text style={{ fontSize: 10, color: '#92400E', fontWeight: '600' }}>WHO target</Text>
-        </View>
+      {/* ── Reading Guide ─────────────────────────────────────────────────── */}
+      <View style={{
+        backgroundColor: Colors.softGold, borderRadius: 10,
+        padding: 10, marginTop: 10,
+      }}>
+        <Text style={{ fontSize: 10, color: '#78350F', lineHeight: 16 }}>
+          <Text style={{ fontWeight: '700' }}>📊 How to read: </Text>
+          Each bar = one day's total sleep. The number above is the total hours (e.g. "8h").
+          {'\n'}Dark portion = night sleep · purple top = daytime naps.
+          {'\n'}🎯 Yellow dashed line = WHO minimum ({targetMin}h/day for baby's age).
+          {'\n'}Green = great · Yellow = getting there · Pink = needs more rest.
+        </Text>
       </View>
     </View>
   );
