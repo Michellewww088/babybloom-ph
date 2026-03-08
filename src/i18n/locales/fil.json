@@ -359,6 +359,12 @@
       "nap_count": "Idlip"
     },
     "who_target": "Target ng WHO",
+    "summary_line": "Si {{name}} ay natulog ng {{hours}}h ngayon {{nap_info}}— {{score}}",
+    "nap_info_one": "(1 idlip) ",
+    "nap_info_many": "({{count}} idlip) ",
+    "score_great": "napakahusay! 🌟",
+    "score_good": "magandang progreso 😊",
+    "score_needs_attention": "kailangan ng mas maraming tulog 💤",
     "timer_active": "NATUTULOG NA",
     "timer_started_at": "Nagsimula {{time}}",
     "prefill_now": "Ngayon",

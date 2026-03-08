@@ -359,6 +359,12 @@
       "nap_count": "小睡次数"
     },
     "who_target": "WHO目标",
+    "summary_line": "{{name}} 今天睡了 {{hours}}h {{nap_info}}— {{score}}",
+    "nap_info_one": "（1次小睡）",
+    "nap_info_many": "（{{count}}次小睡）",
+    "score_great": "非常棒！🌟",
+    "score_good": "继续保持 😊",
+    "score_needs_attention": "需要更多睡眠 💤",
     "timer_active": "睡眠进行中",
     "timer_started_at": "开始于 {{time}}",
     "prefill_now": "现在",

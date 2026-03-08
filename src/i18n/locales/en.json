@@ -359,6 +359,12 @@
       "nap_count": "Naps"
     },
     "who_target": "WHO Target",
+    "summary_line": "{{name}} has slept {{hours}}h today {{nap_info}}— {{score}}",
+    "nap_info_one": "(1 nap) ",
+    "nap_info_many": "({{count}} naps) ",
+    "score_great": "excellent! 🌟",
+    "score_good": "good progress 😊",
+    "score_needs_attention": "needs more rest 💤",
     "timer_active": "SLEEP IN PROGRESS",
     "timer_started_at": "Started {{time}}",
     "prefill_now": "Now",

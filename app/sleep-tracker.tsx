@@ -727,6 +727,18 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
     ? { color: Colors.gold,        bg: Colors.softGold,  emoji: '😊' }
     : { color: '#EF4444',          bg: '#FEF2F2',        emoji: '💤' };
 
+  const napInfo = summary.napCount === 0
+    ? ''
+    : summary.napCount === 1
+    ? t('sleep.nap_info_one')
+    : t('sleep.nap_info_many', { count: summary.napCount });
+  const translatedSummaryLine = t('sleep.summary_line', {
+    name:     childName,
+    hours:    summary.totalHours.toFixed(1),
+    nap_info: napInfo,
+    score:    t(`sleep.score_${summary.overallScore}`),
+  });
+
   const fetchAI = async () => {
     if (hasFetched.current) return;
     hasFetched.current = true;
@@ -748,7 +760,7 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={dsc.label}>{t('sleep.ai_summary_label')}</Text>
-          <Text style={[dsc.scoreLine, { color: scoreDot.color }]}>{summary.summaryLine}</Text>
+          <Text style={[dsc.scoreLine, { color: scoreDot.color }]}>{translatedSummaryLine}</Text>
         </View>
         <TouchableOpacity onPress={() => { setE(!expanded); if (!expanded) fetchAI(); }} style={dsc.expandBtn}>
           <Text style={dsc.expandTxt}>{expanded ? '▲' : '▼'}</Text>
