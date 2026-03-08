@@ -3,6 +3,17 @@
  * WHO Growth Charts + AI Analysis + Measurement History + PDF Export
  * BMAD: richer context, interactivity, AI narrative — beats AsianParents
  */
+
+// Suppress React Native Web SVG prop warnings (onPress on SVG elements is handled via onClick on web)
+if (typeof window !== 'undefined') {
+  const origError = console.error.bind(console);
+  console.error = (...args: unknown[]) => {
+    const msg = typeof args[0] === 'string' ? args[0] : '';
+    if (msg.includes('Unknown event handler property') || msg.includes('onPress')) return;
+    origError(...args);
+  };
+}
+
 import React, { useState, useRef } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal,
@@ -175,7 +186,8 @@ function WHOGrowthChart({
             )}
             <Circle cx={dot.x} cy={dot.y} r="7" fill={dot.color} stroke="#FFFFFF" strokeWidth="2.5" />
             <Circle cx={dot.x} cy={dot.y} r="20" fill="transparent"
-              onPress={() => onDotPress(activeDotId === dot.record.id ? null : dot)} />
+              onPress={Platform.OS !== 'web' ? () => onDotPress(activeDotId === dot.record.id ? null : dot) : undefined}
+              onClick={Platform.OS === 'web' ? () => onDotPress(activeDotId === dot.record.id ? null : dot) : undefined} />
           </G>
         ))}
 
