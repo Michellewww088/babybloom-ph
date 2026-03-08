@@ -15,7 +15,7 @@
  *  OR empty state when no child profile exists
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Image,
   StyleSheet, Dimensions, RefreshControl, Modal,
@@ -48,6 +48,7 @@ import {
   getWHOPercentile,
   getCorrectedAgeMonths,
 } from '../../lib/who-growth';
+import { AteAIButton, AteAIChat, AteAISummaryCard } from '../../components/ai/AteAI';
 
 const { width: W } = Dimensions.get('window');
 const PAD      = 16;
@@ -359,9 +360,9 @@ function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. Top Navigation Bar
+// 1. Top Navigation Bar  (with Ate AI animated button)
 // ─────────────────────────────────────────────────────────────────────────────
-function TopNavBar() {
+function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
   const { activeChild, children } = useChildStore();
   const hasChild    = !!activeChild;
   const displayName = hasChild ? getChildDisplayName(activeChild!) : null;
@@ -405,11 +406,9 @@ function TopNavBar() {
         )}
       </View>
 
-      {/* Right: AI + Bell */}
+      {/* Right: Ate AI (animated kawaii button) + Bell */}
       <View style={nav.right}>
-        <TouchableOpacity style={nav.iconBtn} activeOpacity={0.7}>
-          <Text style={nav.iconEmoji}>🤖</Text>
-        </TouchableOpacity>
+        <AteAIButton onPress={onAteAIPress} />
         <TouchableOpacity style={nav.iconBtn} activeOpacity={0.7}>
           <Text style={nav.iconEmoji}>🔔</Text>
         </TouchableOpacity>
@@ -952,8 +951,10 @@ function EmptyState() {
 // Home Screen
 // ─────────────────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
+  const { t }             = useTranslation();
   const { activeChild, children } = useChildStore();
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing,   setRefreshing]  = useState(false);
+  const [ateAIOpen,    setAteAIOpen]   = useState(false);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -963,15 +964,16 @@ export default function HomeScreen() {
   if (!activeChild) {
     return (
       <View style={s.screen}>
-        <TopNavBar />
+        <TopNavBar onAteAIPress={() => setAteAIOpen(true)} />
         <EmptyState />
+        <AteAIChat visible={ateAIOpen} onClose={() => setAteAIOpen(false)} />
       </View>
     );
   }
 
   return (
     <View style={s.screen}>
-      <TopNavBar />
+      <TopNavBar onAteAIPress={() => setAteAIOpen(true)} />
       {children.length > 1 && <ChildSwitcher />}
 
       <ScrollView
@@ -991,22 +993,35 @@ export default function HomeScreen() {
         <HeroBanner child={activeChild} />
 
         {/* Quick Stats */}
-        <Text style={[s.sectionTitle, { marginTop: 20, marginBottom: 10 }]}>Quick Stats</Text>
+        <Text style={[s.sectionTitle, { marginTop: 20, marginBottom: 10 }]}>
+          {t('home.quick_stats')}
+        </Text>
         <QuickStatsStrip />
 
+        {/* Ate AI Weekly Summary Card */}
+        <AteAISummaryCard
+          title={t('ateai.weekly_summary_title')}
+          emoji="✨"
+          prompt="Give a 2-sentence friendly weekly health summary for this baby based on the data. Include one specific WHO/DOH tip relevant to their age."
+          onChatPress={() => setAteAIOpen(true)}
+        />
+
         {/* Growth Snapshot */}
-        <Text style={s.sectionTitle}>Growth Snapshot</Text>
+        <Text style={s.sectionTitle}>{t('home.growth_snapshot')}</Text>
         <GrowthSnapshotCard />
 
         {/* Feature Grid */}
         <FeatureIconGrid />
 
         {/* Weekly Insights */}
-        <Text style={s.sectionTitle}>Insights</Text>
+        <Text style={s.sectionTitle}>{t('home.insights')}</Text>
         <InsightsCard />
 
         <View style={{ height: 30 }} />
       </ScrollView>
+
+      {/* Ate AI Chat Sheet */}
+      <AteAIChat visible={ateAIOpen} onClose={() => setAteAIOpen(false)} />
     </View>
   );
 }
