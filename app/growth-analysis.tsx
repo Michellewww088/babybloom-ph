@@ -567,13 +567,27 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
         }),
       });
       const data = await res.json();
-      const txt  = data?.content?.[0]?.text?.trim() ?? '';
+
+      // API-level error (credits, rate limit, auth) → fallback to demo
+      if (!res.ok || data?.error) {
+        setReport(buildDemoReport(childName, ageMonths, sex, wR, hR, hdR, wTrend));
+        setIsDemo(true);
+        setLoad(false); return;
+      }
+
+      const txt   = data?.content?.[0]?.text?.trim() ?? '';
       // Strip any markdown code fences if present
       const clean = txt.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '').trim();
       try { setReport(JSON.parse(clean) as GrowthReport); }
-      catch { setRawText(txt || 'Unable to parse AI response. Please try again.'); }
+      catch {
+        // JSON parse failed → also fallback to demo
+        setReport(buildDemoReport(childName, ageMonths, sex, wR, hR, hdR, wTrend));
+        setIsDemo(true);
+      }
     } catch {
-      setRawText('Ate AI is unavailable right now. Check your network connection.');
+      // Network error → fallback to demo
+      setReport(buildDemoReport(childName, ageMonths, sex, wR, hR, hdR, wTrend));
+      setIsDemo(true);
     }
     setLoad(false);
   };
