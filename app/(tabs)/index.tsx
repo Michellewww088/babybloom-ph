@@ -825,10 +825,12 @@ function FeatureIconGrid() {
             style={{ width: FEAT_W }}
             activeOpacity={0.82}
             onPress={() => {
-              if (id === 'feeding_log')    router.push('/feeding-log');
-              if (id === 'sleep_tracker')  router.push('/sleep-tracker');
-              if (id === 'vitamins_meds')  router.push('/vitamins' as any);
-              if (id === 'insights')       router.push('/growth-analysis');
+              if (id === 'feeding_log')      router.push('/feeding-log');
+              if (id === 'sleep_tracker')    router.push('/sleep-tracker');
+              if (id === 'vaccination_log')  router.push('/(tabs)/vaccines' as any);
+              if (id === 'vitamins_meds')    router.push('/vitamins' as any);
+              if (id === 'feeding_guide')    router.push('/feeding-guide' as any);
+              if (id === 'insights')         router.push('/growth-analysis');
             }}
           >
             <LinearGradient

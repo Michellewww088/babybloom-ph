@@ -308,7 +308,7 @@ function GPTrackerModal({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: '#FAFAFA' }}>
         {/* Header */}
         <LinearGradient colors={['#FFB74D', '#FFC870']} style={gp.header}>
@@ -502,7 +502,7 @@ function AddEditModal({
       ];
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet"
+    <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
       onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={{ flex: 1, backgroundColor: '#FAFAFA' }}>
