@@ -501,8 +501,12 @@ function QuickStatsStrip() {
         <TouchableOpacity
           key={id}
           style={[qs.chip, { borderLeftColor: accent }]}
-          onPress={() => id === 'fed' ? router.push('/feeding-log') : undefined}
-          activeOpacity={id === 'fed' ? 0.7 : 1}
+          onPress={() => {
+            if (id === 'fed')    router.push('/feeding-log');
+            if (id === 'weight') router.push('/growth-analysis');
+            if (id === 'sleep')  router.push('/sleep-tracker');
+          }}
+          activeOpacity={id === 'fed' || id === 'weight' || id === 'sleep' ? 0.7 : 1}
         >
           <View style={[qs.iconWrap, { backgroundColor: accent + '22' }]}>
             <QsIcon id={id} size={28} />
@@ -830,7 +834,7 @@ function FeatureIconGrid() {
               if (id === 'vaccination_log')  router.push('/(tabs)/vaccines' as any);
               if (id === 'vitamins_meds')    router.push('/vitamins' as any);
               if (id === 'feeding_guide')    router.push('/feeding-guide' as any);
-              if (id === 'insights')         router.push('/growth-analysis');
+              if (id === 'insights')         router.push('/insights' as any);
             }}
           >
             <LinearGradient
