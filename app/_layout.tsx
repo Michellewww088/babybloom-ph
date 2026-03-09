@@ -13,6 +13,21 @@ export const unstable_settings = { initialRouteName: '(tabs)' };
 
 SplashScreen.preventAutoHideAsync();
 
+// ── Dev bypass ─────────────────────────────────────────────────────────────
+// In __DEV__ mode, the login screen's "Skip Login" button sets this flag in
+// localStorage so the root layout doesn't redirect back to login on reload.
+const DEV_SKIP_KEY = '__bb_dev_skip__';
+function isDevSkip() {
+  if (!__DEV__) return false;
+  try { return !!localStorage.getItem(DEV_SKIP_KEY); } catch { return false; }
+}
+export function setDevSkip() {
+  try { localStorage.setItem(DEV_SKIP_KEY, '1'); } catch {}
+}
+export function clearDevSkip() {
+  try { localStorage.removeItem(DEV_SKIP_KEY); } catch {}
+}
+
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [loaded, fontError] = useFonts({
@@ -41,6 +56,12 @@ export default function RootLayout() {
     // they don't interrupt screens like /welcome that appear mid-flow.
     if (hasNavigated.current) return;
     hasNavigated.current = true;
+
+    // ── Dev bypass: skip auth guard entirely ──────────────────────────────
+    if (isDevSkip()) {
+      router.replace('/(tabs)');
+      return;
+    }
 
     // No session → go to login
     if (!session) {

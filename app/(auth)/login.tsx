@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import i18n from '../../src/i18n';
 import Colors from '../../constants/Colors';
+import { setDevSkip } from '../_layout';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -139,7 +140,7 @@ export default function LoginScreen() {
             <View style={{ gap: 8, marginTop: 16 }}>
               <TouchableOpacity
                 style={s.devSkip}
-                onPress={() => router.replace('/(tabs)')}
+                onPress={() => { setDevSkip(); router.replace('/(tabs)'); }}
               >
                 <Text style={s.devSkipText}>⚡ Dev: Skip Login → Dashboard</Text>
               </TouchableOpacity>
