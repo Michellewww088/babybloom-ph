@@ -827,6 +827,7 @@ function FeatureIconGrid() {
             onPress={() => {
               if (id === 'feeding_log')    router.push('/feeding-log');
               if (id === 'sleep_tracker')  router.push('/sleep-tracker');
+              if (id === 'vitamins_meds')  router.push('/vitamins' as any);
               if (id === 'insights')       router.push('/growth-analysis');
             }}
           >
