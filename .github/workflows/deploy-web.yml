@@ -30,13 +30,17 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Check Expo version
+        run: npx expo --version
+
       - name: Export Expo web build
-        run: npx expo export --platform web
+        run: npx expo export --platform web --clear 2>&1 || (echo "=== EXPORT FAILED ===" && exit 1)
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
           NODE_OPTIONS: --max-old-space-size=4096
           CI: false
+          EXPO_NO_DOTENV: 1
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
