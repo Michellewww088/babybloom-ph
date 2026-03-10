@@ -234,13 +234,15 @@ function KeyTakeawaysBox({ takeaways, t }: { takeaways: string[]; t: (k: string)
    ArticleDetailModal
 ───────────────────────────────────────────────────────────────────────── */
 function ArticleDetailModal({
-  article, visible, onClose, defaultLang, t,
+  article, visible, onClose, defaultLang, t, isSaved, onToggleSave,
 }: {
   article: Article | null;
   visible: boolean;
   onClose: () => void;
   defaultLang: LangKey;
   t: (k: string) => string;
+  isSaved: boolean;
+  onToggleSave: () => void;
 }) {
   const [activeLang, setActiveLang] = useState<LangKey>(defaultLang);
 
@@ -268,6 +270,10 @@ function ArticleDetailModal({
             <Text style={s.detailTitle} numberOfLines={3}>{article.title[activeLang]}</Text>
             <Text style={s.detailMeta}>{article.readMinutes} {t('encyclopedia.min_read')}</Text>
           </View>
+          <TouchableOpacity onPress={onToggleSave} hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }} style={s.detailSaveBtn}>
+            <View style={[s.detailBookmarkFlag, isSaved && s.detailBookmarkFlagSaved]} />
+            <View style={[s.detailBookmarkBase, isSaved && s.detailBookmarkBaseSaved]} />
+          </TouchableOpacity>
         </LinearGradient>
 
         {/* ── Language toggle ── */}
@@ -672,6 +678,8 @@ export default function EncyclopediaScreen() {
         onClose={() => setDetailVisible(false)}
         defaultLang={lang}
         t={t}
+        isSaved={selectedArticle ? savedIds.has(selectedArticle.id) : false}
+        onToggleSave={() => selectedArticle && toggleSave(selectedArticle.id)}
       />
     </SafeAreaView>
   );
@@ -776,14 +784,30 @@ const s = StyleSheet.create({
   srcBadgeText:    { fontSize: 10, fontWeight: '700' },
   cardReadTime:    { fontSize: 11, color: '#9E9EBE', fontWeight: '600' },
 
-  /* Bookmark icon (purely geometric, no emoji) */
+  /* Bookmark icon on article list card */
   bookmarkOuter: { width: 18, height: 22, alignItems: 'center' },
   bookmarkFlag: {
     width: 14, height: 18,
     backgroundColor: '#E0E0E8',
     borderRadius: 2, borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
-    // triangle notch effect via borderBottom — omitted for RN simplicity
   },
+
+  /* Bookmark button in article detail modal header */
+  detailSaveBtn: { width: 36, height: 42, alignItems: 'center', justifyContent: 'flex-start', paddingTop: 4 },
+  detailBookmarkFlag: {
+    width: 20, height: 26,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    borderRadius: 3, borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
+  },
+  detailBookmarkFlagSaved: { backgroundColor: '#FFFFFF' },
+  detailBookmarkBase: {
+    width: 0, height: 0,
+    borderLeftWidth: 10, borderRightWidth: 10, borderTopWidth: 8,
+    borderLeftColor: 'transparent', borderRightColor: 'transparent',
+    borderTopColor: 'rgba(255,255,255,0.35)',
+    marginTop: -1,
+  },
+  detailBookmarkBaseSaved: { borderTopColor: '#FFFFFF' },
 
   /* Empty / no results */
   emptyState: {
