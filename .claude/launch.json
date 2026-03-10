@@ -4,8 +4,14 @@
     {
       "name": "babybloom",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8082"],
-      "port": 8082
+      "runtimeArgs": ["expo", "start", "--web", "--port", "8085"],
+      "port": 8085
+    },
+    {
+      "name": "babybloom-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "dist", "--listen", "8086", "--single"],
+      "port": 8086
     }
   ]
 }
