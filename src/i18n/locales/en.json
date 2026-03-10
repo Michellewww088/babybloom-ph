@@ -88,7 +88,15 @@
     "birth_weight_label": "Birth Weight",
     "birth_height_label": "Birth Height",
     "gestational_label": "Gestational Age",
-    "add_first_measurement": "+ Add first measurement"
+    "add_first_measurement": "+ Add first measurement",
+    "add_baby": "+ Add Baby",
+    "dashboard_suffix": "'s Dashboard",
+    "status_great": "✨ Everything looks great!",
+    "feeds_count": "{{count}}x today",
+    "welcome_title": "Welcome to BabyBloom PH! 🌸",
+    "welcome_subtitle": "Add your baby's profile to start tracking their health journey.",
+    "add_baby_profile": "Add Baby Profile 🍼",
+    "mch_booklet_note": "Your digital MCH Booklet 🇵🇭"
   },
   "calendar": {
     "title": "Calendar & Reminders",
@@ -456,7 +464,9 @@
     "timer_resume": "Resume",
     "timer_paused": "Paused",
     "ai_disclaimer": "This analysis is based on WHO and DOH Philippines guidelines for general reference only. Please consult your Pediatrician for medical concerns.",
-    "daily_summary_label": "Today's Feeding Summary"
+    "daily_summary_label": "Today's Feeding Summary",
+    "no_baby_profile": "No baby profile yet 🍼",
+    "add_baby_profile": "Add Baby Profile"
   },
   "common": {
     "loading": "Loading...",

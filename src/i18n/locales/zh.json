@@ -88,7 +88,15 @@
     "birth_weight_label": "出生体重",
     "birth_height_label": "出生身长",
     "gestational_label": "孕周",
-    "add_first_measurement": "+ 添加第一次测量"
+    "add_first_measurement": "+ 添加第一次测量",
+    "add_baby": "+ 添加宝宝",
+    "dashboard_suffix": "的控制面板",
+    "status_great": "✨ 一切都很好！",
+    "feeds_count": "今天{{count}}次",
+    "welcome_title": "欢迎使用 BabyBloom PH！🌸",
+    "welcome_subtitle": "添加宝宝的档案，开始追踪他们的健康旅程。",
+    "add_baby_profile": "添加宝宝档案 🍼",
+    "mch_booklet_note": "您的数字化 MCH 健康手册 🇵🇭"
   },
   "calendar": {
     "title": "日历与提醒",
@@ -456,7 +464,9 @@
     "timer_resume": "继续",
     "timer_paused": "已暂停",
     "ai_disclaimer": "此分析基于WHO和菲律宾卫生部指南，仅供参考。如有医疗问题，请咨询您的儿科医生。",
-    "daily_summary_label": "今日喂食总结"
+    "daily_summary_label": "今日喂食总结",
+    "no_baby_profile": "还没有宝宝档案 🍼",
+    "add_baby_profile": "添加宝宝档案"
   },
   "common": {
     "loading": "加载中...",

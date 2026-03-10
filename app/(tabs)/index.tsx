@@ -363,6 +363,7 @@ function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
 // 1. Top Navigation Bar  (with Ate AI animated button)
 // ─────────────────────────────────────────────────────────────────────────────
 function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
+  const { t } = useTranslation();
   const { activeChild, children } = useChildStore();
   const hasChild    = !!activeChild;
   const displayName = hasChild ? getChildDisplayName(activeChild!) : null;
@@ -389,7 +390,7 @@ function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
           </>
         ) : (
           <View style={nav.addPill}>
-            <Text style={nav.addPillText}>+ Add Baby</Text>
+            <Text style={nav.addPillText}>{t('home.add_baby')}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -402,7 +403,7 @@ function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
             {ageStr && <Text style={nav.age} numberOfLines={1}>{ageStr}</Text>}
           </>
         ) : (
-          <Text style={nav.appName}>BabyBloom PH 🌸</Text>
+          <Text style={nav.appName}>{t('app.name')} 🌸</Text>
         )}
       </View>
 
@@ -422,7 +423,14 @@ function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
 // Hero Banner — gradient hero card with KawaiiBaby
 // ─────────────────────────────────────────────────────────────────────────────
 function HeroBanner({ child }: { child: Child }) {
+  const { t } = useTranslation();
   const name = getChildDisplayName(child);
+  const hour = new Date().getHours();
+  const greeting = hour < 12
+    ? t('home.greeting_morning')
+    : hour < 18
+      ? t('home.greeting_afternoon')
+      : t('home.greeting_evening');
   return (
     <LinearGradient
       colors={[Colors.primaryPink, '#F472B6', '#FB7185']}
@@ -434,14 +442,14 @@ function HeroBanner({ child }: { child: Child }) {
       <View style={hb.circleBot} />
 
       <View style={hb.textCol}>
-        <Text style={hb.greeting}>Hello, Mommy! 🌸</Text>
-        <Text style={hb.babyName}>{name}'s Dashboard</Text>
+        <Text style={hb.greeting}>{greeting}</Text>
+        <Text style={hb.babyName}>{name}{t('home.dashboard_suffix')}</Text>
         <LinearGradient
           colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
           style={hb.statusPill}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
         >
-          <Text style={hb.statusText}>✨ Everything looks great!</Text>
+          <Text style={hb.statusText}>{t('home.status_great')}</Text>
         </LinearGradient>
       </View>
 
@@ -472,7 +480,7 @@ function QuickStatsStrip() {
   const lastFeed    = getLastFeed(entries, childId);
   const todayFeeds  = getTodayEntries(entries, childId);
   const lastFedVal  = lastFeed ? timeAgoShort(lastFeed.startedAt) : '—';
-  const feedsToday  = todayFeeds.length > 0 ? `${todayFeeds.length}x today` : '—';
+  const feedsToday  = todayFeeds.length > 0 ? t('home.feeds_count', { count: todayFeeds.length }) : '—';
 
   const growthStore   = useGrowthStore();
   const latestGrowth  = growthStore.getLatest(childId);
@@ -933,23 +941,22 @@ function InsightsCard() {
 // Empty State
 // ─────────────────────────────────────────────────────────────────────────────
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <View style={es.wrap}>
       <KawaiiBaby size={160} />
-      <Text style={es.title}>Welcome to BabyBloom PH! 🌸</Text>
-      <Text style={es.subtitle}>
-        Add your baby's profile to start tracking their health journey.
-      </Text>
+      <Text style={es.title}>{t('home.welcome_title')}</Text>
+      <Text style={es.subtitle}>{t('home.welcome_subtitle')}</Text>
       <TouchableOpacity onPress={() => router.push('/child-profile')} activeOpacity={0.85}>
         <LinearGradient
           colors={[Colors.primaryPink, '#F472B6']}
           style={es.btn}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
         >
-          <Text style={es.btnText}>Add Baby Profile  🍼</Text>
+          <Text style={es.btnText}>{t('home.add_baby_profile')}</Text>
         </LinearGradient>
       </TouchableOpacity>
-      <Text style={es.note}>Your digital MCH Booklet 🇵🇭</Text>
+      <Text style={es.note}>{t('home.mch_booklet_note')}</Text>
     </View>
   );
 }

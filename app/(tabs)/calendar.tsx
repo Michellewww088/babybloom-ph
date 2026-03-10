@@ -9,6 +9,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal, TextInput,
   StyleSheet, Dimensions, Switch, Alert, Platform, KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -612,6 +613,7 @@ export default function CalendarScreen() {
   const vaccineStore    = useVaccineStore();
 
   const today = new Date();
+  const [isLoading,       setIsLoading]       = useState(true);
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selDay,    setSelDay]    = useState<number | null>(null);
@@ -620,6 +622,12 @@ export default function CalendarScreen() {
   const [presetDate,      setPresetDate]      = useState<string | undefined>(undefined);
   const [daySheetVisible, setDaySheetVisible] = useState(false);
   const [filterCat, setFilterCat] = useState<ReminderCategory | 'all'>('all');
+
+  // ── Mount-time loading spinner ──────────────────────────────────────────────
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   // ── Auto-generate PPS + GP on load ─────────────────────────────────────────
   useEffect(() => {
@@ -743,6 +751,15 @@ export default function CalendarScreen() {
     setModalVisible(false);
     setEditingReminder(null);
   };
+
+  // ── Loading guard ────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={PINK} />
+      </View>
+    );
+  }
 
   // ── No child guard ──────────────────────────────────────────────────────────
   if (!activeChild) {

@@ -9,7 +9,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal, TextInput,
   StyleSheet, Dimensions, Alert, Platform, Switch,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -1347,12 +1347,18 @@ export default function VaccinesScreen() {
   const { activeChild } = useChildStore();
   const vaccineStore    = useVaccineStore();
 
+  const [isLoading,     setIsLoading]     = useState(true);
   const [mainTab,       setMainTab]       = useState<MainTab>('knowledge');
   const [detailVaccine, setDetailVaccine] = useState<VaccineEntry | null>(null);
   const [detailRecord,  setDetailRecord]  = useState<VaccineRecord | undefined>(undefined);
   const [detailVisible, setDetailVisible] = useState(false);
   const [editRecord,    setEditRecord]    = useState<VaccineRecord | null>(null);
   const [editVisible,   setEditVisible]   = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (activeChild?.id && activeChild.birthday) {
@@ -1384,6 +1390,14 @@ export default function VaccinesScreen() {
     setEditRecord(record);
     setEditVisible(true);
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#F5F8FF', alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={Colors.primaryPink} />
+      </View>
+    );
+  }
 
   if (!activeChild) {
     return (

@@ -88,7 +88,15 @@
     "birth_weight_label": "Timbang sa Kapanganakan",
     "birth_height_label": "Taas sa Kapanganakan",
     "gestational_label": "Gestational Age",
-    "add_first_measurement": "+ Magdagdag ng unang sukat"
+    "add_first_measurement": "+ Magdagdag ng unang sukat",
+    "add_baby": "+ Magdagdag ng Sanggol",
+    "dashboard_suffix": " Dashboard",
+    "status_great": "✨ Lahat ay maayos!",
+    "feeds_count": "{{count}}x ngayon",
+    "welcome_title": "Maligayang pagdating sa BabyBloom PH! 🌸",
+    "welcome_subtitle": "Idagdag ang profile ng iyong sanggol para simulan ang pagsubaybay sa kanilang kalusugan.",
+    "add_baby_profile": "Magdagdag ng Profile ng Sanggol 🍼",
+    "mch_booklet_note": "Ang iyong digital MCH Booklet 🇵🇭"
   },
   "calendar": {
     "title": "Kalendaryo at Paalala",
@@ -456,7 +464,9 @@
     "timer_resume": "Ituloy",
     "timer_paused": "Naka-pause",
     "ai_disclaimer": "Ang pagsusuring ito ay batay sa mga alituntunin ng WHO at DOH Philippines para sa pangkalahatang sanggunian lamang. Kumonsulta sa inyong Pediatrician para sa medikal na alalahanin.",
-    "daily_summary_label": "Buod ng Pagpapakain Ngayon"
+    "daily_summary_label": "Buod ng Pagpapakain Ngayon",
+    "no_baby_profile": "Wala pang profile ng sanggol 🍼",
+    "add_baby_profile": "Magdagdag ng Profile ng Sanggol"
   },
   "common": {
     "loading": "Naglo-load...",

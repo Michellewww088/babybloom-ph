@@ -1483,9 +1483,9 @@ export default function FeedingLogScreen() {
   if (!activeChild) {
     return (
       <View style={scr.emptyWrap}>
-        <Text style={scr.emptyTitle}>No baby profile yet 🍼</Text>
+        <Text style={scr.emptyTitle}>{t('feeding.no_baby_profile')}</Text>
         <TouchableOpacity style={scr.emptyBtn} onPress={() => router.push('/child-profile')}>
-          <Text style={scr.emptyBtnTxt}>Add Baby Profile</Text>
+          <Text style={scr.emptyBtnTxt}>{t('feeding.add_baby_profile')}</Text>
         </TouchableOpacity>
       </View>
     );
