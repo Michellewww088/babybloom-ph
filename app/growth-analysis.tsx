@@ -163,7 +163,7 @@ function WHOGrowthChart({
         <Polyline points={polyPts('p97')} fill="none" stroke="#FCA5A5" strokeWidth="1"   strokeDasharray="4,3" />
 
         {/* Percentile labels on right edge */}
-        {([['p3','3','#FCA5A5'],['p15','15','#F5A623'],['p50','50','#27AE7A'],['p85','85','#F5A623'],['p97','97','#FCA5A5']] as [keyof WHOPercentileRow, string, string][]).map(([key, lbl, col]) => {
+        {([['p3','3','#FCA5A5'],['p15','15',Colors.gold],['p50','50',Colors.mint],['p85','85',Colors.gold],['p97','97','#FCA5A5']] as [keyof WHOPercentileRow, string, string][]).map(([key, lbl, col]) => {
           const last = curveData[curveData.length - 1];
           return (
             <SvgText key={key} x={SVG_W - PR + 2} y={toY(last[key] as number) + 3}
@@ -211,7 +211,7 @@ function WHOGrowthChart({
       {/* Legend */}
       <View style={ch.legend}>
         {[
-          { color: '#27AE7A',           label: '50th (median)' },
+          { color: Colors.mint,           label: '50th (median)' },
           { color: Colors.primaryPink,  label: t('growth.child_data_legend') },
           { color: Colors.gold,         label: '15th / 85th' },
           { color: '#FCA5A5',           label: '3rd / 97th' },
@@ -391,7 +391,7 @@ function PercentileBar({ percentile, color }: { percentile: number; color: strin
       <View style={{
         position: 'absolute', left: Math.max(0, markerLeft), top: -3,
         width: 16, height: 16, borderRadius: 8,
-        backgroundColor: color, borderWidth: 2.5, borderColor: '#FFFFFF',
+        backgroundColor: color, borderWidth: 2.5, borderColor: Colors.white,
         shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 3, elevation: 4,
       }} />
       {/* Percentile label */}
@@ -402,7 +402,7 @@ function PercentileBar({ percentile, color }: { percentile: number; color: strin
       {/* Zone labels */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, width: BAR_W }}>
         <Text style={{ fontSize: 8, color: '#FCA5A5', fontWeight: '800' }}>Low</Text>
-        <Text style={{ fontSize: 8, color: '#27AE7A', fontWeight: '800', marginLeft: 14 }}>Healthy (p15–p85)</Text>
+        <Text style={{ fontSize: 8, color: Colors.mint, fontWeight: '800', marginLeft: 14 }}>Healthy (p15–p85)</Text>
         <Text style={{ fontSize: 8, color: '#FCA5A5', fontWeight: '800' }}>High</Text>
       </View>
     </View>
@@ -594,9 +594,9 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
 
   // Overall status colour theming
   const OVERALL_THEME: Record<string, { bg: string; text: string; icon: string }> = {
-    great: { bg: '#E0F7EF', text: Colors.mint,         icon: '🌟' },
-    good:  { bg: '#FFF8E8', text: Colors.gold,         icon: '😊' },
-    watch: { bg: '#FFE4EE', text: Colors.primaryPink,  icon: '⚠️' },
+    great: { bg: Colors.softMint, text: Colors.mint,         icon: '🌟' },
+    good:  { bg: Colors.softGold, text: Colors.gold,         icon: '😊' },
+    watch: { bg: Colors.softPink, text: Colors.primaryPink,  icon: '⚠️' },
   };
   const theme = report ? (OVERALL_THEME[report.overallStatus] ?? OVERALL_THEME.good) : null;
 
@@ -882,7 +882,7 @@ export default function GrowthAnalysisScreen() {
 
         {/* Current value hero card */}
         {curVal !== undefined && pResult ? (
-          <LinearGradient colors={[pResult.bgColor, '#FFFFFF']} style={sv.card}
+          <LinearGradient colors={[pResult.bgColor, Colors.white]} style={sv.card}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
             <View style={{ flex: 1 }}>
               <Text style={sv.metaLbl}>
@@ -946,11 +946,11 @@ export default function GrowthAnalysisScreen() {
           <Text style={pl.title}>{t('growth.percentile_explain_title')}</Text>
           <View style={pl.row}>
             {[
-              { range: '< 5th',   c: '#E63B6F', bg: '#FFE4EE' },
-              { range: '5–15th',  c: '#F5A623', bg: '#FFF8E8' },
-              { range: '15–85th', c: '#27AE7A', bg: '#E0F7EF' },
-              { range: '85–97th', c: '#F5A623', bg: '#FFF8E8' },
-              { range: '> 97th',  c: '#E63B6F', bg: '#FFE4EE' },
+              { range: '< 5th',   c: Colors.primaryPink, bg: Colors.softPink },
+              { range: '5–15th',  c: Colors.gold, bg: Colors.softGold },
+              { range: '15–85th', c: Colors.mint, bg: Colors.softMint },
+              { range: '85–97th', c: Colors.gold, bg: Colors.softGold },
+              { range: '> 97th',  c: Colors.primaryPink, bg: Colors.softPink },
             ].map(({ range, c, bg }) => (
               <View key={range} style={[pl.band, { backgroundColor: bg }]}>
                 <Text style={[pl.bandTxt, { color: c }]}>{range}</Text>
@@ -1071,10 +1071,10 @@ export default function GrowthAnalysisScreen() {
 const s = StyleSheet.create({
   screen:     { flex: 1, backgroundColor: Colors.background },
   hdr:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingTop: 52, paddingBottom: 14 },
-  backW:      { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
-  hdrTitleW:  { fontSize: 17, fontWeight: '800', color: '#FFFFFF' },
+  backW:      { color: Colors.white, fontWeight: '700', fontSize: 14 },
+  hdrTitleW:  { fontSize: 17, fontWeight: '800', color: Colors.white },
   addBtn:     { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
-  addTxt:     { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
+  addTxt:     { color: Colors.white, fontWeight: '800', fontSize: 13 },
   scroll:     { flex: 1 },
   content:    { paddingTop: 4, paddingBottom: 40 },
   childRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: PAD, paddingVertical: 10 },
@@ -1082,7 +1082,7 @@ const s = StyleSheet.create({
   childAge:   { fontSize: 13, color: Colors.midGray, fontWeight: '600' },
   pretrmBadge:{ backgroundColor: Colors.softGold, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   pretrmTxt:  { fontSize: 10, color: Colors.gold, fontWeight: '700' },
-  card:       { backgroundColor: '#FFFFFF', borderRadius: 20, padding: PAD, marginHorizontal: PAD, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: Colors.border },
+  card:       { backgroundColor: Colors.white, borderRadius: 20, padding: PAD, marginHorizontal: PAD, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: Colors.border },
   cardTitle:  { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 4 },
   cardSub:    { fontSize: 10, color: Colors.lightGray, marginBottom: 12 },
 });
@@ -1090,7 +1090,7 @@ const s = StyleSheet.create({
 const tb2 = StyleSheet.create({
   bar:       { flexDirection: 'row', marginHorizontal: PAD, marginBottom: 12, backgroundColor: Colors.border, borderRadius: 14, padding: 3 },
   tab:       { flex: 1, paddingVertical: 9, borderRadius: 12, alignItems: 'center' },
-  active:    { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
+  active:    { backgroundColor: Colors.white, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
   txt:       { fontSize: 13, fontWeight: '700', color: Colors.lightGray },
   activeTxt: { color: Colors.primaryPink },
 });
@@ -1105,11 +1105,11 @@ const sv = StyleSheet.create({
   badgeTxt:   { fontSize: 14, fontWeight: '800' },
   zone:       { fontSize: 12, fontWeight: '700' },
   lastDate:   { fontSize: 10, color: Colors.lightGray },
-  empty:      { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, marginHorizontal: PAD, marginBottom: 12, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  empty:      { backgroundColor: Colors.white, borderRadius: 20, padding: 24, marginHorizontal: PAD, marginBottom: 12, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   emptyTitle: { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 6 },
   emptySub:   { fontSize: 13, color: Colors.midGray, textAlign: 'center', marginBottom: 16, lineHeight: 19 },
   emptyCta:   { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24 },
-  emptyCtaTxt:{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
+  emptyCtaTxt:{ color: Colors.white, fontWeight: '800', fontSize: 14 },
 });
 
 const ch = StyleSheet.create({
@@ -1120,7 +1120,7 @@ const ch = StyleSheet.create({
 });
 
 const dp = StyleSheet.create({
-  card:     { position: 'absolute', bottom: 56, backgroundColor: '#FFFFFF', borderRadius: 14, padding: 12, width: 148, borderWidth: 2, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 8, elevation: 6, zIndex: 10 },
+  card:     { position: 'absolute', bottom: 56, backgroundColor: Colors.white, borderRadius: 14, padding: 12, width: 148, borderWidth: 2, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 8, elevation: 6, zIndex: 10 },
   closeBtn: { position: 'absolute', top: 6, right: 8 },
   closeX:   { color: Colors.lightGray, fontSize: 12, fontWeight: '700' },
   value:    { fontSize: 22, fontWeight: '900', marginTop: 8, marginBottom: 4 },
@@ -1130,7 +1130,7 @@ const dp = StyleSheet.create({
 });
 
 const pl = StyleSheet.create({
-  card:    { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginHorizontal: PAD, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
+  card:    { backgroundColor: Colors.white, borderRadius: 20, padding: 16, marginHorizontal: PAD, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
   title:   { fontSize: 13, fontWeight: '800', color: Colors.dark, marginBottom: 10 },
   row:     { flexDirection: 'row', gap: 4, marginBottom: 10 },
   band:    { flex: 1, paddingVertical: 7, borderRadius: 8, alignItems: 'center' },
@@ -1140,12 +1140,12 @@ const pl = StyleSheet.create({
 
 const aig = StyleSheet.create({
   // wrapper card
-  wrapper:       { backgroundColor: '#FFFFFF', borderRadius: 20, marginHorizontal: PAD, marginBottom: 12, overflow: 'hidden', shadowColor: '#7C3AED', shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: '#EDE9FE' },
+  wrapper:       { backgroundColor: Colors.white, borderRadius: 20, marginHorizontal: PAD, marginBottom: 12, overflow: 'hidden', shadowColor: '#7C3AED', shadowOpacity: 0.1, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: '#EDE9FE' },
   // demo badge
   demoBadge:     { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#F5F3FF', borderRadius: 12, margin: 12, marginBottom: 0, padding: 10, borderWidth: 1, borderColor: '#DDD6FE' },
   demoIcon:      { fontSize: 22 },
   demoTitle:     { fontSize: 12, fontWeight: '800', color: '#7C3AED', letterSpacing: 0.5 },
-  demoSub:       { fontSize: 11, color: '#6B7280', marginTop: 1 },
+  demoSub:       { fontSize: 11, color: Colors.textMid, marginTop: 1 },
   // collapsible header
   hdrRow:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
   hdrLeft:       { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
@@ -1182,10 +1182,10 @@ const aig = StyleSheet.create({
   guidanceCard:  { backgroundColor: Colors.softMint, borderRadius: 14, padding: 14, marginBottom: 10 },
   tipRow:        { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },
   tipNum:        { width: 22, height: 22, borderRadius: 11, backgroundColor: Colors.mint, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  tipNumTxt:     { fontSize: 11, fontWeight: '900', color: '#FFFFFF' },
+  tipNumTxt:     { fontSize: 11, fontWeight: '900', color: Colors.white },
   tipTxt:        { fontSize: 13, color: Colors.dark, lineHeight: 19, flex: 1 },
   // disclaimer
-  disclaimer:    { backgroundColor: '#F3F4F6', borderRadius: 12, padding: 12, marginTop: 4 },
+  disclaimer:    { backgroundColor: Colors.divider, borderRadius: 12, padding: 12, marginTop: 4 },
   disclaimerTxt: { fontSize: 11, color: Colors.midGray, lineHeight: 17, fontStyle: 'italic' },
   // fallback
   rawWrap:       { padding: 4 },
@@ -1194,7 +1194,7 @@ const aig = StyleSheet.create({
 });
 
 const ht = StyleSheet.create({
-  wrap:   { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginHorizontal: PAD, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
+  wrap:   { backgroundColor: Colors.white, borderRadius: 20, padding: 16, marginHorizontal: PAD, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
   title:  { fontSize: 12, fontWeight: '800', color: Colors.dark, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
   empty:  { fontSize: 13, color: Colors.lightGray, textAlign: 'center', paddingVertical: 8 },
   row:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
@@ -1212,11 +1212,11 @@ const ex = StyleSheet.create({
 });
 
 const mm = StyleSheet.create({
-  wrap:     { flex: 1, backgroundColor: '#FFFFFF' },
+  wrap:     { flex: 1, backgroundColor: Colors.white },
   hdr:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.border },
   closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
   closeTxt: { fontSize: 13, color: Colors.midGray, fontWeight: '700' },
-  delBtn:   { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFE4EE', alignItems: 'center', justifyContent: 'center' },
+  delBtn:   { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.softPink, alignItems: 'center', justifyContent: 'center' },
   title:    { fontSize: 16, fontWeight: '800', color: Colors.dark },
   body:     { padding: 20 },
   label:    { fontSize: 13, fontWeight: '700', color: Colors.midGray, marginBottom: 6, marginTop: 14 },
@@ -1227,5 +1227,5 @@ const mm = StyleSheet.create({
   tipTxt:   { fontSize: 12, color: Colors.blue, lineHeight: 18 },
   saveWrap: { marginHorizontal: 20, marginBottom: 32, marginTop: 12 },
   saveBtn:  { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  saveTxt:  { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  saveTxt:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
 });

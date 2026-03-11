@@ -336,7 +336,7 @@ export default function OnboardingScreen() {
   const isLastStep = step === MAX_STEPS;
 
   return (
-    <LinearGradient colors={['#FFE4EE', '#FFCFDA', '#FFB3C6']} style={s.gradient}>
+    <LinearGradient colors={[Colors.softPink, '#FFCFDA', '#FFB3C6']} style={s.gradient}>
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
         {/* Language toggle */}
@@ -673,7 +673,7 @@ const s = StyleSheet.create({
 
   langRow:       { flexDirection: 'row', justifyContent: 'flex-end', gap: 6, marginBottom: 12 },
   langBtn:       { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.45)' },
-  langBtnActive: { backgroundColor: '#fff' },
+  langBtnActive: { backgroundColor: Colors.white },
   langText:      { fontSize: 13, color: '#E8637C', fontWeight: '600' },
   langTextActive:{ color: Colors.primaryPink },
 
@@ -687,14 +687,14 @@ const s = StyleSheet.create({
   dotActive:     { backgroundColor: '#E8637C' },
   dotInactive:   { backgroundColor: 'rgba(232,99,124,0.25)' },
 
-  card:          { backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#E8637C', shadowOpacity: 0.12, shadowRadius: 20, elevation: 8 },
+  card:          { backgroundColor: Colors.white, borderRadius: 24, padding: 24, shadowColor: '#E8637C', shadowOpacity: 0.12, shadowRadius: 20, elevation: 8 },
 
   stepLabel:     { fontSize: 11, fontWeight: '700', color: Colors.lightGray, marginBottom: 6, letterSpacing: 0.8 },
   question:      { fontSize: 20, fontWeight: '800', color: Colors.dark, marginBottom: 20, lineHeight: 28 },
 
   // Option grid
   optionGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
-  optCard:       { flex: 1, minWidth: '44%', alignItems: 'center', paddingVertical: 20, paddingHorizontal: 12, borderRadius: 18, borderWidth: 2, borderColor: Colors.border, backgroundColor: '#FAFAFA', position: 'relative' },
+  optCard:       { flex: 1, minWidth: '44%', alignItems: 'center', paddingVertical: 20, paddingHorizontal: 12, borderRadius: 18, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.background, position: 'relative' },
   optCardSelected:{ borderColor: Colors.primaryPink, backgroundColor: '#FFF0F4' },
   optCardWide:   { minWidth: '100%' },
   optIconWrap:   { marginBottom: 10, position: 'relative' },
@@ -702,16 +702,16 @@ const s = StyleSheet.create({
   optLabel:      { fontSize: 14, fontWeight: '700', color: Colors.dark, textAlign: 'center' },
   optLabelSelected: { color: Colors.primaryPink },
   optSublabel:   { fontSize: 11, color: Colors.midGray, marginTop: 4, textAlign: 'center', fontWeight: '500' },
-  countBadge:    { position: 'absolute', bottom: -4, right: -4, backgroundColor: Colors.primaryPink, borderRadius: 10, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1.5, borderColor: '#fff' },
-  countBadgeText:{ fontSize: 10, color: '#fff', fontWeight: '700' },
+  countBadge:    { position: 'absolute', bottom: -4, right: -4, backgroundColor: Colors.primaryPink, borderRadius: 10, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1.5, borderColor: Colors.white },
+  countBadgeText:{ fontSize: 10, color: Colors.white, fontWeight: '700' },
 
   // Child details (step 4 parenting)
   infoBanner:    { backgroundColor: Colors.softGold, borderRadius: 12, padding: 10, marginBottom: 16 },
   infoBannerText:{ fontSize: 12, color: Colors.dark, fontWeight: '500', textAlign: 'center' },
   fieldLabel:    { fontSize: 13, fontWeight: '700', color: Colors.midGray, marginBottom: 8, marginTop: 4 },
-  nameInput:     { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, color: Colors.dark, backgroundColor: '#FAFAFA', marginBottom: 16 },
+  nameInput:     { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, color: Colors.dark, backgroundColor: Colors.background, marginBottom: 16 },
   genderRow:     { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  genderCard:    { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: '#FAFAFA', position: 'relative' },
+  genderCard:    { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.background, position: 'relative' },
   genderCardSelected: { borderColor: Colors.primaryPink, backgroundColor: '#FFF0F4' },
   genderCheck:   { position: 'absolute', top: 6, right: 8, fontSize: 12, color: Colors.primaryPink, fontWeight: '800' },
   genderLabel:   { fontSize: 12, fontWeight: '600', color: Colors.dark, marginTop: 6, textAlign: 'center' },
@@ -719,7 +719,7 @@ const s = StyleSheet.create({
 
   // Language
   langOptions:   { gap: 12, marginBottom: 20 },
-  langCard:      { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 16, borderWidth: 2, borderColor: Colors.border, backgroundColor: '#FAFAFA' },
+  langCard:      { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 16, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.background },
   langCardActive:{ borderColor: Colors.primaryPink, backgroundColor: '#FFF0F4' },
   langEmoji:     { fontSize: 28, marginRight: 14 },
   langLabel:     { fontSize: 16, fontWeight: '700', color: Colors.dark, flex: 1 },
@@ -729,7 +729,7 @@ const s = StyleSheet.create({
   // Button
   nextBtn:        { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   nextBtnDisabled:{ opacity: 0.4 },
-  nextBtnText:    { color: '#fff', fontSize: 16, fontWeight: '700' },
+  nextBtnText:    { color: Colors.white, fontSize: 16, fontWeight: '700' },
 });
 
 const ds = StyleSheet.create({

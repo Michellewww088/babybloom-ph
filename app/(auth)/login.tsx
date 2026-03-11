@@ -204,25 +204,25 @@ const s = StyleSheet.create({
 
   langRow:        { flexDirection: 'row', justifyContent: 'flex-end', gap: 6, marginBottom: 28 },
   langBtn:        { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.25)' },
-  langBtnActive:  { backgroundColor: '#fff' },
-  langText:       { fontSize: 13, color: '#fff', fontWeight: '600' },
+  langBtnActive:  { backgroundColor: Colors.white },
+  langText:       { fontSize: 13, color: Colors.white, fontWeight: '600' },
   langTextActive: { color: Colors.primaryPink },
 
   logoArea:       { alignItems: 'center', marginBottom: 28 },
-  logoWrap:       { width: 110, height: 110, borderRadius: 26, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12, elevation: 6 },
+  logoWrap:       { width: 110, height: 110, borderRadius: 26, backgroundColor: Colors.white, overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12, elevation: 6 },
   logoImg:        { width: 172, height: 172, position: 'absolute', top: -31, left: -31 },
-  appName:        { fontSize: 30, fontWeight: '900', color: '#fff', letterSpacing: 0.5, marginBottom: 10 },
+  appName:        { fontSize: 30, fontWeight: '900', color: Colors.white, letterSpacing: 0.5, marginBottom: 10 },
   tagline:        { fontSize: 14, color: 'rgba(255,255,255,0.95)', fontWeight: '600' },
 
-  card:           { backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  card:           { backgroundColor: Colors.white, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
 
   inputLabel:     { fontSize: 14, fontWeight: '700', color: Colors.dark, marginBottom: 8 },
   emailInput:     { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: Colors.dark, marginBottom: 6 },
-  validationHint: { fontSize: 12, color: '#EF4444', marginBottom: 6 },
+  validationHint: { fontSize: 12, color: Colors.danger, marginBottom: 6 },
 
   otpBtn:         { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 8, marginBottom: 16 },
   btnDisabled:    { opacity: 0.45 },
-  otpBtnText:     { color: '#fff', fontSize: 16, fontWeight: '700' },
+  otpBtnText:     { color: Colors.white, fontSize: 16, fontWeight: '700' },
 
   divider:        { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
   divLine:        { flex: 1, height: 1, backgroundColor: Colors.border },
@@ -234,6 +234,6 @@ const s = StyleSheet.create({
 
   terms:          { fontSize: 11, color: Colors.lightGray, textAlign: 'center', marginTop: 16, lineHeight: 16 },
 
-  devSkip:        { marginTop: 16, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#F5A623', alignItems: 'center' },
-  devSkipText:    { fontSize: 13, color: '#F5A623', fontWeight: '700' },
+  devSkip:        { marginTop: 16, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: Colors.gold, alignItems: 'center' },
+  devSkipText:    { fontSize: 13, color: Colors.gold, fontWeight: '700' },
 });

@@ -20,20 +20,21 @@ import BearIllustration    from '../../components/intro/BearIllustration';
 import GrowthIllustration  from '../../components/intro/GrowthIllustration';
 import ReminderIllustration from '../../components/intro/ReminderIllustration';
 import AIIllustration      from '../../components/intro/AIIllustration';
+import Colors from '../../constants/Colors';
 
 // ── Feature slides data ────────────────────────────────────────────────────────
 
 const SLIDES = [
   {
     key:         'growth',
-    blobColors:  ['#FFD6E4', '#FFE8EF', '#FFF4F7'] as [string, string, string],
+    blobColors:  [Colors.primarySoft, '#FFE8EF', '#FFF4F7'] as [string, string, string],
     accentColor: '#E8637C',
     Illustration: GrowthIllustration,
   },
   {
     key:         'reminders',
     blobColors:  ['#C0EDD8', '#DAF5EA', '#F0FBF6'] as [string, string, string],
-    accentColor: '#27AE7A',
+    accentColor: Colors.mint,
     Illustration: ReminderIllustration,
   },
   {
@@ -155,7 +156,7 @@ export default function IntroScreen() {
       {/* ═══ SPLASH ══════════════════════════════════════════════════════════ */}
       {phase === 'splash' && (
         <Animated.View style={[StyleSheet.absoluteFillObject, { opacity: splashOp }]}>
-          <LinearGradient colors={['#FFE4EE', '#FFF0F6', '#FFFAFC']} style={s.page}>
+          <LinearGradient colors={[Colors.softPink, '#FFF0F6', '#FFFAFC']} style={s.page}>
 
             <TouchableOpacity style={s.skipBtn} onPress={handleSkip} activeOpacity={0.7}>
               <Text style={[s.skipText, { color: '#E8637C' }]}>Skip</Text>
@@ -438,7 +439,7 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 4,
   },
-  arrowText: { fontSize: 22, color: '#fff', fontWeight: '700' },
+  arrowText: { fontSize: 22, color: Colors.white, fontWeight: '700' },
 
   ctaBtn: {
     borderRadius: 18,
@@ -450,5 +451,5 @@ const s = StyleSheet.create({
     elevation: 6,
   },
   ctaBtnGrad: { paddingVertical: 17, alignItems: 'center', borderRadius: 18 },
-  ctaBtnText: { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
+  ctaBtnText: { color: Colors.white, fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
 });

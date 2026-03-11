@@ -21,10 +21,10 @@ const MAX_CHILDREN = 5;
 
 /** Coloured circle avatar (when no photo) */
 const DEFAULT_AVATAR_BG = [
-  '#E8F2FF',
-  '#FFE4EE',
-  '#E0F7EF',
-  '#FFF8E8',
+  Colors.softBlue,
+  Colors.softPink,
+  Colors.softMint,
+  Colors.softGold,
 ];
 const DEFAULT_AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
 
@@ -227,6 +227,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addBtnLargeIcon: { fontSize: 26, color: '#fff', fontWeight: '300', lineHeight: 30 },
+  addBtnLargeIcon: { fontSize: 26, color: Colors.white, fontWeight: '300', lineHeight: 30 },
   emptyText: { fontSize: 14, fontWeight: '600', color: Colors.primaryPink, flex: 1 },
 });

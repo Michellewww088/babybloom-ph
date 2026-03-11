@@ -335,7 +335,7 @@ function MiniSparkLine({ width = 120, data }: { width?: number; data?: number[] 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mini Avatar
 // ─────────────────────────────────────────────────────────────────────────────
-const AVATAR_BG    = ['#E8F2FF', '#FFE4EE', '#E0F7EF', '#FFF8E8'];
+const AVATAR_BG    = [Colors.softBlue, Colors.softPink, Colors.softMint, Colors.softGold];
 const AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
 
 function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
@@ -814,7 +814,7 @@ const FEATURES: FeatureItem[] = [
     Icon: IconGuide,
     labelKey: 'home.feeding_guide',
     gradColors: ['#FEF3C7', '#FDE68A'],
-    shadowColor: '#F59E0B',
+    shadowColor: Colors.warning,
   },
   {
     id: 'insights',
@@ -1060,7 +1060,7 @@ const nav = StyleSheet.create({
   bar: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 14, paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1, borderBottomColor: Colors.border,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 3,
   },
@@ -1099,9 +1099,9 @@ const hb = StyleSheet.create({
   },
   textCol:     { flex: 1, zIndex: 1 },
   greeting:    { fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginBottom: 4 },
-  babyName:    { fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 10 },
+  babyName:    { fontSize: 22, fontWeight: '900', color: Colors.white, marginBottom: 10 },
   statusPill:  { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start' },
-  statusText:  { fontSize: 12, color: '#FFFFFF', fontWeight: '700' },
+  statusText:  { fontSize: 12, color: Colors.white, fontWeight: '700' },
   illustration:{ zIndex: 1, marginLeft: -8 },
 });
 
@@ -1109,7 +1109,7 @@ const hb = StyleSheet.create({
 const qs = StyleSheet.create({
   row:  { gap: 10, paddingBottom: 6, paddingHorizontal: PAD },
   chip: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white,
     borderRadius: 18,
     borderLeftWidth: 4,
     paddingHorizontal: 14, paddingVertical: 12,
@@ -1126,7 +1126,7 @@ const qs = StyleSheet.create({
 // Growth snapshot
 const gc = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF', borderRadius: 22, padding: 16,
+    backgroundColor: Colors.white, borderRadius: 22, padding: 16,
     marginHorizontal: PAD, marginBottom: 4,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: Colors.border,
@@ -1155,7 +1155,7 @@ const mm = StyleSheet.create({
   header:     {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1, borderBottomColor: Colors.border,
   },
   title:      { fontSize: 16, fontWeight: '800', color: Colors.dark },
@@ -1164,7 +1164,7 @@ const mm = StyleSheet.create({
   body:       { padding: 16, paddingBottom: 60 },
   label:      { fontSize: 13, fontWeight: '700', color: Colors.dark, marginTop: 16, marginBottom: 6 },
   input:      {
-    backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1.5,
+    backgroundColor: Colors.white, borderRadius: 14, borderWidth: 1.5,
     borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12,
     fontSize: 15, color: Colors.dark,
   },
@@ -1202,7 +1202,7 @@ const fg = StyleSheet.create({
 // Insights card
 const ic = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF', borderRadius: 22, padding: 16,
+    backgroundColor: Colors.white, borderRadius: 22, padding: 16,
     marginHorizontal: PAD, marginBottom: 4,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: Colors.border,
@@ -1227,6 +1227,6 @@ const es = StyleSheet.create({
   title:    { fontSize: 22, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginTop: 20, marginBottom: 10 },
   subtitle: { fontSize: 14, color: Colors.midGray, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
   btn:      { borderRadius: 18, paddingVertical: 15, paddingHorizontal: 32, shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
-  btnText:  { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  btnText:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
   note:     { marginTop: 20, fontSize: 13, color: Colors.lightGray, fontWeight: '600' },
 });

@@ -103,8 +103,8 @@ function AdherenceRing({ percent, size = 44 }: { percent: number; size?: number 
 // ─────────────────────────────────────────────────────────────────────────────
 function PriorityBadge({ priority }: { priority: 'high' | 'medium' | 'low' }) {
   const config = {
-    high:   { bg: '#FFE4EE', text: Colors.primaryPink, label: '★ High' },
-    medium: { bg: '#FFF8E8', text: Colors.gold,        label: '◆ Med'  },
+    high:   { bg: Colors.softPink, text: Colors.primaryPink, label: '★ High' },
+    medium: { bg: Colors.softGold, text: Colors.gold,        label: '◆ Med'  },
     low:    { bg: '#E8F5E9', text: Colors.mint,        label: '○ Low'  },
   }[priority];
   return (
@@ -241,7 +241,7 @@ function EntryCard({
               style={[s.doseBtn, todayStatus?.taken && s.doseBtnTaken]}
               onPress={() => onLogDose(!todayStatus?.taken)}
             >
-              <Text style={[s.doseBtnTxt, todayStatus?.taken && { color: '#fff' }]}>
+              <Text style={[s.doseBtnTxt, todayStatus?.taken && { color: Colors.white }]}>
                 {todayStatus?.taken ? '✓' : tKey('vitamins.log_dose')}
               </Text>
             </TouchableOpacity>
@@ -309,7 +309,7 @@ function GPTrackerModal({
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#FAFAFA' }}>
+      <View style={{ flex: 1, backgroundColor: Colors.background }}>
         {/* Header */}
         <LinearGradient colors={['#FFB74D', '#FFC870']} style={gp.header}>
           <Text style={gp.headerTitle}>🌟 {tKey('vitamins.gp.title')}</Text>
@@ -505,10 +505,10 @@ function AddEditModal({
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
       onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={{ flex: 1, backgroundColor: '#FAFAFA' }}>
+        <View style={{ flex: 1, backgroundColor: Colors.background }}>
           {/* Header */}
           <LinearGradient
-            colors={isMedication ? ['#5BC8F5', '#90D8F8'] : ['#27AE7A', '#4DD0A0']}
+            colors={isMedication ? ['#5BC8F5', '#90D8F8'] : [Colors.mint, '#4DD0A0']}
             style={m.header}
           >
             <Text style={m.headerTitle}>
@@ -594,7 +594,7 @@ function AddEditModal({
               </Text>
               <Switch value={remEnabled} onValueChange={setRemEnabled}
                 thumbColor={remEnabled ? Colors.primaryPink : '#ccc'}
-                trackColor={{ true: '#FFE4EE', false: '#eee' }} />
+                trackColor={{ true: Colors.softPink, false: '#eee' }} />
             </View>
             {remEnabled && (
               <TextInput style={s.input} value={remTime} onChangeText={setRemTime}
@@ -627,7 +627,7 @@ function AddEditModal({
                   </Text>
                   <Switch value={isAntibiotic} onValueChange={setIsAntibiotic}
                     thumbColor={isAntibiotic ? Colors.primaryPink : '#ccc'}
-                    trackColor={{ true: '#FFE4EE', false: '#eee' }} />
+                    trackColor={{ true: Colors.softPink, false: '#eee' }} />
                 </View>
               </>
             )}
@@ -742,9 +742,9 @@ export default function VitaminsScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FAFAFA' }}>
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
       {/* Header */}
-      <LinearGradient colors={['#27AE7A', '#4DD0A0']} style={s.header}>
+      <LinearGradient colors={[Colors.mint, '#4DD0A0']} style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
           <Text style={s.backTxt}>‹</Text>
         </TouchableOpacity>
@@ -882,7 +882,7 @@ export default function VitaminsScreen() {
       <TouchableOpacity
         style={s.fab}
         onPress={() => { setEditEntry(null); setShowAdd(true); }}>
-        <LinearGradient colors={['#27AE7A', '#4DD0A0']} style={s.fabGrad}>
+        <LinearGradient colors={[Colors.mint, '#4DD0A0']} style={s.fabGrad}>
           <Text style={s.fabTxt}>+</Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -916,11 +916,11 @@ const s = StyleSheet.create({
   // Header
   header:      { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, paddingTop: 50, gap: 12 },
   backBtn:     { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  backTxt:     { fontSize: 22, color: '#fff', fontWeight: '700', lineHeight: 26 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  backTxt:     { fontSize: 22, color: Colors.white, fontWeight: '700', lineHeight: 26 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white },
   headerSub:   { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 1 },
   gpBtn:       { backgroundColor: 'rgba(255,255,255,0.25)', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20 },
-  gpBtnTxt:    { color: '#fff', fontWeight: '700', fontSize: 13 },
+  gpBtnTxt:    { color: Colors.white, fontWeight: '700', fontSize: 13 },
 
   // Section titles
   sectionTitle:   { fontSize: 13, fontWeight: '800', color: Colors.dark, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4, marginTop: 8 },
@@ -929,12 +929,12 @@ const s = StyleSheet.create({
   // Tabs
   tabs:         { flexDirection: 'row', marginHorizontal: PAD, marginTop: 16, marginBottom: 4, backgroundColor: '#F0F0F5', borderRadius: 12, padding: 4 },
   tab:          { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10 },
-  tabActive:    { backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
+  tabActive:    { backgroundColor: Colors.white, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
   tabTxt:       { fontSize: 13, fontWeight: '600', color: Colors.midGray },
   tabTxtActive: { color: Colors.dark, fontWeight: '800' },
 
   // Recommendation card
-  recCard:       { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 0, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: '#F0F0F5' },
+  recCard:       { backgroundColor: Colors.white, borderRadius: 16, padding: 14, marginBottom: 0, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: '#F0F0F5' },
   recCardDone:   { borderColor: Colors.mint + '55', borderWidth: 1.5 },
   recHeader:     { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6, gap: 8 },
   recNameRow:    { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
@@ -944,14 +944,14 @@ const s = StyleSheet.create({
   recFooter:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   recSource:     { fontSize: 11, color: Colors.blue, flex: 1 },
   addRecBtn:     { backgroundColor: Colors.mint, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
-  addRecBtnTxt:  { color: '#fff', fontWeight: '800', fontSize: 12 },
+  addRecBtnTxt:  { color: Colors.white, fontWeight: '800', fontSize: 12 },
   loggedPill:    { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.softMint, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   loggedTxt:     { fontSize: 11, color: Colors.mint, fontWeight: '700' },
   freeBadge:     { backgroundColor: '#E8F5E9', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
   freeBadgeTxt:  { fontSize: 10, fontWeight: '800', color: Colors.mint },
 
   // Entry card
-  entryCard:       { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  entryCard:       { backgroundColor: Colors.white, borderRadius: 16, padding: 14, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   entryRow:        { flexDirection: 'row', alignItems: 'flex-start' },
   entryName:       { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 4 },
   entryChips:      { flexDirection: 'row', gap: 6, marginBottom: 4 },
@@ -971,7 +971,7 @@ const s = StyleSheet.create({
   ringPct:         { fontSize: 9, fontWeight: '700', color: Colors.midGray, marginTop: -2 },
 
   // GP Banner
-  gpBanner:      { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF8E8', marginHorizontal: PAD, marginTop: 14, borderRadius: 16, padding: 14, borderWidth: 1.5, borderColor: Colors.gold + '66' },
+  gpBanner:      { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.softGold, marginHorizontal: PAD, marginTop: 14, borderRadius: 16, padding: 14, borderWidth: 1.5, borderColor: Colors.gold + '66' },
   gpBannerEmoji: { fontSize: 28, marginRight: 12 },
   gpBannerTitle: { fontSize: 14, fontWeight: '800', color: Colors.dark },
   gpBannerSub:   { fontSize: 12, color: Colors.midGray, marginTop: 2 },
@@ -981,7 +981,7 @@ const s = StyleSheet.create({
   emptyState:    { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   emptyIcon:     { fontSize: 48, marginBottom: 12 },
   emptyTxt:      { fontSize: 15, color: Colors.midGray, textAlign: 'center' },
-  emptyCard:     { backgroundColor: '#fff', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 1 },
+  emptyCard:     { backgroundColor: Colors.white, borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 1 },
   emptyCardTxt:  { fontSize: 14, color: Colors.midGray, textAlign: 'center', marginBottom: 14 },
   addFirstBtn:   { backgroundColor: Colors.softMint, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
   addFirstBtnTxt:{ color: Colors.mint, fontWeight: '800', fontSize: 13 },
@@ -989,16 +989,16 @@ const s = StyleSheet.create({
   // FAB
   fab:     { position: 'absolute', bottom: 90, right: 22, borderRadius: 30, shadowColor: Colors.mint, shadowOpacity: 0.45, shadowRadius: 12, elevation: 8 },
   fabGrad: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },
-  fabTxt:  { color: '#fff', fontSize: 30, fontWeight: '300', lineHeight: 34 },
+  fabTxt:  { color: Colors.white, fontSize: 30, fontWeight: '300', lineHeight: 34 },
 
   // Shared form styles
   label:       { fontSize: 13, fontWeight: '700', color: Colors.dark, marginBottom: 6, marginTop: 14 },
-  input:       { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#EEE', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark },
+  input:       { backgroundColor: Colors.white, borderWidth: 1.5, borderColor: '#EEE', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark },
   modalFooter: { flexDirection: 'row', gap: 12, marginTop: 24 },
   cancelBtn:   { flex: 1, borderWidth: 1.5, borderColor: '#DDD', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   cancelTxt:   { fontSize: 14, fontWeight: '700', color: Colors.midGray },
   saveBtn:     { flex: 1, backgroundColor: Colors.mint, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  saveTxt:     { fontSize: 14, fontWeight: '800', color: '#fff' },
+  saveTxt:     { fontSize: 14, fontWeight: '800', color: Colors.white },
 
   // Badge
   badge:    { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
@@ -1008,15 +1008,15 @@ const s = StyleSheet.create({
 // Add/Edit modal styles
 const m = StyleSheet.create({
   header:         { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, paddingTop: 50, gap: 12 },
-  headerTitle:    { fontSize: 17, fontWeight: '800', color: '#fff', flex: 1 },
+  headerTitle:    { fontSize: 17, fontWeight: '800', color: Colors.white, flex: 1 },
   closeBtn:       { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  closeTxt:       { color: '#fff', fontSize: 16, fontWeight: '700' },
+  closeTxt:       { color: Colors.white, fontSize: 16, fontWeight: '700' },
   chip:           { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F5F5FA', borderWidth: 1, borderColor: '#EEE' },
   chipActive:     { backgroundColor: Colors.mint, borderColor: Colors.mint },
   chipTxt:        { fontSize: 12.5, fontWeight: '600', color: Colors.midGray },
-  chipTxtActive:  { color: '#fff' },
+  chipTxtActive:  { color: Colors.white },
   typeRow:        { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
-  typeChip:       { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1.5, borderColor: '#EEE', backgroundColor: '#fff' },
+  typeChip:       { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1.5, borderColor: '#EEE', backgroundColor: Colors.white },
   typeChipActive: { borderColor: Colors.mint, backgroundColor: Colors.softMint },
   typeChipTxt:    { fontSize: 12.5, fontWeight: '600', color: Colors.midGray },
   typeChipTxtActive: { color: Colors.mint },
@@ -1028,27 +1028,27 @@ const m = StyleSheet.create({
 // GP Tracker modal styles
 const gp = StyleSheet.create({
   header:      { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, paddingTop: 50, gap: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff', flex: 1 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white, flex: 1 },
   closeBtn:    { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  closeTxt:    { color: '#fff', fontSize: 16, fontWeight: '700' },
-  infoCard:    { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  closeTxt:    { color: Colors.white, fontSize: 16, fontWeight: '700' },
+  infoCard:    { backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginBottom: 14, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   infoTitle:   { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 6 },
   infoDesc:    { fontSize: 13, color: Colors.midGray, lineHeight: 19, marginBottom: 10 },
   infoRow:     { flexDirection: 'row', gap: 12, marginBottom: 8 },
   infoItem:    { fontSize: 13, fontWeight: '700', color: Colors.dark },
   infoFree:    { fontSize: 13, color: Colors.mint, fontWeight: '700', marginTop: 4 },
-  countdownCard:{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF8E8', borderRadius: 14, padding: 14, marginBottom: 14, borderWidth: 1.5, borderColor: Colors.gold + '55' },
+  countdownCard:{ flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.softGold, borderRadius: 14, padding: 14, marginBottom: 14, borderWidth: 1.5, borderColor: Colors.gold + '55' },
   countdownLabel:{ fontSize: 12, color: Colors.midGray, marginBottom: 2 },
   countdownVal: { fontSize: 15, fontWeight: '800', color: Colors.dark },
   logBtn:      { backgroundColor: Colors.gold, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 14 },
-  logBtnTxt:   { color: '#fff', fontWeight: '800', fontSize: 15 },
-  form:        { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  logBtnTxt:   { color: Colors.white, fontWeight: '800', fontSize: 15 },
+  form:        { backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   formTitle:   { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 2 },
   checkRow:    { flexDirection: 'row', gap: 10, marginBottom: 4 },
   check:       { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 12, borderWidth: 1.5, borderColor: '#EEE', backgroundColor: '#F5F5FA' },
-  checkActive: { borderColor: Colors.gold, backgroundColor: '#FFF8E8' },
+  checkActive: { borderColor: Colors.gold, backgroundColor: Colors.softGold },
   checkTxt:    { fontSize: 13, fontWeight: '700', color: Colors.dark },
-  visitCard:   { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'flex-start', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  visitCard:   { backgroundColor: Colors.white, borderRadius: 14, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'flex-start', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
   visitDate:   { fontSize: 13, fontWeight: '800', color: Colors.dark },
   visitBHS:    { fontSize: 13, color: Colors.midGray, marginTop: 2 },
   visitPills:  { flexDirection: 'row', gap: 6, marginTop: 6 },

@@ -106,7 +106,7 @@ function IconBack({ size = 24 }: { size?: number }) {
   );
 }
 
-function IconPlus({ size = 22, color = '#fff' }: { size?: number; color?: string }) {
+function IconPlus({ size = 22, color = Colors.white }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M12 5v14M5 12h14" stroke={color} strokeWidth="2.8" strokeLinecap="round" />
@@ -324,14 +324,14 @@ const ss = StyleSheet.create({
   wrap:      { paddingHorizontal: PAD, gap: 10, marginBottom: 4 },
   row:       { flexDirection: 'row', gap: 10 },
   card:      {
-    flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 12,
+    flex: 1, backgroundColor: Colors.white, borderRadius: 16, padding: 12,
     borderTopWidth: 3,
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
     alignItems: 'center',
   },
   val:       { fontSize: 18, fontWeight: '800', color: Colors.dark },
   lbl:       { fontSize: 10, color: Colors.lightGray, fontWeight: '700', marginTop: 2, textTransform: 'uppercase' },
-  goalWrap:  { backgroundColor: '#fff', borderRadius: 16, padding: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  goalWrap:  { backgroundColor: Colors.white, borderRadius: 16, padding: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
   goalRow:   { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   goalLbl:   { fontSize: 12, fontWeight: '700', color: Colors.dark },
   goalCount: { fontSize: 12, fontWeight: '800', color: Colors.primaryPink },
@@ -352,7 +352,7 @@ function DailyTimeline({ entries }: { entries: FeedingEntry[] }) {
   const typeColor: Record<FeedType, string> = {
     breastfeed: Colors.primaryPink,
     bottle:     Colors.blue,
-    solids:     '#F59E0B',
+    solids:     Colors.warning,
   };
   const timelineW = W - PAD * 2 - 32;
 
@@ -379,11 +379,11 @@ function DailyTimeline({ entries }: { entries: FeedingEntry[] }) {
 }
 
 const tl = StyleSheet.create({
-  wrap:     { marginHorizontal: PAD, backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  wrap:     { marginHorizontal: PAD, backgroundColor: Colors.white, borderRadius: 16, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
   title:    { fontSize: 12, fontWeight: '700', color: Colors.dark, marginBottom: 14 },
   axis:     { height: 36, position: 'relative', marginHorizontal: 8 },
   line:     { position: 'absolute', top: 8, left: 0, right: 0, height: 3, backgroundColor: Colors.softPink, borderRadius: 2 },
-  dot:      { position: 'absolute', top: 0, width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: '#fff', shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 3, elevation: 3 },
+  dot:      { position: 'absolute', top: 0, width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: Colors.white, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 3, elevation: 3 },
   dotTime:  { position: 'absolute', top: 22, fontSize: 8, color: Colors.midGray, fontWeight: '600', width: 40, textAlign: 'center', left: -11 },
   labelL:   { position: 'absolute', bottom: 0, left: 0, fontSize: 9, color: Colors.lightGray, fontWeight: '600' },
   labelR:   { position: 'absolute', bottom: 0, right: 0, fontSize: 9, color: Colors.lightGray, fontWeight: '600' },
@@ -403,7 +403,7 @@ function FeedEntryRow({
   const typeColor: Record<FeedType, string> = {
     breastfeed: Colors.primaryPink,
     bottle:     Colors.blue,
-    solids:     '#F59E0B',
+    solids:     Colors.warning,
   };
   const color = typeColor[entry.feedType];
 
@@ -456,12 +456,12 @@ function FeedEntryRow({
 }
 
 const er = StyleSheet.create({
-  row:         { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14, gap: 12, backgroundColor: '#fff' },
+  row:         { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14, gap: 12, backgroundColor: Colors.white },
   iconWrap:    { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   body:        { flex: 1 },
   type:        { fontSize: 13, fontWeight: '700', color: Colors.dark },
   sub:         { fontSize: 11, color: Colors.midGray, marginTop: 2 },
-  allergyBadge:{ fontSize: 10, color: '#EF4444', fontWeight: '700', marginTop: 3 },
+  allergyBadge:{ fontSize: 10, color: Colors.danger, fontWeight: '700', marginTop: 3 },
   right:       { alignItems: 'flex-end', gap: 8 },
   time:        { fontSize: 12, fontWeight: '700', color: Colors.midGray },
 });
@@ -494,7 +494,7 @@ function DeleteConfirmModal({ visible, feedType, onCancel, onConfirm }: {
             </TouchableOpacity>
             <TouchableOpacity style={dc.deleteBtn} onPress={onConfirm} activeOpacity={0.85}>
               <LinearGradient
-                colors={['#EF4444', '#DC2626']}
+                colors={[Colors.danger, '#DC2626']}
                 style={dc.deleteBtnGrad}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               >
@@ -510,9 +510,9 @@ function DeleteConfirmModal({ visible, feedType, onCancel, onConfirm }: {
 }
 const dc = StyleSheet.create({
   overlay:       { flex: 1, backgroundColor: 'rgba(28,28,58,0.55)', alignItems: 'center', justifyContent: 'center', padding: 32 },
-  card:          { backgroundColor: '#fff', borderRadius: 28, padding: 28, alignItems: 'center', width: '100%', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 20, elevation: 10 },
+  card:          { backgroundColor: Colors.white, borderRadius: 28, padding: 28, alignItems: 'center', width: '100%', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 20, elevation: 10 },
   iconWrap:      { position: 'relative', marginBottom: 16 },
-  sadBadge:      { position: 'absolute', bottom: -4, right: -4, width: 24, height: 24, borderRadius: 12, backgroundColor: '#FEF2F2', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  sadBadge:      { position: 'absolute', bottom: -4, right: -4, width: 24, height: 24, borderRadius: 12, backgroundColor: Colors.dangerBg, borderWidth: 2, borderColor: Colors.white, alignItems: 'center', justifyContent: 'center' },
   sadEmoji:      { fontSize: 13 },
   title:         { fontSize: 18, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginBottom: 8 },
   body:          { fontSize: 13, color: Colors.midGray, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
@@ -521,7 +521,7 @@ const dc = StyleSheet.create({
   cancelTxt:     { fontSize: 14, fontWeight: '800', color: Colors.primaryPink },
   deleteBtn:     { flex: 1, borderRadius: 16, overflow: 'hidden' },
   deleteBtnGrad: { flexDirection: 'row', gap: 6, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
-  deleteTxt:     { fontSize: 14, fontWeight: '800', color: '#fff' },
+  deleteTxt:     { fontSize: 14, fontWeight: '800', color: Colors.white },
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -589,7 +589,7 @@ function TimerTimeline({ timerStartedAt, pauseIntervals, activeSeconds }: {
 const ttl = StyleSheet.create({
   wrap:       { marginTop: 10, marginBottom: 6, paddingHorizontal: 12 },
   track:      { height: 4, backgroundColor: Colors.softPink, borderRadius: 2, position: 'relative', marginBottom: 28 },
-  dot:        { position: 'absolute', top: -6, width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: '#fff' },
+  dot:        { position: 'absolute', top: -6, width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: Colors.white },
   dotStart:   { backgroundColor: Colors.mint },
   dotPause:   { backgroundColor: Colors.gold },
   dotResume:  { backgroundColor: Colors.mint },
@@ -611,10 +611,10 @@ function PerFeedInsightCard({ insight, onDismiss }: {
   const bgMap: Record<FeedInsight['type'], [string, string]> = {
     good:    [Colors.softMint, '#D1FAE5'],
     tip:     [Colors.softGold, '#FEF3C7'],
-    warning: ['#FEF2F2', '#FEE2E2'],
+    warning: [Colors.dangerBg, '#FEE2E2'],
   };
   const colorMap: Record<FeedInsight['type'], string> = {
-    good: Colors.mint, tip: Colors.gold, warning: '#EF4444',
+    good: Colors.mint, tip: Colors.gold, warning: Colors.danger,
   };
   const emojiMap: Record<FeedInsight['type'], string> = {
     good: '✅', tip: '💡', warning: '⚠️',
@@ -691,7 +691,7 @@ function DailySummaryCard({ todayEntries, childAgeMonths, childName }: {
       {expanded && (
         <View style={ds.body}>
           {summary.insights.map((ins, idx) => {
-            const tc = ins.type === 'good' ? Colors.mint : ins.type === 'tip' ? Colors.gold : '#EF4444';
+            const tc = ins.type === 'good' ? Colors.mint : ins.type === 'tip' ? Colors.gold : Colors.danger;
             return (
               <View key={idx} style={ds.insightRow}>
                 <Text style={ds.insightEmoji}>{ins.type === 'good' ? '✅' : ins.type === 'tip' ? '💡' : '⚠️'}</Text>
@@ -718,7 +718,7 @@ function DailySummaryCard({ todayEntries, childAgeMonths, childName }: {
   );
 }
 const ds = StyleSheet.create({
-  card:          { marginHorizontal: PAD, backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  card:          { marginHorizontal: PAD, backgroundColor: Colors.white, borderRadius: 18, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   headerRow:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
   dot:           { width: 10, height: 10, borderRadius: 5 },
   line:          { flex: 1, fontSize: 13, fontWeight: '700', color: Colors.dark, lineHeight: 19 },
@@ -967,7 +967,7 @@ function AddFeedModal({
               const tabColors: Record<FeedType, string> = {
                 breastfeed: Colors.primaryPink,
                 bottle:     Colors.blue,
-                solids:     '#F59E0B',
+                solids:     Colors.warning,
               };
               const tc = tabColors[ft];
               return (
@@ -1031,11 +1031,11 @@ function AddFeedModal({
                 )}
                 <View style={m.timerRow}>
                   <TouchableOpacity
-                    style={[m.timerBtn, timerActive && { backgroundColor: '#FEE2E2', borderColor: '#EF4444' }]}
+                    style={[m.timerBtn, timerActive && { backgroundColor: '#FEE2E2', borderColor: Colors.danger }]}
                     onPress={handleToggleTimer}
                   >
-                    <IconTimer size={18} color={timerActive ? '#EF4444' : Colors.primaryPink} />
-                    <Text style={[m.timerBtnTxt, timerActive && { color: '#EF4444' }]}>
+                    <IconTimer size={18} color={timerActive ? Colors.danger : Colors.primaryPink} />
+                    <Text style={[m.timerBtnTxt, timerActive && { color: Colors.danger }]}>
                       {timerActive ? t('feeding.timer_btn_stop') : t('feeding.timer_btn_start')}
                     </Text>
                   </TouchableOpacity>
@@ -1182,7 +1182,7 @@ function AddFeedModal({
                       style={[m.chip, foodItem === f && m.chipSolidsActive]}
                       onPress={() => setFoodItem(foodItem === f ? '' : f)}
                     >
-                      <Text style={[m.chipTxt, foodItem === f && { color: '#fff' }]}>{f}</Text>
+                      <Text style={[m.chipTxt, foodItem === f && { color: Colors.white }]}>{f}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -1222,7 +1222,7 @@ function AddFeedModal({
                         m.reactionBtn,
                         reaction === r && {
                           backgroundColor: r === 'none' ? Colors.softMint : r === 'mild' ? Colors.softGold : '#FEE2E2',
-                          borderColor:     r === 'none' ? Colors.mint : r === 'mild' ? Colors.gold : '#EF4444',
+                          borderColor:     r === 'none' ? Colors.mint : r === 'mild' ? Colors.gold : Colors.danger,
                         },
                       ]}
                       onPress={() => setReaction(r)}
@@ -1288,7 +1288,7 @@ function AddFeedModal({
 const m = StyleSheet.create({
   overlay:        { flex: 1, justifyContent: 'flex-end' },
   backdrop:       { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet:          { backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '92%', paddingBottom: Platform.OS === 'ios' ? 34 : 24 },
+  sheet:          { backgroundColor: Colors.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '92%', paddingBottom: Platform.OS === 'ios' ? 34 : 24 },
   handle:         { width: 40, height: 5, backgroundColor: '#E5E7EB', borderRadius: 3, alignSelf: 'center', marginTop: 10, marginBottom: 4 },
   header:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: PAD, paddingVertical: 10 },
   title:          { fontSize: 18, fontWeight: '800', color: Colors.dark },
@@ -1306,7 +1306,7 @@ const m = StyleSheet.create({
   fieldSubLabel:  { fontSize: 11, color: Colors.midGray, fontWeight: '600' },
   suggest:        { fontSize: 11, color: Colors.mint, fontWeight: '700' },
   sideRow:        { flexDirection: 'row', gap: 8 },
-  sideBtn:        { flex: 1, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 10, alignItems: 'center', backgroundColor: '#FAFAFA' },
+  sideBtn:        { flex: 1, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 10, alignItems: 'center', backgroundColor: Colors.background },
   sideBtnActive:  { borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },
   sideTxt:        { fontSize: 12, fontWeight: '700', color: Colors.midGray },
   sideTxtActive:  { color: Colors.primaryPink },
@@ -1322,10 +1322,10 @@ const m = StyleSheet.create({
   resumeBtnTxt:   { color: '#065F46' },
   pausedBadge:    { fontSize: 10, fontWeight: '700', color: Colors.midGray, backgroundColor: Colors.softGold, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
   durInput:       { width: 80, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, alignItems: 'center' },
-  input:          { borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark, backgroundColor: '#FAFAFA' },
+  input:          { borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark, backgroundColor: Colors.background },
   notesInput:     { minHeight: 72, textAlignVertical: 'top' },
   radioRow:       { flexDirection: 'row', gap: 8 },
-  radioBtn:       { flex: 1, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 10, alignItems: 'center', backgroundColor: '#FAFAFA' },
+  radioBtn:       { flex: 1, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 10, alignItems: 'center', backgroundColor: Colors.background },
   radioBtnActive: { borderColor: Colors.blue, backgroundColor: '#EFF6FF' },
   radioTxt:       { fontSize: 12, fontWeight: '700', color: Colors.midGray },
   radioTxtActive: { color: Colors.blue },
@@ -1337,26 +1337,26 @@ const m = StyleSheet.create({
   volVal:         { fontSize: 28, fontWeight: '900', color: Colors.dark },
   volUnit:        { fontSize: 13, color: Colors.primaryPink, fontWeight: '700' },
   chipRow:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip:           { borderRadius: 20, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#FAFAFA' },
+  chip:           { borderRadius: 20, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: Colors.background },
   chipActive:     { borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },
   chipTxt:        { fontSize: 12, fontWeight: '700', color: Colors.midGray },
   chipTxtActive:  { color: Colors.primaryPink },
-  chipSolidsActive:{ borderColor: '#F59E0B', backgroundColor: '#F59E0B' },
-  allergenBanner: { borderRadius: 12, backgroundColor: '#FEF2F2', borderWidth: 1.5, borderColor: '#EF4444', padding: 10 },
+  chipSolidsActive:{ borderColor: Colors.warning, backgroundColor: Colors.warning },
+  allergenBanner: { borderRadius: 12, backgroundColor: Colors.dangerBg, borderWidth: 1.5, borderColor: Colors.danger, padding: 10 },
   allergenTxt:    { fontSize: 12, color: '#B91C1C', fontWeight: '700' },
   firstFoodBadge: { borderRadius: 12, backgroundColor: Colors.softMint, borderWidth: 1.5, borderColor: Colors.mint, padding: 8 },
   firstFoodTxt:   { fontSize: 12, color: Colors.mint, fontWeight: '700' },
   radioCol:       { gap: 8 },
-  reactionBtn:    { borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 11, paddingHorizontal: 14, backgroundColor: '#FAFAFA' },
+  reactionBtn:    { borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 11, paddingHorizontal: 14, backgroundColor: Colors.background },
   reactionTxt:    { fontSize: 13, fontWeight: '700', color: Colors.dark },
   timeDisplay:    { fontSize: 22, fontWeight: '900', color: Colors.primaryPink },
   timeQuickRow:   { flexDirection: 'row', gap: 8 },
-  timeQuickBtn:   { borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#FAFAFA' },
+  timeQuickBtn:   { borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: Colors.background },
   timeQuickTxt:   { fontSize: 11, fontWeight: '700', color: Colors.midGray },
   saveWrap:       { paddingVertical: 16 },
   saveBtn:        { borderRadius: 18, overflow: 'hidden', shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
   saveBtnGrad:    { paddingVertical: 16, alignItems: 'center' },
-  saveTxt:        { fontSize: 16, fontWeight: '800', color: '#fff' },
+  saveTxt:        { fontSize: 16, fontWeight: '800', color: Colors.white },
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1405,7 +1405,7 @@ function FoodsTriedCard({ entries, childId }: { entries: FeedingEntry[]; childId
 }
 
 const ft = StyleSheet.create({
-  card:    { marginHorizontal: PAD, backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  card:    { marginHorizontal: PAD, backgroundColor: Colors.white, borderRadius: 18, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
   title:   { fontSize: 13, fontWeight: '800', color: Colors.dark, marginBottom: 2 },
   count:   { fontSize: 11, color: Colors.midGray, marginBottom: 8, fontWeight: '600' },
   chips:   { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -1638,19 +1638,19 @@ const scr = StyleSheet.create({
   header:           { flexDirection: 'row', alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 54 : 48, paddingBottom: 16, paddingHorizontal: PAD, gap: 12 },
   backBtn:          { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   headerCenter:     { flex: 1 },
-  headerTitle:      { fontSize: 20, fontWeight: '900', color: '#fff' },
+  headerTitle:      { fontSize: 20, fontWeight: '900', color: Colors.white },
   headerSub:        { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
   addBtn:           { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   timerBanner:      { backgroundColor: Colors.softPink, borderBottomWidth: 1, borderBottomColor: Colors.primaryPink + '40', paddingVertical: 10, paddingHorizontal: PAD },
   timerBannerTxt:   { fontSize: 13, fontWeight: '700', color: Colors.primaryPink, textAlign: 'center' },
   filterRow:        { flexDirection: 'row', paddingHorizontal: PAD, paddingVertical: 10, gap: 8 },
-  filterBtn:        { flex: 1, borderRadius: 12, paddingVertical: 8, alignItems: 'center', backgroundColor: '#fff', borderWidth: 1.5, borderColor: Colors.border },
+  filterBtn:        { flex: 1, borderRadius: 12, paddingVertical: 8, alignItems: 'center', backgroundColor: Colors.white, borderWidth: 1.5, borderColor: Colors.border },
   filterBtnActive:  { backgroundColor: Colors.softPink, borderColor: Colors.primaryPink },
   filterTxt:        { fontSize: 12, fontWeight: '700', color: Colors.midGray },
   filterTxtActive:  { color: Colors.primaryPink },
   group:            { paddingHorizontal: PAD },
   groupHeader:      { fontSize: 13, fontWeight: '800', color: Colors.dark, marginBottom: 6, marginLeft: 2 },
-  groupCard:        { backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  groupCard:        { backgroundColor: Colors.white, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   divider:          { height: 1, backgroundColor: Colors.border, marginHorizontal: 14 },
   emptyList:        { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 32 },
   emptyListEmoji:   { fontSize: 52, marginBottom: 12 },
@@ -1661,5 +1661,5 @@ const scr = StyleSheet.create({
   emptyWrap:        { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   emptyTitle:       { fontSize: 20, fontWeight: '800', color: Colors.dark, marginBottom: 20 },
   emptyBtn:         { borderRadius: 14, backgroundColor: Colors.primaryPink, paddingVertical: 13, paddingHorizontal: 28 },
-  emptyBtnTxt:      { fontSize: 15, fontWeight: '800', color: '#fff' },
+  emptyBtnTxt:      { fontSize: 15, fontWeight: '800', color: Colors.white },
 });

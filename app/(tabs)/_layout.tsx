@@ -13,7 +13,7 @@ import Colors from '../../constants/Colors';
 
 const PINK   = Colors.primaryPink;  // #E63B6F
 const GRAY   = '#B8B8CC';
-const ACTIVE_BG = '#FFE4EE';
+const ACTIVE_BG = Colors.softPink;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SVG Tab Icons  (filled when active, outlined when inactive)
@@ -179,7 +179,7 @@ const ph = StyleSheet.create({
   bar:      { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingVertical: 13, gap: 12 },
   iconPill: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.32)', alignItems: 'center', justifyContent: 'center' },
   icon:     { fontSize: 21 },
-  title:    { fontSize: 17, fontWeight: '800', color: '#fff', flex: 1, letterSpacing: 0.3 },
+  title:    { fontSize: 17, fontWeight: '800', color: Colors.white, flex: 1, letterSpacing: 0.3 },
   deco1:    { fontSize: 17, opacity: 0.65 },
   deco2:    { fontSize: 13, opacity: 0.5 },
 });
@@ -196,7 +196,7 @@ export default function TabLayout() {
         tabBarActiveTintColor:   PINK,
         tabBarInactiveTintColor: GRAY,
         tabBarStyle: {
-          backgroundColor:  '#FFFFFF',
+          backgroundColor:  Colors.white,
           borderTopColor:   '#F8E4EC',
           borderTopWidth:   1.5,
           height:           68,

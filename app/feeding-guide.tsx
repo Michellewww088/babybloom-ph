@@ -17,6 +17,7 @@ import {
   AGE_STAGES, PH_SUPERFOODS, ALLERGENS, READINESS_SIGNS, FOODS_TO_AVOID,
   Superfood, Allergen,
 } from '../constants/feeding-guide';
+import Colors from '../constants/Colors';
 
 const { width: W } = Dimensions.get('window');
 
@@ -385,8 +386,8 @@ export default function FeedingGuideScreen() {
           const isKnownAllergy = hasAllergyFor(allergen.id);
           const evidence = lang === 'zh' ? allergen.evidenceZH : lang === 'fil' ? allergen.evidenceFIL : allergen.evidenceEN;
           const caution  = lang === 'zh' ? allergen.cautionZH  : lang === 'fil' ? allergen.cautionFIL  : allergen.cautionEN;
-          const dotColor = allergen.warningColor === 'green' ? '#27AE7A' : allergen.warningColor === 'yellow' ? '#F5A623' : '#E63B6F';
-          const bgColor  = allergen.warningColor === 'green' ? '#E0F7EF' : allergen.warningColor === 'yellow' ? '#FFF8E8' : '#FFE4EE';
+          const dotColor = allergen.warningColor === 'green' ? Colors.mint : allergen.warningColor === 'yellow' ? Colors.gold : Colors.primaryPink;
+          const bgColor  = allergen.warningColor === 'green' ? Colors.softMint : allergen.warningColor === 'yellow' ? Colors.softGold : Colors.softPink;
 
           return (
             <TouchableOpacity
@@ -516,8 +517,8 @@ export default function FeedingGuideScreen() {
     const isKnown = hasAllergyFor(selectedAllergen.id);
     const evidence = lang === 'zh' ? selectedAllergen.evidenceZH : lang === 'fil' ? selectedAllergen.evidenceFIL : selectedAllergen.evidenceEN;
     const caution  = lang === 'zh' ? selectedAllergen.cautionZH  : lang === 'fil' ? selectedAllergen.cautionFIL  : selectedAllergen.cautionEN;
-    const dotColor = selectedAllergen.warningColor === 'green' ? '#27AE7A' : selectedAllergen.warningColor === 'yellow' ? '#F5A623' : '#E63B6F';
-    const bgColor  = selectedAllergen.warningColor === 'green' ? '#E0F7EF' : selectedAllergen.warningColor === 'yellow' ? '#FFF8E8' : '#FFE4EE';
+    const dotColor = selectedAllergen.warningColor === 'green' ? Colors.mint : selectedAllergen.warningColor === 'yellow' ? Colors.gold : Colors.primaryPink;
+    const bgColor  = selectedAllergen.warningColor === 'green' ? Colors.softMint : selectedAllergen.warningColor === 'yellow' ? Colors.softGold : Colors.softPink;
     return (
       <Modal visible transparent animationType="slide" onRequestClose={() => setSelectedAllergen(null)}>
         <View style={ss.modalOverlay}>
@@ -626,7 +627,7 @@ export default function FeedingGuideScreen() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function AteAICard({
-  text, color = '#FFF8E8', borderColor = '#F5A623',
+  text, color = Colors.softGold, borderColor = Colors.gold,
 }: { text: string; color?: string; borderColor?: string }) {
   const { t } = useTranslation();
   return (
@@ -643,25 +644,25 @@ function AteAICard({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ss = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAFA' },
+  safe: { flex: 1, backgroundColor: Colors.background },
 
   // Header
   header:       { paddingTop: 12, paddingBottom: 20, paddingHorizontal: 20 },
   backBtn:      { marginBottom: 10 },
-  backBtnText:  { color: '#fff', fontWeight: '700', fontSize: 14 },
+  backBtnText:  { color: Colors.white, fontWeight: '700', fontSize: 14 },
   headerCenter: { alignItems: 'center' },
   headerEmoji:  { fontSize: 40, marginBottom: 4 },
-  headerTitle:  { fontSize: 22, fontWeight: '900', color: '#fff', textAlign: 'center' },
+  headerTitle:  { fontSize: 22, fontWeight: '900', color: Colors.white, textAlign: 'center' },
   headerSub:    { fontSize: 13, color: 'rgba(255,255,255,0.85)', textAlign: 'center', marginTop: 2 },
   agePill: {
     alignSelf: 'center', marginTop: 10, backgroundColor: 'rgba(255,255,255,0.25)',
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5,
   },
-  agePillText:  { color: '#fff', fontWeight: '700', fontSize: 13 },
+  agePillText:  { color: Colors.white, fontWeight: '700', fontSize: 13 },
 
   // Tab bar
   tabBar: {
-    flexDirection: 'row', backgroundColor: '#fff',
+    flexDirection: 'row', backgroundColor: Colors.white,
     borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
   },
   tabBtn: {
@@ -669,11 +670,11 @@ const ss = StyleSheet.create({
   },
   tabBtnActive: {},
   tabEmoji:     { fontSize: 18, marginBottom: 2 },
-  tabLabel:     { fontSize: 11, color: '#4A4A6A', fontWeight: '600' },
-  tabLabelActive: { color: '#E63B6F', fontWeight: '800' },
+  tabLabel:     { fontSize: 11, color: Colors.midGray, fontWeight: '600' },
+  tabLabelActive: { color: Colors.primaryPink, fontWeight: '800' },
   tabUnderline: {
     position: 'absolute', bottom: 0, left: '15%', right: '15%',
-    height: 2, backgroundColor: '#E63B6F', borderRadius: 2,
+    height: 2, backgroundColor: Colors.primaryPink, borderRadius: 2,
   },
 
   // Scroll
@@ -685,77 +686,77 @@ const ss = StyleSheet.create({
     borderWidth: 1.5,
   },
   ateAiLabel:      { fontSize: 11, fontWeight: '900', letterSpacing: 1, marginBottom: 6 },
-  ateAiText:       { fontSize: 14, color: '#1C1C3A', lineHeight: 21, fontWeight: '500' },
+  ateAiText:       { fontSize: 14, color: Colors.dark, lineHeight: 21, fontWeight: '500' },
   ateAiDisclaimer: { fontSize: 11, color: '#9E9EB8', marginTop: 8, fontStyle: 'italic' },
 
   // Section
   section:      { marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1C1C3A', marginBottom: 4 },
-  sectionSub:   { fontSize: 12, color: '#4A4A6A', marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: Colors.dark, marginBottom: 4 },
+  sectionSub:   { fontSize: 12, color: Colors.midGray, marginBottom: 12 },
 
   // Readiness
   readinessGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   readinessChip: {
-    backgroundColor: '#E0F7EF', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8,
+    backgroundColor: Colors.softMint, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8,
     alignItems: 'center', flexDirection: 'row', gap: 6,
   },
   readinessEmoji: { fontSize: 18 },
-  readinessText:  { fontSize: 12, color: '#27AE7A', fontWeight: '600' },
+  readinessText:  { fontSize: 12, color: Colors.mint, fontWeight: '600' },
 
   // Stage Timeline
   stageCard: {
-    backgroundColor: '#fff', borderRadius: 16, marginBottom: 10,
+    backgroundColor: Colors.white, borderRadius: 16, marginBottom: 10,
     padding: 16, elevation: 2,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
     borderLeftWidth: 4, borderLeftColor: '#E0E0E0',
   },
-  stageCardActive:  { borderLeftColor: '#E63B6F', backgroundColor: '#FFF5F8' },
-  stageCardPast:    { borderLeftColor: '#27AE7A', opacity: 0.85 },
+  stageCardActive:  { borderLeftColor: Colors.primaryPink, backgroundColor: '#FFF5F8' },
+  stageCardPast:    { borderLeftColor: Colors.mint, opacity: 0.85 },
   stageHeader:      { flexDirection: 'row', alignItems: 'center', gap: 12 },
   stageDot:         { width: 12, height: 12, borderRadius: 6, backgroundColor: '#E0E0E0' },
-  stageDotActive:   { backgroundColor: '#E63B6F' },
-  stageDotPast:     { backgroundColor: '#27AE7A' },
+  stageDotActive:   { backgroundColor: Colors.primaryPink },
+  stageDotPast:     { backgroundColor: Colors.mint },
   stageLabelCol:    { flex: 1 },
-  stageLabel:       { fontSize: 15, fontWeight: '700', color: '#4A4A6A' },
-  stageLabelActive: { color: '#E63B6F' },
+  stageLabel:       { fontSize: 15, fontWeight: '700', color: Colors.midGray },
+  stageLabelActive: { color: Colors.primaryPink },
   currentBadge: {
-    alignSelf: 'flex-start', backgroundColor: '#FFE4EE', borderRadius: 8,
+    alignSelf: 'flex-start', backgroundColor: Colors.softPink, borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 2, marginTop: 4,
   },
-  currentBadgeText: { fontSize: 11, color: '#E63B6F', fontWeight: '800' },
+  currentBadgeText: { fontSize: 11, color: Colors.primaryPink, fontWeight: '800' },
   stageChevron:     { color: '#B8B8CC', fontSize: 12 },
   stageBody:        { marginTop: 14 },
-  stageSummary:     { fontSize: 13, color: '#4A4A6A', lineHeight: 20, marginBottom: 12 },
+  stageSummary:     { fontSize: 13, color: Colors.midGray, lineHeight: 20, marginBottom: 12 },
   stageInfoRow:     { flexDirection: 'row', gap: 10, marginBottom: 12 },
   stageInfoBox: {
     flex: 1, backgroundColor: '#F8F8FC', borderRadius: 10, padding: 10,
   },
   stageInfoLabel: { fontSize: 10, color: '#9E9EB8', fontWeight: '700', textTransform: 'uppercase', marginBottom: 3 },
-  stageInfoValue: { fontSize: 12, color: '#1C1C3A', fontWeight: '600' },
+  stageInfoValue: { fontSize: 12, color: Colors.dark, fontWeight: '600' },
   stageFoodRow:   { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   stageFoodChip: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5FA',
     borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, gap: 3,
   },
-  stageFoodChipWarn: { backgroundColor: '#FFE4EE' },
+  stageFoodChipWarn: { backgroundColor: Colors.softPink },
   stageFoodEmoji:    { fontSize: 14 },
-  stageFoodName:     { fontSize: 11, color: '#4A4A6A', fontWeight: '600' },
+  stageFoodName:     { fontSize: 11, color: Colors.midGray, fontWeight: '600' },
   stageFoodWarnIcon: { fontSize: 10 },
   breastfeedBanner: {
-    backgroundColor: '#FFE4EE', borderRadius: 10, padding: 10, marginTop: 8,
+    backgroundColor: Colors.softPink, borderRadius: 10, padding: 10, marginTop: 8,
   },
-  breastfeedText: { fontSize: 13, color: '#E63B6F', fontWeight: '700', textAlign: 'center' },
+  breastfeedText: { fontSize: 13, color: Colors.primaryPink, fontWeight: '700', textAlign: 'center' },
 
   // Avoid
   avoidRow:      { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, gap: 12 },
   avoidEmoji:    { fontSize: 24 },
   avoidTextCol:  { flex: 1 },
-  avoidName:     { fontSize: 14, fontWeight: '700', color: '#1C1C3A' },
-  avoidReason:   { fontSize: 12, color: '#4A4A6A', lineHeight: 18 },
+  avoidName:     { fontSize: 14, fontWeight: '700', color: Colors.dark },
+  avoidReason:   { fontSize: 12, color: Colors.midGray, lineHeight: 18 },
 
   // Superfood cards
   superfoodCard: {
-    backgroundColor: '#fff', borderRadius: 16, marginBottom: 12,
+    backgroundColor: Colors.white, borderRadius: 16, marginBottom: 12,
     flexDirection: 'row', overflow: 'hidden',
     elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
@@ -764,17 +765,17 @@ const ss = StyleSheet.create({
   superfoodEmoji:    { fontSize: 36 },
   superfoodBody:     { flex: 1, padding: 12 },
   superfoodHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
-  superfoodName:     { fontSize: 16, fontWeight: '800', color: '#1C1C3A' },
-  superfoodTagline:  { fontSize: 11, color: '#4A4A6A', marginTop: 1 },
+  superfoodName:     { fontSize: 16, fontWeight: '800', color: Colors.dark },
+  superfoodTagline:  { fontSize: 11, color: Colors.midGray, marginTop: 1 },
   nutrientRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 6 },
   nutrientChip:      { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   nutrientText:      { fontSize: 10, fontWeight: '700' },
-  superfoodBenefit:  { fontSize: 12, color: '#4A4A6A', lineHeight: 17, marginBottom: 4 },
+  superfoodBenefit:  { fontSize: 12, color: Colors.midGray, lineHeight: 17, marginBottom: 4 },
   warnBadge: {
-    backgroundColor: '#FFF8E8', borderRadius: 8,
+    backgroundColor: Colors.softGold, borderRadius: 8,
     paddingHorizontal: 6, paddingVertical: 3,
   },
-  warnBadgeText:  { fontSize: 10, color: '#F5A623', fontWeight: '700' },
+  warnBadgeText:  { fontSize: 10, color: Colors.gold, fontWeight: '700' },
   tapHint:        { fontSize: 11, color: '#B8B8CC', fontStyle: 'italic' },
 
   // Locked superfoods
@@ -789,21 +790,21 @@ const ss = StyleSheet.create({
 
   // Allergen profile card
   allergyProfileCard: {
-    backgroundColor: '#FFE4EE', borderRadius: 16, padding: 16, marginBottom: 16,
-    borderWidth: 1.5, borderColor: '#E63B6F',
+    backgroundColor: Colors.softPink, borderRadius: 16, padding: 16, marginBottom: 16,
+    borderWidth: 1.5, borderColor: Colors.primaryPink,
   },
-  allergyProfileTitle: { fontSize: 14, fontWeight: '800', color: '#E63B6F', marginBottom: 8 },
+  allergyProfileTitle: { fontSize: 14, fontWeight: '800', color: Colors.primaryPink, marginBottom: 8 },
   allergyChipRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   allergyChip: {
-    backgroundColor: '#E63B6F', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4,
+    backgroundColor: Colors.primaryPink, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4,
   },
-  allergyChipText:   { fontSize: 12, color: '#fff', fontWeight: '700' },
+  allergyChipText:   { fontSize: 12, color: Colors.white, fontWeight: '700' },
   allergyProfileNote: { fontSize: 12, color: '#C62A47' },
 
   // Allergen cards
   allergenCard: {
-    backgroundColor: '#fff', borderRadius: 14, marginBottom: 10, padding: 14,
-    borderLeftWidth: 4, borderLeftColor: '#27AE7A',
+    backgroundColor: Colors.white, borderRadius: 14, marginBottom: 10, padding: 14,
+    borderLeftWidth: 4, borderLeftColor: Colors.mint,
     elevation: 1, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 1 },
   },
   allergenCardAlert: { backgroundColor: '#FFF5F8' },
@@ -812,40 +813,40 @@ const ss = StyleSheet.create({
   allergenEmoji:     { fontSize: 24 },
   allergenInfo:      { flex: 1 },
   allergenNameRow:   { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 4 },
-  allergenName:      { fontSize: 15, fontWeight: '800', color: '#1C1C3A' },
+  allergenName:      { fontSize: 15, fontWeight: '800', color: Colors.dark },
   allergenAgeBadge: {
     borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2,
   },
-  allergenAgeBadgeText: { fontSize: 10, color: '#fff', fontWeight: '700' },
+  allergenAgeBadgeText: { fontSize: 10, color: Colors.white, fontWeight: '700' },
   knownAllergyBadge: {
-    backgroundColor: '#FFE4EE', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2,
+    backgroundColor: Colors.softPink, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2,
   },
-  knownAllergyText:  { fontSize: 10, color: '#E63B6F', fontWeight: '700' },
-  allergenEvidence:  { fontSize: 12, color: '#4A4A6A', lineHeight: 17 },
+  knownAllergyText:  { fontSize: 10, color: Colors.primaryPink, fontWeight: '700' },
+  allergenEvidence:  { fontSize: 12, color: Colors.midGray, lineHeight: 17 },
   allergenWarnBox: {
-    backgroundColor: '#FFE4EE', borderRadius: 8, padding: 8, marginBottom: 6,
+    backgroundColor: Colors.softPink, borderRadius: 8, padding: 8, marginBottom: 6,
   },
   allergenWarnText:  { fontSize: 12, color: '#C62A47', fontWeight: '600' },
 
   // Emergency
   emergencyCard: {
-    backgroundColor: '#FFE4EE', borderRadius: 16, padding: 16, marginBottom: 16,
-    borderWidth: 1.5, borderColor: '#E63B6F',
+    backgroundColor: Colors.softPink, borderRadius: 16, padding: 16, marginBottom: 16,
+    borderWidth: 1.5, borderColor: Colors.primaryPink,
   },
-  emergencyTitle:  { fontSize: 15, fontWeight: '900', color: '#E63B6F', marginBottom: 10 },
+  emergencyTitle:  { fontSize: 15, fontWeight: '900', color: Colors.primaryPink, marginBottom: 10 },
   emergencyItem:   { fontSize: 13, color: '#C62A47', lineHeight: 22, fontWeight: '600' },
-  emergencyAction: { marginTop: 8, fontSize: 12, color: '#E63B6F', fontWeight: '700' },
+  emergencyAction: { marginTop: 8, fontSize: 12, color: Colors.primaryPink, fontWeight: '700' },
 
   // Source box
   sourceBox: {
-    backgroundColor: '#E8F2FF', borderRadius: 10, padding: 10, marginTop: 8,
+    backgroundColor: Colors.softBlue, borderRadius: 10, padding: 10, marginTop: 8,
   },
-  sourceText: { fontSize: 11, color: '#1A73C8', textAlign: 'center' },
+  sourceText: { fontSize: 11, color: Colors.blue, textAlign: 'center' },
 
   // Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalSheet: {
-    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    backgroundColor: Colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24,
     maxHeight: '88%',
   },
   modalHero: {
@@ -857,28 +858,28 @@ const ss = StyleSheet.create({
     padding: 24, alignItems: 'center',
   },
   modalHeroEmoji:   { fontSize: 56, marginBottom: 8 },
-  modalHeroName:    { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 4 },
+  modalHeroName:    { fontSize: 22, fontWeight: '900', color: Colors.white, marginBottom: 4 },
   modalHeroTagline: { fontSize: 13, color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
   modalBody:        { padding: 20 },
-  modalSectionTitle: { fontSize: 14, fontWeight: '800', color: '#1C1C3A', marginBottom: 10 },
+  modalSectionTitle: { fontSize: 14, fontWeight: '800', color: Colors.dark, marginBottom: 10 },
   bulletRow:        { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8, gap: 8 },
   bullet:           { width: 6, height: 6, borderRadius: 3, marginTop: 6 },
-  bulletText:       { flex: 1, fontSize: 13, color: '#4A4A6A', lineHeight: 20 },
+  bulletText:       { flex: 1, fontSize: 13, color: Colors.midGray, lineHeight: 20 },
   prepRow:          { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, gap: 10 },
   prepNum:          { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   prepNumText:      { fontSize: 12, fontWeight: '800' },
-  prepText:         { flex: 1, fontSize: 13, color: '#4A4A6A', lineHeight: 20 },
+  prepText:         { flex: 1, fontSize: 13, color: Colors.midGray, lineHeight: 20 },
   nutrientFullRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 16 },
   nutrientFullChip: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
   nutrientFullText: { fontSize: 12, fontWeight: '700' },
-  ageTag:           { fontSize: 13, color: '#4A4A6A', marginTop: 12, textAlign: 'center' },
+  ageTag:           { fontSize: 13, color: Colors.midGray, marginTop: 12, textAlign: 'center' },
   modalWarnBanner: {
-    backgroundColor: '#FFE4EE', borderRadius: 10, padding: 10, marginBottom: 14,
-    borderWidth: 1, borderColor: '#F5A623',
+    backgroundColor: Colors.softPink, borderRadius: 10, padding: 10, marginBottom: 14,
+    borderWidth: 1, borderColor: Colors.gold,
   },
   modalWarnText:  { fontSize: 13, color: '#C62A47', fontWeight: '600' },
-  evidenceText:   { fontSize: 13, color: '#4A4A6A', lineHeight: 20 },
-  cautionText:    { fontSize: 13, color: '#4A4A6A', lineHeight: 20 },
+  evidenceText:   { fontSize: 13, color: Colors.midGray, lineHeight: 20 },
+  cautionText:    { fontSize: 13, color: Colors.midGray, lineHeight: 20 },
   phFoodRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   phFoodChip:     { borderRadius: 8, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4 },
   phFoodText:     { fontSize: 12, fontWeight: '600' },
@@ -887,7 +888,7 @@ const ss = StyleSheet.create({
   },
   aiDisclaimer:   { fontSize: 11, color: '#9E9EB8', textAlign: 'center', fontStyle: 'italic' },
   modalClose: {
-    backgroundColor: '#E63B6F', margin: 16, borderRadius: 14, padding: 14, alignItems: 'center',
+    backgroundColor: Colors.primaryPink, margin: 16, borderRadius: 14, padding: 14, alignItems: 'center',
   },
-  modalCloseText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  modalCloseText: { color: Colors.white, fontWeight: '800', fontSize: 15 },
 });

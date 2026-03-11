@@ -5,6 +5,8 @@
  * Source: https://www.who.int/tools/child-growth-standards
  */
 
+import Colors from '../constants/Colors';
+
 export type Sex          = 'male' | 'female';
 export type GrowthMetric = 'weight' | 'height' | 'head';
 
@@ -240,13 +242,13 @@ export function getWHOPercentile(
   let color: string;
   let bgColor: string;
   if (pct >= 15 && pct <= 85) {
-    label = 'Normal'; color = '#27AE7A'; bgColor = '#E0F7EF';
+    label = 'Normal'; color = Colors.mint; bgColor = Colors.softMint;
   } else if (pct >= 5 && pct < 15) {
-    label = 'Watch';  color = '#F5A623'; bgColor = '#FFF8E8';
+    label = 'Watch';  color = Colors.gold; bgColor = Colors.softGold;
   } else if (pct > 85 && pct <= 97) {
-    label = 'Watch';  color = '#F5A623'; bgColor = '#FFF8E8';
+    label = 'Watch';  color = Colors.gold; bgColor = Colors.softGold;
   } else {
-    label = 'Consult Pedia'; color = '#E63B6F'; bgColor = '#FFE4EE';
+    label = 'Consult Pedia'; color = Colors.primaryPink; bgColor = Colors.softPink;
   }
 
   return { percentile: pct, label, color, bgColor };

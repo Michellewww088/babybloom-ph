@@ -33,10 +33,10 @@ const PRESET_ALLERGIES = ['Nuts', 'Dairy', 'Eggs', 'Shellfish', 'Wheat', 'Soy', 
 
 /** 4 default avatar options: colour + emoji */
 const DEFAULT_AVATARS = [
-  { bg: '#E8F2FF', emoji: '👶🏻', label: 'Boy (light)' },
-  { bg: '#FFE4EE', emoji: '👶🏽', label: 'Girl (medium)' },
-  { bg: '#E0F7EF', emoji: '👶🏾', label: 'Baby (dark)' },
-  { bg: '#FFF8E8', emoji: '👶',   label: 'Baby (neutral)' },
+  { bg: Colors.softBlue, emoji: '👶🏻', label: 'Boy (light)' },
+  { bg: Colors.softPink, emoji: '👶🏽', label: 'Girl (medium)' },
+  { bg: Colors.softMint, emoji: '👶🏾', label: 'Baby (dark)' },
+  { bg: Colors.softGold, emoji: '👶',   label: 'Baby (neutral)' },
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -838,7 +838,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 56,
     paddingBottom: 14,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
@@ -853,7 +853,7 @@ const s = StyleSheet.create({
     minWidth: 60,
     alignItems: 'center',
   },
-  saveBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  saveBtnText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
 
   // Scroll
   scroll:        { flex: 1 },
@@ -861,7 +861,7 @@ const s = StyleSheet.create({
 
   // Progress bar
   progressCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -913,7 +913,7 @@ const s = StyleSheet.create({
 
   // Cards
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 18,
     shadowColor: '#000',
@@ -990,7 +990,7 @@ const s = StyleSheet.create({
   // Fields
   fieldRow:    { marginBottom: 12 },
   fieldLabel:  { fontSize: 13, fontWeight: '600', color: Colors.midGray, marginBottom: 6 },
-  requiredStar:{ color: '#E63B6F', fontWeight: '800' },
+  requiredStar:{ color: Colors.primaryPink, fontWeight: '800' },
   input: {
     borderWidth: 1.5,
     borderColor: Colors.border,
@@ -999,18 +999,18 @@ const s = StyleSheet.create({
     paddingVertical: 11,
     fontSize: 15,
     color: Colors.dark,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.background,
     marginBottom: 0,
   },
   inputError: {
-    borderColor: '#E63B6F',
+    borderColor: Colors.primaryPink,
     backgroundColor: '#FFF5F7',
   },
   inputText:        { fontSize: 15, color: Colors.dark },
   inputPlaceholder: { fontSize: 15, color: Colors.lightGray },
   errorText: {
     fontSize: 12,
-    color: '#E63B6F',
+    color: Colors.primaryPink,
     fontWeight: '600',
     marginTop: 4,
     marginLeft: 2,
@@ -1025,7 +1025,7 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.border,
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.background,
   },
   toggleBtnActive:     { borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },
   toggleBtnText:       { fontSize: 13, fontWeight: '600', color: Colors.midGray },
@@ -1039,7 +1039,7 @@ const s = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.background,
   },
   chipActive:     { borderColor: Colors.blue, backgroundColor: Colors.softBlue },
   chipActiveRed:  { borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },
@@ -1072,7 +1072,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addAllergyBtnText: { color: '#fff', fontSize: 22, fontWeight: '300', lineHeight: 26 },
+  addAllergyBtnText: { color: Colors.white, fontSize: 22, fontWeight: '300', lineHeight: 26 },
 
   // Bottom save
   bottomSaveBtn: {
@@ -1083,7 +1083,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   bottomSaveBtnDisabled: { opacity: 0.6 },
-  bottomSaveBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  bottomSaveBtnText: { color: Colors.white, fontSize: 17, fontWeight: '700' },
 });
 
 // ── Stable sub-components ─────────────────────────────────────────────────────

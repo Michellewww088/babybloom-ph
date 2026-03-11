@@ -23,11 +23,11 @@ import {
 } from '../../constants/vaccines-doh-epi';
 
 const { width: W } = Dimensions.get('window');
-const BLUE   = '#1A73C8';
-const MINT   = '#27AE7A';
-const GOLD   = '#F5A623';
-const DARK   = '#1C1C3A';
-const GRAY   = '#4A4A6A';
+const BLUE   = Colors.blue;
+const MINT   = Colors.mint;
+const GOLD   = Colors.gold;
+const DARK   = Colors.dark;
+const GRAY   = Colors.midGray;
 const PURPLE = '#7B68EE';
 const PINK   = Colors.primaryPink;
 
@@ -60,8 +60,8 @@ function statusColor(s: VaccineStatus) {
   return GRAY;
 }
 function statusBg(s: VaccineStatus) {
-  if (s === 'given')    return '#E0F7EF';
-  if (s === 'upcoming') return '#E8F2FF';
+  if (s === 'given')    return Colors.softMint;
+  if (s === 'upcoming') return Colors.softBlue;
   if (s === 'overdue')  return '#FFF5F5';
   return '#F5F5F5';
 }
@@ -189,7 +189,7 @@ function VaccineAISection({
                   </View>
                 </View>
               )}
-              <View style={[ai.section, { backgroundColor: '#E0F7EF' }]}>
+              <View style={[ai.section, { backgroundColor: Colors.softMint }]}>
                 <Text style={[ai.sLabel, { color: MINT }]}>🛡️ {t('vaccine_log.ai_section_coverage')}</Text>
                 <Text style={ai.sBody}>{report.coverageSummary}</Text>
               </View>
@@ -199,11 +199,11 @@ function VaccineAISection({
                   <Text style={ai.sBody}>{report.actionNeeded}</Text>
                 </View>
               )}
-              <View style={[ai.section, { backgroundColor: '#FFF8E8' }]}>
+              <View style={[ai.section, { backgroundColor: Colors.softGold }]}>
                 <Text style={[ai.sLabel, { color: GOLD }]}>💡 {t('vaccine_log.ai_section_tip')}</Text>
                 <Text style={ai.sBody}>{report.ateTip}</Text>
               </View>
-              <View style={[ai.section, { backgroundColor: '#E8F2FF' }]}>
+              <View style={[ai.section, { backgroundColor: Colors.softBlue }]}>
                 <Text style={[ai.sLabel, { color: BLUE }]}>📅 {t('vaccine_log.ai_section_next')}</Text>
                 <Text style={ai.sBody}>{report.nextStep}</Text>
               </View>
@@ -217,7 +217,7 @@ function VaccineAISection({
 }
 
 const ai = StyleSheet.create({
-  card:      { backgroundColor: '#fff', borderRadius: 20, marginBottom: 14, shadowColor: PURPLE, shadowOpacity: 0.12, shadowRadius: 10, elevation: 4 },
+  card:      { backgroundColor: Colors.white, borderRadius: 20, marginBottom: 14, shadowColor: PURPLE, shadowOpacity: 0.12, shadowRadius: 10, elevation: 4 },
   hdrRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   hdrLeft:   { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   iconBox:   { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
@@ -251,7 +251,7 @@ function CoverageHero({
   const barW = (W - 32 - 36) * (pct / 100);
 
   return (
-    <LinearGradient colors={['#1A73C8','#4A9DE8']} start={{ x:0,y:0 }} end={{ x:1,y:1 }} style={h.card}>
+    <LinearGradient colors={[Colors.blue,'#4A9DE8']} start={{ x:0,y:0 }} end={{ x:1,y:1 }} style={h.card}>
       <View style={h.topRow}>
         <Text style={h.emoji}>💉</Text>
         <View style={{ flex: 1 }}>
@@ -283,16 +283,16 @@ const h = StyleSheet.create({
   card:     { borderRadius: 22, padding: 18, marginBottom: 14, shadowColor: BLUE, shadowOpacity: 0.25, shadowRadius: 12, elevation: 6 },
   topRow:   { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   emoji:    { fontSize: 36 },
-  title:    { fontSize: 17, fontWeight: '800', color: '#fff' },
+  title:    { fontSize: 17, fontWeight: '800', color: Colors.white },
   subtitle: { fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 1 },
   pctBadge: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
-  pctNum:   { fontSize: 22, fontWeight: '900', color: '#fff' },
+  pctNum:   { fontSize: 22, fontWeight: '900', color: Colors.white },
   pctLbl:   { fontSize: 9, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginTop: 1 },
   barBg:    { height: 8, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 4, marginBottom: 14 },
-  barFill:  { height: 8, backgroundColor: '#fff', borderRadius: 4 },
+  barFill:  { height: 8, backgroundColor: Colors.white, borderRadius: 4 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
   stat:     { alignItems: 'center' },
-  statN:    { fontSize: 20, fontWeight: '900', color: '#fff' },
+  statN:    { fontSize: 20, fontWeight: '900', color: Colors.white },
   statL:    { fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginTop: 2 },
   div:      { width: 1, backgroundColor: 'rgba(255,255,255,0.3)' },
   autoNote: { fontSize: 10, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
@@ -342,7 +342,7 @@ function VaccineRow({ record, onPress }: { record: VaccineRecord; onPress: () =>
 }
 
 const vr = StyleSheet.create({
-  card:      { backgroundColor: '#fff', borderRadius: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 12, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
+  card:      { backgroundColor: Colors.white, borderRadius: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 12, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
   iconCol:   { width: 48, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', paddingVertical: 14 },
   iconTxt:   { fontSize: 20 },
   center:    { flex: 1, paddingVertical: 12, gap: 3 },
@@ -352,8 +352,8 @@ const vr = StyleSheet.create({
   dot:       { fontSize: 11, color: '#ccc' },
   clinic:    { fontSize: 10, color: GRAY, opacity: 0.7 },
   badge:     { borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3 },
-  badgeFree: { backgroundColor: '#E0F7EF' },
-  badgePriv: { backgroundColor: '#FFF8E8' },
+  badgeFree: { backgroundColor: Colors.softMint },
+  badgePriv: { backgroundColor: Colors.softGold },
   badgeTxt:  { fontSize: 9, fontWeight: '800' },
   chevron:   { fontSize: 18, color: '#ccc' },
 });
@@ -415,7 +415,7 @@ function VaccineEditModal({
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={mo.wrap}>
-          <LinearGradient colors={['#1A73C8','#4A9DE8']} style={mo.hdr}>
+          <LinearGradient colors={[Colors.blue,'#4A9DE8']} style={mo.hdr}>
             <TouchableOpacity onPress={onClose} style={mo.closeBtn}>
               <Text style={mo.closeTxt}>✕</Text>
             </TouchableOpacity>
@@ -512,11 +512,11 @@ function VaccineEditModal({
 }
 
 const mo = StyleSheet.create({
-  wrap:        { flex: 1, backgroundColor: '#FAFAFA' },
+  wrap:        { flex: 1, backgroundColor: Colors.background },
   hdr:         { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 16, paddingBottom: 16 },
   closeBtn:    { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  closeTxt:    { color: '#fff', fontSize: 14, fontWeight: '700' },
-  hdrTitle:    { fontSize: 16, fontWeight: '800', color: '#fff' },
+  closeTxt:    { color: Colors.white, fontSize: 14, fontWeight: '700' },
+  hdrTitle:    { fontSize: 16, fontWeight: '800', color: Colors.white },
   hdrSub:      { fontSize: 12, color: 'rgba(255,255,255,0.9)', marginTop: 2, lineHeight: 16 },
   hdrAge:      { fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 3 },
   epiBadge:    { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, alignSelf: 'flex-start' },
@@ -531,15 +531,15 @@ const mo = StyleSheet.create({
   statusBtnTxt:{ fontSize: 11, fontWeight: '700', color: GRAY },
   fBlock:      { marginBottom: 12 },
   fLbl:        { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 6 },
-  input:       { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#e8e8e8', paddingHorizontal: 14, paddingVertical: 11, fontSize: 13, color: DARK },
+  input:       { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: '#e8e8e8', paddingHorizontal: 14, paddingVertical: 11, fontSize: 13, color: DARK },
   inputMulti:  { minHeight: 60, textAlignVertical: 'top', paddingTop: 11 },
   reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#F0F8FF', borderRadius: 14, padding: 14, marginBottom: 14 },
   reminderSub: { fontSize: 11, color: BLUE, marginTop: 2 },
   saveBtn:     { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 10, shadowColor: BLUE, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  saveBtnTxt:  { color: '#fff', fontSize: 16, fontWeight: '800' },
+  saveBtnTxt:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
   deleteBtn:   { borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, borderColor: '#FFBDBD', backgroundColor: '#FFF5F5', marginBottom: 14 },
   deleteBtnTxt:{ color: '#E53E3E', fontSize: 14, fontWeight: '700' },
-  postCare:    { backgroundColor: '#FFF8E8', borderRadius: 14, padding: 14, borderLeftWidth: 3, borderLeftColor: GOLD, gap: 4 },
+  postCare:    { backgroundColor: Colors.softGold, borderRadius: 14, padding: 14, borderLeftWidth: 3, borderLeftColor: GOLD, gap: 4 },
   postCareLbl: { fontSize: 11, fontWeight: '800', color: GOLD },
   postCareVal: { fontSize: 12, color: DARK, lineHeight: 17 },
 });
@@ -661,19 +661,19 @@ function VaccineDetailAI({
             ))}
           </View>
           {activeSection === 'why' && (
-            <View style={[kbai.section, { backgroundColor: '#E8F2FF' }]}>
+            <View style={[kbai.section, { backgroundColor: Colors.softBlue }]}>
               <Text style={[kbai.sLabel, { color: BLUE }]}>{t('vaccine_kb.ai_section_why')}</Text>
               <Text style={kbai.sBody}>{analysis.whyMatters}</Text>
             </View>
           )}
           {activeSection === 'qa' && (
-            <View style={[kbai.section, { backgroundColor: '#FFF8E8' }]}>
+            <View style={[kbai.section, { backgroundColor: Colors.softGold }]}>
               <Text style={[kbai.sLabel, { color: GOLD }]}>{t('vaccine_kb.ai_section_qa')}</Text>
               <Text style={kbai.sBody}>{analysis.commonQs}</Text>
             </View>
           )}
           {activeSection === 'expect' && (
-            <View style={[kbai.section, { backgroundColor: '#E0F7EF' }]}>
+            <View style={[kbai.section, { backgroundColor: Colors.softMint }]}>
               <Text style={[kbai.sLabel, { color: MINT }]}>{t('vaccine_kb.ai_section_expect')}</Text>
               <Text style={kbai.sBody}>{analysis.whatToExpect}</Text>
             </View>
@@ -686,7 +686,7 @@ function VaccineDetailAI({
 }
 
 const kbai = StyleSheet.create({
-  card:        { backgroundColor: '#fff', borderRadius: 18, marginBottom: 12, shadowColor: PURPLE, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
+  card:        { backgroundColor: Colors.white, borderRadius: 18, marginBottom: 12, shadowColor: PURPLE, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
   hdr:         { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   iconBox:     { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   iconTxt:     { fontSize: 20 },
@@ -698,7 +698,7 @@ const kbai = StyleSheet.create({
   secTab:      { flex: 1, paddingVertical: 7, borderRadius: 8, backgroundColor: '#F5F5F7', alignItems: 'center' },
   secTabActive:{ backgroundColor: PURPLE },
   secTabTxt:   { fontSize: 10, fontWeight: '700', color: GRAY },
-  secTabTxtActive: { color: '#fff' },
+  secTabTxtActive: { color: Colors.white },
   section:     { borderRadius: 12, padding: 12 },
   sLabel:      { fontSize: 10, fontWeight: '800', letterSpacing: 0.6, marginBottom: 6 },
   sBody:       { fontSize: 12, color: DARK, lineHeight: 19 },
@@ -723,7 +723,7 @@ function VaccineDetailModal({
   if (!vaccine) return null;
 
   const isOral = vaccine.route.toLowerCase().includes('oral');
-  const gradColors: [string, string] = vaccine.isFreeEPI ? ['#1A73C8','#4A9DE8'] : ['#D4860A','#F5A623'];
+  const gradColors: [string, string] = vaccine.isFreeEPI ? [Colors.blue,'#4A9DE8'] : ['#D4860A',Colors.gold];
 
   const getName = () => lang === 'en' ? vaccine.nameEN : lang === 'fil' ? vaccine.nameFIL : vaccine.nameZH;
   const getProtects = () => lang === 'en' ? vaccine.protectsAgainst.en : lang === 'fil' ? vaccine.protectsAgainst.fil : vaccine.protectsAgainst.zh;
@@ -769,7 +769,7 @@ function VaccineDetailModal({
           </View>
 
           {/* Protects Against (big highlight) */}
-          <LinearGradient colors={vaccine.isFreeEPI ? ['#E8F2FF','#D0E8FF'] : ['#FFF8E8','#FFEEcc']} style={det.protectsBox}>
+          <LinearGradient colors={vaccine.isFreeEPI ? [Colors.softBlue,'#D0E8FF'] : [Colors.softGold,'#FFEEcc']} style={det.protectsBox}>
             <Text style={[det.protectsLbl, { color: vaccine.isFreeEPI ? BLUE : '#A05C00' }]}>🛡️ {t('vaccine_kb.detail_protects')}</Text>
             <Text style={[det.protectsTxt, { color: vaccine.isFreeEPI ? DARK : '#6B3A00' }]}>{getProtects()}</Text>
           </LinearGradient>
@@ -814,7 +814,7 @@ function VaccineDetailModal({
             <Text style={det.collapsibleChevron}>{careOpen ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           {careOpen && (
-            <View style={[det.collapsibleBody, { backgroundColor: '#FFF8E8', borderLeftColor: GOLD }]}>
+            <View style={[det.collapsibleBody, { backgroundColor: Colors.softGold, borderLeftColor: GOLD }]}>
               <Text style={det.collapsibleTxt}>{vaccine.postVaccineCare}</Text>
             </View>
           )}
@@ -825,7 +825,7 @@ function VaccineDetailModal({
             <Text style={det.collapsibleChevron}>{whereOpen ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           {whereOpen && (
-            <View style={[det.collapsibleBody, { backgroundColor: '#E0F7EF', borderLeftColor: MINT }]}>
+            <View style={[det.collapsibleBody, { backgroundColor: Colors.softMint, borderLeftColor: MINT }]}>
               <Text style={[det.collapsibleTxt, { color: '#1A5C3A' }]}>{getWhere()}</Text>
             </View>
           )}
@@ -871,14 +871,14 @@ function VaccineDetailModal({
 }
 
 const det = StyleSheet.create({
-  wrap:             { flex: 1, backgroundColor: '#FAFAFA' },
+  wrap:             { flex: 1, backgroundColor: Colors.background },
   hdr:              { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 16, paddingBottom: 20 },
   closeBtn:         { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center', marginTop: 2 },
-  closeTxt:         { color: '#fff', fontSize: 14, fontWeight: '700' },
+  closeTxt:         { color: Colors.white, fontSize: 14, fontWeight: '700' },
   routeRow:         { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
   routeIcon:        { fontSize: 18 },
   routeTxt:         { fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: '700' },
-  hdrName:          { fontSize: 18, fontWeight: '900', color: '#fff', lineHeight: 24 },
+  hdrName:          { fontSize: 18, fontWeight: '900', color: Colors.white, lineHeight: 24 },
   epiBadge:         { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
   epiBadgeTxt:      { fontSize: 10, fontWeight: '800' },
   doseLbl:          { fontSize: 10, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
@@ -887,29 +887,29 @@ const det = StyleSheet.create({
   langBtn:          { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F0F0F0', borderWidth: 1.5, borderColor: 'transparent' },
   langBtnActive:    { backgroundColor: DARK, borderColor: DARK },
   langTxt:          { fontSize: 12, fontWeight: '700', color: GRAY },
-  langTxtActive:    { color: '#fff' },
+  langTxtActive:    { color: Colors.white },
   langHint:         { fontSize: 10, color: GRAY, fontStyle: 'italic' },
   protectsBox:      { borderRadius: 16, padding: 16, marginBottom: 12 },
   protectsLbl:      { fontSize: 10, fontWeight: '800', letterSpacing: 0.8, marginBottom: 6 },
   protectsTxt:      { fontSize: 15, fontWeight: '700', lineHeight: 22 },
-  infoGrid:         { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 14, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
+  infoGrid:         { flexDirection: 'row', backgroundColor: Colors.white, borderRadius: 14, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
   infoCell:         { flex: 1, alignItems: 'center', paddingVertical: 14, gap: 4 },
   infoCellIcon:     { fontSize: 20 },
   infoCellLbl:      { fontSize: 9, color: GRAY, fontWeight: '700', letterSpacing: 0.4 },
   infoCellVal:      { fontSize: 12, color: DARK, fontWeight: '700', textAlign: 'center' },
   infoDivider:      { width: 1, backgroundColor: '#F0F0F0', marginVertical: 10 },
-  collapsibleHdr:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
+  collapsibleHdr:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.white, borderRadius: 12, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
   collapsibleLbl:   { fontSize: 13, fontWeight: '700', color: DARK },
   collapsibleChevron:{ fontSize: 11, color: GRAY },
   collapsibleBody:  { backgroundColor: '#F0F8FF', borderRadius: 12, padding: 14, marginBottom: 8, borderLeftWidth: 3, borderLeftColor: BLUE },
   collapsibleTxt:   { fontSize: 13, color: DARK, lineHeight: 20 },
-  childStatusBox:   { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginTop: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  childStatusBox:   { backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginTop: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
   childStatusLbl:   { fontSize: 11, color: GRAY, fontWeight: '700', marginBottom: 8 },
   childStatusChip:  { alignSelf: 'flex-start', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginBottom: 12 },
   childStatusTxt:   { fontSize: 13, fontWeight: '800' },
   markGivenBtn:     { borderRadius: 12, overflow: 'hidden' },
   markGivenGrad:    { paddingVertical: 14, alignItems: 'center', borderRadius: 12 },
-  markGivenTxt:     { color: '#fff', fontSize: 15, fontWeight: '800' },
+  markGivenTxt:     { color: Colors.white, fontSize: 15, fontWeight: '800' },
   viewRecordBtn:    { borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1.5, borderColor: BLUE },
   viewRecordTxt:    { color: BLUE, fontSize: 14, fontWeight: '700' },
 });
@@ -922,14 +922,14 @@ const PARENT_RESOURCES = [
     titleKey: 'vaccine_kb.res_1_title',
     bodyKey:  'vaccine_kb.res_1_body',
     color: MINT,
-    bg: '#E0F7EF',
+    bg: Colors.softMint,
   },
   {
     icon: '🔬',
     titleKey: 'vaccine_kb.res_2_title',
     bodyKey:  'vaccine_kb.res_2_body',
     color: BLUE,
-    bg: '#E8F2FF',
+    bg: Colors.softBlue,
   },
   {
     icon: '🌡️',
@@ -950,7 +950,7 @@ const PARENT_RESOURCES = [
     titleKey: 'vaccine_kb.res_5_title',
     bodyKey:  'vaccine_kb.res_5_body',
     color: GOLD,
-    bg: '#FFF8E8',
+    bg: Colors.softGold,
   },
 ];
 
@@ -980,7 +980,7 @@ function ParentResourceCard({ icon, titleKey, bodyKey, color, bg }: typeof PAREN
 }
 
 const res = StyleSheet.create({
-  card:     { backgroundColor: '#fff', borderRadius: 14, marginBottom: 8, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
+  card:     { backgroundColor: Colors.white, borderRadius: 14, marginBottom: 8, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
   hdr:      { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
   iconBox:  { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   iconTxt:  { fontSize: 20 },
@@ -1028,8 +1028,8 @@ function AgeGroupAccordion({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {childRecords.length > 0 && (
             <View style={[acc.progressBadge, {
-              backgroundColor: givenInGroup === totalInGroup ? '#E0F7EF' :
-                hasOverdue ? '#FFF5F5' : '#E8F2FF',
+              backgroundColor: givenInGroup === totalInGroup ? Colors.softMint :
+                hasOverdue ? '#FFF5F5' : Colors.softBlue,
             }]}>
               <Text style={[acc.progressTxt, {
                 color: givenInGroup === totalInGroup ? MINT :
@@ -1058,7 +1058,7 @@ function AgeGroupAccordion({
                 <View style={{ flex: 1 }}>
                   <View style={acc.vaccTop}>
                     <Text style={acc.vaccName} numberOfLines={2}>{vaccine.nameEN}</Text>
-                    <View style={[acc.epiBadge, { backgroundColor: vaccine.isFreeEPI ? '#E0F7EF' : '#FFF8E8' }]}>
+                    <View style={[acc.epiBadge, { backgroundColor: vaccine.isFreeEPI ? Colors.softMint : Colors.softGold }]}>
                       <Text style={[acc.epiBadgeTxt, { color: vaccine.isFreeEPI ? MINT : GOLD }]}>
                         {vaccine.isFreeEPI ? t('vaccine_kb.free_badge') : t('vaccine_kb.private_badge')}
                       </Text>
@@ -1093,7 +1093,7 @@ function AgeGroupAccordion({
 }
 
 const acc = StyleSheet.create({
-  card:         { backgroundColor: '#fff', borderRadius: 18, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 3, overflow: 'hidden' },
+  card:         { backgroundColor: Colors.white, borderRadius: 18, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 3, overflow: 'hidden' },
   hdr:          { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   ageBox:       { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F5F5FA', alignItems: 'center', justifyContent: 'center' },
   ageEmoji:     { fontSize: 24 },
@@ -1181,14 +1181,14 @@ function KnowledgeBaseTab({
             style={[kb.chip, filter === f.key && { backgroundColor: f.activeBg, borderColor: f.activeBg }]}
             onPress={() => setFilter(f.key)} activeOpacity={0.8}
           >
-            <Text style={[kb.chipTxt, filter === f.key && { color: '#fff' }]}>{f.label}</Text>
+            <Text style={[kb.chipTxt, filter === f.key && { color: Colors.white }]}>{f.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       {/* EPI Coverage Banner */}
       {filter !== 'optional' && (
-        <LinearGradient colors={['#E0F7EF','#C8F7DC']} style={kb.epiBanner}>
+        <LinearGradient colors={[Colors.softMint,'#C8F7DC']} style={kb.epiBanner}>
           <Text style={kb.epiBannerTxt}>🟢 {t('vaccine_kb.epi_banner')}</Text>
         </LinearGradient>
       )}
@@ -1227,7 +1227,7 @@ function KnowledgeBaseTab({
 
       {/* BHS Locator CTA */}
       <TouchableOpacity activeOpacity={0.85} style={{ marginTop: 6 }}>
-        <LinearGradient colors={['#1A73C8','#4A9DE8']} style={kb.bhsBtn}>
+        <LinearGradient colors={[Colors.blue,'#4A9DE8']} style={kb.bhsBtn}>
           <Text style={kb.bhsBtnTxt}>🏥 {t('vaccine_log.find_center')}</Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -1238,12 +1238,12 @@ function KnowledgeBaseTab({
 }
 
 const kb = StyleSheet.create({
-  searchRow:      { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 10, gap: 8, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  searchRow:      { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.white, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 10, gap: 8, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
   searchIcon:     { fontSize: 16 },
   searchInput:    { flex: 1, fontSize: 14, color: DARK },
   searchClear:    { fontSize: 12, color: GRAY, padding: 2 },
   filterRow:      { marginBottom: 10 },
-  chip:           { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e8e8e8' },
+  chip:           { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8, backgroundColor: Colors.white, borderWidth: 1.5, borderColor: '#e8e8e8' },
   chipTxt:        { fontSize: 12, fontWeight: '700', color: GRAY },
   epiBanner:      { borderRadius: 12, padding: 12, marginBottom: 12 },
   epiBannerTxt:   { fontSize: 12, color: '#1A5C3A', fontWeight: '700', lineHeight: 17 },
@@ -1256,7 +1256,7 @@ const kb = StyleSheet.create({
   resourcesTitle: { fontSize: 16, fontWeight: '800', color: DARK },
   resourcesSub:   { fontSize: 11, color: GRAY, marginTop: 2 },
   bhsBtn:         { borderRadius: 16, paddingVertical: 15, alignItems: 'center', shadowColor: BLUE, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 },
-  bhsBtnTxt:      { color: '#fff', fontSize: 15, fontWeight: '800' },
+  bhsBtnTxt:      { color: Colors.white, fontSize: 15, fontWeight: '800' },
 });
 
 // ── Records Tab (existing log wrapped) ────────────────────────────────────────
@@ -1302,7 +1302,7 @@ function RecordsTab({
         nextVaccineName={nextUpcoming?.nameEN ?? ''}
         nextVaccineDate={nextUpcoming?.scheduledDate ?? ''}
       />
-      <LinearGradient colors={['#F5A623','#FFC642']} style={rt.gpBanner}>
+      <LinearGradient colors={[Colors.gold,'#FFC642']} style={rt.gpBanner}>
         <Text style={rt.gpTxt}>{t('vaccine_log.garantisadong')}</Text>
       </LinearGradient>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rt.filterRow}>
@@ -1330,12 +1330,12 @@ function RecordsTab({
 
 const rt = StyleSheet.create({
   gpBanner:  { borderRadius: 14, padding: 14, marginBottom: 12 },
-  gpTxt:     { fontSize: 12, color: '#fff', fontWeight: '700', lineHeight: 17 },
+  gpTxt:     { fontSize: 12, color: Colors.white, fontWeight: '700', lineHeight: 17 },
   filterRow: { marginBottom: 12 },
-  tab:       { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e8e8e8' },
+  tab:       { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8, backgroundColor: Colors.white, borderWidth: 1.5, borderColor: '#e8e8e8' },
   tabActive: { backgroundColor: BLUE, borderColor: BLUE },
   tabTxt:    { fontSize: 12, fontWeight: '700', color: GRAY },
-  tabTxtActive: { color: '#fff' },
+  tabTxtActive: { color: Colors.white },
   emptyList: { alignItems: 'center', paddingVertical: 36, gap: 8 },
   emptyTxt:  { fontSize: 14, color: GRAY },
 });
@@ -1402,7 +1402,7 @@ export default function VaccinesScreen() {
   if (!activeChild) {
     return (
       <ScrollView style={sc.container} contentContainerStyle={sc.content}>
-        <LinearGradient colors={['#1A73C8','#4A9DE8']} style={sc.emptyHero}>
+        <LinearGradient colors={[Colors.blue,'#4A9DE8']} style={sc.emptyHero}>
           <Text style={{ fontSize: 48 }}>💉</Text>
           <Text style={sc.emptyTitle}>{t('vaccine_log.title')}</Text>
           <Text style={sc.emptySub}>{t('vaccine_log.error_no_child')}</Text>
@@ -1488,14 +1488,14 @@ export default function VaccinesScreen() {
 const sc = StyleSheet.create({
   container:       { flex: 1, backgroundColor: '#F5F8FF' },
   content:         { padding: 16, paddingBottom: 40 },
-  mainTabBar:      { flexDirection: 'row', backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, gap: 8, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 4, zIndex: 10 },
+  mainTabBar:      { flexDirection: 'row', backgroundColor: Colors.white, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, gap: 8, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 4, zIndex: 10 },
   mainTab:         { flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: '#F5F5FA', alignItems: 'center', justifyContent: 'center' },
   mainTabActive:   { backgroundColor: BLUE },
   mainTabTxt:      { fontSize: 13, fontWeight: '700', color: GRAY },
-  mainTabTxtActive:{ color: '#fff' },
+  mainTabTxtActive:{ color: Colors.white },
   overdueDot:      { backgroundColor: '#E53E3E', borderRadius: 10, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  overdueDotTxt:   { color: '#fff', fontSize: 10, fontWeight: '800' },
+  overdueDotTxt:   { color: Colors.white, fontSize: 10, fontWeight: '800' },
   emptyHero:       { borderRadius: 22, padding: 40, alignItems: 'center', gap: 10 },
-  emptyTitle:      { fontSize: 20, fontWeight: '800', color: '#fff' },
+  emptyTitle:      { fontSize: 20, fontWeight: '800', color: Colors.white },
   emptySub:        { fontSize: 14, color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
 });

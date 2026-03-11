@@ -21,6 +21,7 @@ import Svg, {
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
+import Colors from '../constants/Colors';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -416,7 +417,7 @@ const st = StyleSheet.create({
   phTxt: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#FFF',
+    color: Colors.white,
     letterSpacing: 1,
   },
   tagline: {

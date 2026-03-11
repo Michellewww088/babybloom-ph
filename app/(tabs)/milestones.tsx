@@ -17,6 +17,7 @@ import {
   MILESTONES, STAGE_CHECKLISTS, FIRST_TIMES,
   DOMAIN_META, MilestoneDomain, AgeGroup,
 } from '../../constants/milestones';
+import Colors from '../../constants/Colors';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -222,10 +223,10 @@ export default function MilestonesScreen() {
   }, [currentStage, checkedStageItems]);
 
   const CATEGORY_COLORS: Record<string, string> = {
-    medical:     '#E63B6F',
-    admin:       '#1A73C8',
-    nutrition:   '#27AE7A',
-    development: '#F5A623',
+    medical:     Colors.primaryPink,
+    admin:       Colors.blue,
+    nutrition:   Colors.mint,
+    development: Colors.gold,
     safety:      '#7B5CF0',
   };
   const CATEGORY_EMOJIS: Record<string, string> = {
@@ -311,7 +312,7 @@ export default function MilestonesScreen() {
                   onPress={() => openFirstTimeModal(ft)}
                 >
                   <LinearGradient
-                    colors={log ? ['#FFDDE8', '#FFB3C6'] : ['#FAFAFA', '#F0F0F0']}
+                    colors={log ? ['#FFDDE8', '#FFB3C6'] : [Colors.background, '#F0F0F0']}
                     style={s.ftGrad}
                   >
                     <Text style={s.ftEmoji}>{ft.emoji}</Text>
@@ -361,7 +362,7 @@ export default function MilestonesScreen() {
 
           {/* Add Memory FAB row */}
           <TouchableOpacity activeOpacity={0.85} onPress={() => setShowAddMemoryModal(true)}>
-            <LinearGradient colors={['#E63B6F', '#F06292']} style={s.addBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+            <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.addBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
               <Text style={s.addBtnText}>📷  {t('milestones.add_memory')}</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -413,7 +414,7 @@ export default function MilestonesScreen() {
             <Text style={s.progressPct}>{Math.round(milestoneProgress.pct * 100)}%</Text>
           </View>
           <View style={s.progressBarBg}>
-            <View style={[s.progressBarFill, { width: `${Math.round(milestoneProgress.pct * 100)}%`, backgroundColor: milestoneProgress.pct >= 0.8 ? '#27AE7A' : milestoneProgress.pct >= 0.5 ? '#F5A623' : '#E63B6F' }]} />
+            <View style={[s.progressBarFill, { width: `${Math.round(milestoneProgress.pct * 100)}%`, backgroundColor: milestoneProgress.pct >= 0.8 ? Colors.mint : milestoneProgress.pct >= 0.5 ? Colors.gold : Colors.primaryPink }]} />
           </View>
 
           {/* Domain groups */}
@@ -487,7 +488,7 @@ export default function MilestonesScreen() {
             <Text style={s.heroEmoji}>✅</Text>
             <View style={{ flex: 1 }}>
               <Text style={[s.heroTitle, { color: '#1A6E48' }]}>{t('milestones.checklist_title', { name: childName })}</Text>
-              <Text style={[s.heroSub, { color: '#27AE7A' }]}>{t('milestones.checklist_sub')}</Text>
+              <Text style={[s.heroSub, { color: Colors.mint }]}>{t('milestones.checklist_sub')}</Text>
             </View>
           </LinearGradient>
 
@@ -514,12 +515,12 @@ export default function MilestonesScreen() {
             <Text style={s.progressLabel}>
               {t('milestones.stage_progress_label', { done: stageProgress.done, total: stageProgress.total })}
             </Text>
-            <Text style={[s.progressPct, { color: '#27AE7A' }]}>{Math.round(stageProgress.pct * 100)}%</Text>
+            <Text style={[s.progressPct, { color: Colors.mint }]}>{Math.round(stageProgress.pct * 100)}%</Text>
           </View>
           <View style={s.progressBarBg}>
             <View style={[s.progressBarFill, {
               width: `${Math.round(stageProgress.pct * 100)}%`,
-              backgroundColor: stageProgress.pct === 1 ? '#27AE7A' : stageProgress.pct >= 0.6 ? '#F5A623' : '#1A73C8',
+              backgroundColor: stageProgress.pct === 1 ? Colors.mint : stageProgress.pct >= 0.6 ? Colors.gold : Colors.blue,
             }]} />
           </View>
 
@@ -551,7 +552,7 @@ export default function MilestonesScreen() {
                     <Text style={s.stageCatEmoji}>{catEmoji}</Text>
                   </View>
                   <Text style={[s.checklistText, done && s.checklistTextDone]}>{label}</Text>
-                  <View style={[s.stageCheckbox, done && { backgroundColor: '#27AE7A', borderColor: '#27AE7A' }]}>
+                  <View style={[s.stageCheckbox, done && { backgroundColor: Colors.mint, borderColor: Colors.mint }]}>
                     {done && <Text style={s.checkmark}>✓</Text>}
                   </View>
                 </TouchableOpacity>
@@ -620,7 +621,7 @@ export default function MilestonesScreen() {
                   <Text style={s.modalCancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveFirstTime} style={{ flex: 1 }}>
-                  <LinearGradient colors={['#E63B6F', '#F06292']} style={s.modalSave}>
+                  <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.modalSave}>
                     <Text style={s.modalSaveText}>🌟 {t('milestones.save_first_time')}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -700,7 +701,7 @@ export default function MilestonesScreen() {
                   <Text style={s.modalCancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveMemory} style={{ flex: 1 }}>
-                  <LinearGradient colors={['#E63B6F', '#F06292']} style={s.modalSave}>
+                  <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.modalSave}>
                     <Text style={s.modalSaveText}>💾 {t('milestones.save_memory')}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -725,23 +726,23 @@ const s = StyleSheet.create({
 
   // ── Top tabs ────────────────────────────────────────────────────────────────
   tabBar: {
-    flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1,
+    flexDirection: 'row', backgroundColor: Colors.white, borderBottomWidth: 1,
     borderBottomColor: '#FCE4EC', paddingHorizontal: 8, paddingTop: 4,
   },
   tabBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 10, borderBottomWidth: 3,
     borderBottomColor: 'transparent', gap: 2,
   },
-  tabBtnActive: { borderBottomColor: '#E63B6F' },
+  tabBtnActive: { borderBottomColor: Colors.primaryPink },
   tabEmoji:     { fontSize: 18 },
   tabLabel:     { fontSize: 11, fontWeight: '600', color: '#BBB', textAlign: 'center' },
-  tabLabelActive: { color: '#E63B6F', fontWeight: '800' },
+  tabLabelActive: { color: Colors.primaryPink, fontWeight: '800' },
 
   // ── Hero banner ─────────────────────────────────────────────────────────────
   hero: {
     borderRadius: 22, padding: 18, marginBottom: 16,
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    shadowColor: '#E63B6F', shadowOpacity: 0.18, shadowRadius: 10, elevation: 4,
+    shadowColor: Colors.primaryPink, shadowOpacity: 0.18, shadowRadius: 10, elevation: 4,
   },
   heroEmoji: { fontSize: 40 },
   heroTitle: { fontSize: 15, fontWeight: '800', color: '#880E4F', lineHeight: 20 },
@@ -774,10 +775,10 @@ const s = StyleSheet.create({
   ftDoneBadge: {
     position: 'absolute', top: 6, right: 6,
     width: 18, height: 18, borderRadius: 9,
-    backgroundColor: '#E63B6F', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.primaryPink, alignItems: 'center', justifyContent: 'center',
   },
-  ftDoneTick: { color: '#fff', fontSize: 10, fontWeight: '900' },
-  ftDate:  { fontSize: 9, color: '#E63B6F', fontWeight: '700', textAlign: 'center' },
+  ftDoneTick: { color: Colors.white, fontSize: 10, fontWeight: '900' },
+  ftDate:  { fontSize: 9, color: Colors.primaryPink, fontWeight: '700', textAlign: 'center' },
   ftNote:  { fontSize: 8, color: '#888', fontStyle: 'italic', textAlign: 'center', lineHeight: 12 },
   ftTap:   { fontSize: 9, color: '#CCC', textAlign: 'center', fontStyle: 'italic' },
 
@@ -800,9 +801,9 @@ const s = StyleSheet.create({
   // ── Add button ───────────────────────────────────────────────────────────────
   addBtn: {
     borderRadius: 18, paddingVertical: 16, alignItems: 'center', marginBottom: 10,
-    shadowColor: '#E63B6F', shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
+    shadowColor: Colors.primaryPink, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
   },
-  addBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  addBtnText: { color: Colors.white, fontSize: 16, fontWeight: '800' },
 
   // ── Age chip row ─────────────────────────────────────────────────────────────
   chipRow:       { paddingHorizontal: 2, gap: 8, marginBottom: 16, alignItems: 'center' },
@@ -810,21 +811,21 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
     backgroundColor: '#F0F0F0', alignItems: 'center', flexDirection: 'row', gap: 4,
   },
-  ageChipActive: { backgroundColor: '#E63B6F' },
+  ageChipActive: { backgroundColor: Colors.primaryPink },
   ageChipText:   { fontSize: 13, fontWeight: '700', color: '#888' },
-  ageChipTextActive: { color: '#fff' },
-  ageChipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#27AE7A' },
+  ageChipTextActive: { color: Colors.white },
+  ageChipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.mint },
 
   // ── Progress bar ─────────────────────────────────────────────────────────────
   progressRow:    { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   progressLabel:  { fontSize: 13, color: '#555', fontWeight: '600' },
-  progressPct:    { fontSize: 13, fontWeight: '800', color: '#E63B6F' },
+  progressPct:    { fontSize: 13, fontWeight: '800', color: Colors.primaryPink },
   progressBarBg:  { height: 8, backgroundColor: '#EEE', borderRadius: 4, marginBottom: 16, overflow: 'hidden' },
   progressBarFill: { height: 8, borderRadius: 4 },
 
   // ── Domain cards ─────────────────────────────────────────────────────────────
   domainCard: {
-    backgroundColor: '#fff', borderRadius: 20, marginBottom: 12, overflow: 'hidden',
+    backgroundColor: Colors.white, borderRadius: 20, marginBottom: 12, overflow: 'hidden',
     shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2,
     borderLeftWidth: 4,
   },
@@ -832,7 +833,7 @@ const s = StyleSheet.create({
   domainEmoji:    { fontSize: 20 },
   domainLabel:    { fontSize: 14, fontWeight: '800', flex: 1 },
   domainCount:    { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
-  domainCountText: { color: '#fff', fontSize: 11, fontWeight: '800' },
+  domainCountText: { color: Colors.white, fontSize: 11, fontWeight: '800' },
 
   milestoneRow: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10,
@@ -842,15 +843,15 @@ const s = StyleSheet.create({
     width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#DDD',
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
-  checkmark:        { fontSize: 12, color: '#fff', fontWeight: '900' },
+  checkmark:        { fontSize: 12, color: Colors.white, fontWeight: '900' },
   milestoneText:    { flex: 1, fontSize: 13, color: '#444', fontWeight: '500', lineHeight: 19 },
   milestoneTextDone: { color: '#BBB', textDecorationLine: 'line-through' },
   achievedEmoji:    { fontSize: 14 },
 
   // ── Age future note ──────────────────────────────────────────────────────────
   ageFutureCard: {
-    backgroundColor: '#FFF8E8', borderRadius: 14, padding: 12, marginTop: 4,
-    borderLeftWidth: 3, borderLeftColor: '#F5A623',
+    backgroundColor: Colors.softGold, borderRadius: 14, padding: 12, marginTop: 4,
+    borderLeftWidth: 3, borderLeftColor: Colors.gold,
   },
   ageFutureText: { fontSize: 12, color: '#A07020', fontWeight: '600' },
 
@@ -859,10 +860,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, backgroundColor: '#F0F0F0',
     alignItems: 'center', gap: 2,
   },
-  stageChipActive: { backgroundColor: '#27AE7A' },
+  stageChipActive: { backgroundColor: Colors.mint },
   stageChipEmoji:  { fontSize: 16 },
   stageChipText:   { fontSize: 11, fontWeight: '700', color: '#777' },
-  stageChipTextActive: { color: '#fff' },
+  stageChipTextActive: { color: Colors.white },
 
   // ── Category legend ───────────────────────────────────────────────────────────
   legendRow:   { paddingHorizontal: 2, gap: 6, marginBottom: 12, alignItems: 'center' },
@@ -872,7 +873,7 @@ const s = StyleSheet.create({
 
   // ── Checklist ─────────────────────────────────────────────────────────────────
   checklistCard: {
-    backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden',
+    backgroundColor: Colors.white, borderRadius: 20, overflow: 'hidden',
     shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2, marginBottom: 14,
   },
   checklistRow: {
@@ -892,7 +893,7 @@ const s = StyleSheet.create({
   // ── PH Tip ───────────────────────────────────────────────────────────────────
   phTipCard: {
     backgroundColor: '#FFF5C8', borderRadius: 14, padding: 12, marginTop: 4,
-    borderLeftWidth: 3, borderLeftColor: '#F5A623',
+    borderLeftWidth: 3, borderLeftColor: Colors.gold,
   },
   phTipText: { fontSize: 12, color: '#8B6914', fontWeight: '600', lineHeight: 18 },
 
@@ -901,7 +902,7 @@ const s = StyleSheet.create({
     flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden',
+    backgroundColor: Colors.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden',
     maxHeight: '85%',
   },
   modalHeaderGrad: {
@@ -926,13 +927,13 @@ const s = StyleSheet.create({
     borderWidth: 2, borderColor: '#F48FB1', borderStyle: 'dashed',
   },
   photoPlaceholderEmoji: { fontSize: 28 },
-  photoPlaceholderText:  { fontSize: 9, color: '#E63B6F', fontWeight: '700' },
+  photoPlaceholderText:  { fontSize: 9, color: Colors.primaryPink, fontWeight: '700' },
   photoHint: { flex: 1, fontSize: 12, color: '#999', fontStyle: 'italic', lineHeight: 18 },
 
   tagChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: '#F0F0F0' },
-  tagChipActive: { backgroundColor: '#E63B6F' },
+  tagChipActive: { backgroundColor: Colors.primaryPink },
   tagChipText:   { fontSize: 12, color: '#666', fontWeight: '600' },
-  tagChipTextActive: { color: '#fff' },
+  tagChipTextActive: { color: Colors.white },
 
   modalBtnRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
   modalCancel: {
@@ -941,8 +942,8 @@ const s = StyleSheet.create({
   },
   modalCancelText: { fontSize: 14, fontWeight: '700', color: '#888' },
   modalSave: { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
-  modalSaveText: { fontSize: 14, fontWeight: '800', color: '#fff' },
+  modalSaveText: { fontSize: 14, fontWeight: '800', color: Colors.white },
 
   clearBtn: { marginTop: 12, alignItems: 'center' },
-  clearBtnText: { fontSize: 13, color: '#E63B6F', fontWeight: '700', textDecorationLine: 'underline' },
+  clearBtnText: { fontSize: 13, color: Colors.primaryPink, fontWeight: '700', textDecorationLine: 'underline' },
 });

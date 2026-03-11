@@ -34,11 +34,11 @@ import { Child } from '../store/childStore';
 const { width: W } = Dimensions.get('window');
 const PAD  = 16;
 const PINK = Colors.primaryPink;
-const MINT = '#27AE7A';
-const BLUE = '#1A73C8';
-const GOLD = '#F5A623';
-const DARK = '#1C1C3A';
-const GRAY = '#4A4A6A';
+const MINT = Colors.mint;
+const BLUE = Colors.blue;
+const GOLD = Colors.gold;
+const DARK = Colors.dark;
+const GRAY = Colors.midGray;
 const PURPLE = '#7C3AED';
 const LAVENDER = '#C4B5FD';
 
@@ -308,7 +308,7 @@ function SleepHeatmap({ entries, days }: { entries: SleepEntry[]; days: string[]
             x={PAD + hr * CELL} y={rowIdx * ROW}
             width={CELL - 1} height={ROW - 2}
             rx={2}
-            fill={asleep.has(hr) ? PURPLE : '#F3F4F6'}
+            fill={asleep.has(hr) ? PURPLE : Colors.divider}
             opacity={asleep.has(hr) ? 0.85 : 0.5}
           />
         ));
@@ -617,7 +617,7 @@ function SleepTab({
               <Text style={{ fontSize: 11, color: GRAY }}>Sleeping</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB' }} />
+              <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: Colors.divider, borderWidth: 1, borderColor: '#E5E7EB' }} />
               <Text style={{ fontSize: 11, color: GRAY }}>Awake</Text>
             </View>
           </View>
@@ -716,7 +716,7 @@ function GrowthTab({
                   Now: {latest?.weightKg} kg (+{weightGain.toFixed(2)} kg)
                 </Text>
               </View>
-              <View style={{ height: 12, backgroundColor: '#E8F2FF', borderRadius: 6, overflow: 'hidden' }}>
+              <View style={{ height: 12, backgroundColor: Colors.softBlue, borderRadius: 6, overflow: 'hidden' }}>
                 <View style={{
                   height: 12, borderRadius: 6, backgroundColor: MINT,
                   width: `${Math.min(100, (weightGain / Math.max(birthWeight, 1)) * 100 * 2)}%`,
@@ -1238,25 +1238,25 @@ export default function InsightsScreen() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen:   { flex: 1, backgroundColor: '#FAFAFA' },
+  screen:   { flex: 1, backgroundColor: Colors.background },
   header:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: PAD, paddingVertical: 14, paddingTop: 50, gap: 12 },
   backBtn:  { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  backTxt:  { fontSize: 22, color: '#fff', fontWeight: '700', lineHeight: 26 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  backTxt:  { fontSize: 22, color: Colors.white, fontWeight: '700', lineHeight: 26 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white },
   headerSub:   { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
   exportBtn: { backgroundColor: 'rgba(255,255,255,0.22)', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20 },
-  exportTxt: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  exportTxt: { color: Colors.white, fontWeight: '700', fontSize: 12 },
 
-  rangeWrap:        { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  rangeChip:        { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F3F4F6' },
+  rangeWrap:        { backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  rangeChip:        { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: Colors.divider },
   rangeChipActive:  { backgroundColor: PINK },
   rangeChipTxt:     { fontSize: 12, fontWeight: '600', color: GRAY },
-  rangeChipTxtActive: { color: '#fff' },
+  rangeChipTxtActive: { color: Colors.white },
   customRow:        { flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: PAD, paddingBottom: 6 },
   customInput:      { flex: 1, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, color: DARK },
   dateLabel:        { fontSize: 11, color: GRAY, paddingHorizontal: PAD, paddingBottom: 6 },
 
-  tabBar:      { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  tabBar:      { flexDirection: 'row', backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.divider },
   tab:         { flex: 1, alignItems: 'center', paddingVertical: 10, gap: 2 },
   tabActive:   { borderBottomWidth: 2, borderBottomColor: PINK },
   tabTxt:      { fontSize: 10, fontWeight: '600', color: GRAY },
@@ -1264,7 +1264,7 @@ const s = StyleSheet.create({
 });
 
 const ai = StyleSheet.create({
-  card:    { backgroundColor: '#FFF0F5', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#FFD6E5' },
+  card:    { backgroundColor: Colors.primaryBg, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#FFD6E5' },
   row:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconWrap:{ width: 38, height: 38, borderRadius: 19, backgroundColor: PINK + '22', alignItems: 'center', justifyContent: 'center' },
   title:   { fontSize: 14, fontWeight: '700', color: DARK },
@@ -1275,19 +1275,19 @@ const ai = StyleSheet.create({
 });
 
 const st = StyleSheet.create({
-  chip:   { backgroundColor: '#fff', borderRadius: 12, padding: 12, borderLeftWidth: 3, minWidth: 110, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+  chip:   { backgroundColor: Colors.white, borderRadius: 12, padding: 12, borderLeftWidth: 3, minWidth: 110, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   label:  { fontSize: 11, color: GRAY, marginBottom: 2 },
   value:  { fontSize: 17, fontWeight: '800' },
   sub:    { fontSize: 11, marginTop: 1 },
 });
 
 const cc = StyleSheet.create({
-  card:  { backgroundColor: '#fff', borderRadius: 16, padding: PAD, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
+  card:  { backgroundColor: Colors.white, borderRadius: 16, padding: PAD, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
   title: { fontSize: 13, fontWeight: '700', color: DARK, marginBottom: 12 },
 });
 
 const db = StyleSheet.create({
-  wrap:  { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFF8E8', borderRadius: 12, margin: PAD, marginBottom: 4, padding: 12 },
+  wrap:  { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.softGold, borderRadius: 12, margin: PAD, marginBottom: 4, padding: 12 },
   emoji: { fontSize: 22 },
   title: { fontSize: 13, fontWeight: '700', color: GOLD },
   sub:   { fontSize: 11, color: GRAY },

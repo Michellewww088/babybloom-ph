@@ -37,14 +37,15 @@ import {
   ChatMessage, WeeklySummary, Language,
   streamAteAIResponse, detectLanguage, getAISummary,
 } from '../../src/lib/claude';
+import Colors from '../../constants/Colors';
 
 const { width: W, height: H } = Dimensions.get('window');
-const PINK    = '#E63B6F';
-const SOFT_PK = '#FFE4EE';
-const DARK    = '#1C1C3A';
-const GRAY    = '#4A4A6A';
-const MINT    = '#27AE7A';
-const GOLD    = '#F5A623';
+const PINK    = Colors.primaryPink;
+const SOFT_PK = Colors.softPink;
+const DARK    = Colors.dark;
+const GRAY    = Colors.midGray;
+const MINT    = Colors.mint;
+const GOLD    = Colors.gold;
 
 // ── uuid helper ──────────────────────────────────────────────────────────────
 function uid() {
@@ -323,10 +324,10 @@ const mb = StyleSheet.create({
   avatarWrap: { marginRight: 8, marginBottom: 2 },
   bubble:     { maxWidth: W * 0.72, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10 },
   bubbleUser: { backgroundColor: PINK, borderBottomRightRadius: 6 },
-  bubbleAte:  { backgroundColor: '#fff', borderBottomLeftRadius: 6,
+  bubbleAte:  { backgroundColor: Colors.white, borderBottomLeftRadius: 6,
                 shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   bubbleText: { fontSize: 14, lineHeight: 21 },
-  userText:   { color: '#fff' },
+  userText:   { color: Colors.white },
   ateText:    { color: DARK },
   italic:     { fontSize: 12, opacity: 0.7, marginTop: 4 },
   userItalic: { color: 'rgba(255,255,255,0.8)', fontStyle: 'italic' },
@@ -425,7 +426,7 @@ export function AteAISummaryCard({
       activeOpacity={0.9}
     >
       <LinearGradient
-        colors={['#FFF0F5', '#FFF5F8']}
+        colors={[Colors.primaryBg, '#FFF5F8']}
         style={asc.gradient}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       >
@@ -480,7 +481,7 @@ const asc = StyleSheet.create({
   summaryText: { fontSize: 13, color: DARK, lineHeight: 20 },
   chatBtn:     { marginTop: 10, backgroundColor: PINK, borderRadius: 12,
                  paddingVertical: 8, paddingHorizontal: 14, alignSelf: 'flex-start' },
-  chatBtnText: { color: '#fff', fontSize: 12, fontWeight: '800' },
+  chatBtnText: { color: Colors.white, fontSize: 12, fontWeight: '800' },
 });
 
 // ── Weekly summary hook ───────────────────────────────────────────────────────
@@ -695,7 +696,7 @@ export function AteAIChat({ visible, onClose }: { visible: boolean; onClose: () 
         <Animated.View style={[chat.sheet, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
           <LinearGradient
-            colors={['#E63B6F', '#F06292']}
+            colors={[Colors.primaryPink, '#F06292']}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
             style={chat.header}
           >
@@ -788,31 +789,31 @@ export function AteAIChat({ visible, onClose }: { visible: boolean; onClose: () 
 const chat = StyleSheet.create({
   overlay:        { flex: 1, justifyContent: 'flex-end' },
   backdrop:       { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
-  sheet:          { height: H * 0.88, backgroundColor: '#FAFAFA',
+  sheet:          { height: H * 0.88, backgroundColor: Colors.background,
                     borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' },
   header:         { flexDirection: 'row', alignItems: 'center', gap: 10,
                     paddingHorizontal: 16, paddingVertical: 12, paddingTop: 18 },
   headerAvatar:   { width: 44, height: 44, borderRadius: 22,
                     backgroundColor: 'rgba(255,255,255,0.22)',
                     alignItems: 'center', justifyContent: 'center' },
-  headerTitle:    { fontSize: 13, fontWeight: '800', color: '#fff' },
+  headerTitle:    { fontSize: 13, fontWeight: '800', color: Colors.white },
   onlineRow:      { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
   onlineDot:      { width: 7, height: 7, borderRadius: 4, backgroundColor: '#86EFAC' },
   onlineText:     { fontSize: 11, color: 'rgba(255,255,255,0.85)' },
   clearBtn:       { backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 8,
                     paddingHorizontal: 8, paddingVertical: 5 },
-  clearText:      { fontSize: 11, color: '#fff', fontWeight: '700' },
+  clearText:      { fontSize: 11, color: Colors.white, fontWeight: '700' },
   closeBtn:       { width: 28, height: 28, borderRadius: 14,
                     backgroundColor: 'rgba(255,255,255,0.22)',
                     alignItems: 'center', justifyContent: 'center' },
-  closeText:      { fontSize: 14, color: '#fff', fontWeight: '800' },
-  trustBar:       { backgroundColor: '#E8F2FF', paddingHorizontal: 16, paddingVertical: 7 },
-  trustText:      { fontSize: 11, color: '#1A73C8', fontWeight: '600' },
+  closeText:      { fontSize: 14, color: Colors.white, fontWeight: '800' },
+  trustBar:       { backgroundColor: Colors.softBlue, paddingHorizontal: 16, paddingVertical: 7 },
+  trustText:      { fontSize: 11, color: Colors.blue, fontWeight: '600' },
   messages:       { flex: 1 },
   messagesContent:{ padding: 16, paddingBottom: 8 },
   inputRow:       { flexDirection: 'row', alignItems: 'flex-end', gap: 8,
                     padding: 12, borderTopWidth: 1, borderTopColor: '#F0E4EC',
-                    backgroundColor: '#fff' },
+                    backgroundColor: Colors.white },
   input:          { flex: 1, backgroundColor: '#F8F0F5', borderRadius: 20,
                     paddingHorizontal: 16, paddingVertical: 10,
                     fontSize: 14, color: DARK, maxHeight: 100,
@@ -821,7 +822,7 @@ const chat = StyleSheet.create({
                     backgroundColor: PINK, alignItems: 'center', justifyContent: 'center',
                     shadowColor: PINK, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 },
   sendBtnDisabled:{ backgroundColor: '#F48FB1' },
-  sendIcon:       { fontSize: 18, color: '#fff' },
+  sendIcon:       { fontSize: 18, color: Colors.white },
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

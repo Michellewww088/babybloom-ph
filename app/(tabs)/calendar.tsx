@@ -21,21 +21,21 @@ import { useVaccineStore } from '../../store/vaccineStore';
 
 const { width: W } = Dimensions.get('window');
 const PINK  = Colors.primaryPink;  // #E63B6F
-const DARK  = '#1C1C3A';
-const GRAY  = '#4A4A6A';
+const DARK  = Colors.dark;
+const GRAY  = Colors.midGray;
 const BG    = '#FFF5F8';
 
 // ─── Category config ─────────────────────────────────────────────────────────
 
 const CAT: Record<ReminderCategory, { color: string; bg: string; icon: string }> = {
-  vaccine:    { color: '#E63B6F', bg: '#FFE4EE', icon: '💉' },
-  checkup:    { color: '#1A73C8', bg: '#E8F2FF', icon: '🏥' },
-  feeding:    { color: '#F5A623', bg: '#FFF8E8', icon: '🍼' },
+  vaccine:    { color: Colors.primaryPink, bg: Colors.softPink, icon: '💉' },
+  checkup:    { color: Colors.blue, bg: Colors.softBlue, icon: '🏥' },
+  feeding:    { color: Colors.gold, bg: Colors.softGold, icon: '🍼' },
   sleep:      { color: '#8B5CF6', bg: '#F3F0FF', icon: '😴' },
-  medication: { color: '#27AE7A', bg: '#E0F7EF', icon: '💊' },
-  vitamins:   { color: '#27AE7A', bg: '#E0F7EF', icon: '🌿' },
-  gp:         { color: '#F5A623', bg: '#FFF8E8', icon: '🌟' },
-  custom:     { color: '#9CA3AF', bg: '#F5F5F5', icon: '📝' },
+  medication: { color: Colors.mint, bg: Colors.softMint, icon: '💊' },
+  vitamins:   { color: Colors.mint, bg: Colors.softMint, icon: '🌿' },
+  gp:         { color: Colors.gold, bg: Colors.softGold, icon: '🌟' },
+  custom:     { color: Colors.lightGray, bg: '#F5F5F5', icon: '📝' },
 };
 
 const ALL_CATS: ReminderCategory[] = ['vaccine', 'checkup', 'feeding', 'sleep', 'medication', 'vitamins', 'gp', 'custom'];
@@ -202,9 +202,9 @@ function MonthGrid({ year, month, selectedDay, onDayPress, dotMap, onPrev, onNex
 }
 
 const mg = StyleSheet.create({
-  card:           { backgroundColor: '#fff', borderRadius: 22, padding: 16, marginBottom: 16, shadowColor: PINK, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4, borderWidth: 1, borderColor: '#FCE4EC' },
+  card:           { backgroundColor: Colors.white, borderRadius: 22, padding: 16, marginBottom: 16, shadowColor: PINK, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4, borderWidth: 1, borderColor: '#FCE4EC' },
   navRow:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  navBtn:         { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFE4EE', alignItems: 'center', justifyContent: 'center' },
+  navBtn:         { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.softPink, alignItems: 'center', justifyContent: 'center' },
   navArrow:       { fontSize: 22, color: PINK, fontWeight: '800', lineHeight: 26 },
   monthLabel:     { fontSize: 17, fontWeight: '800', color: DARK },
   dayHeaderRow:   { flexDirection: 'row', marginBottom: 4 },
@@ -213,10 +213,10 @@ const mg = StyleSheet.create({
   cell:           { width: `${100/7}%`, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
   cellNum:        { fontSize: 13, color: DARK, fontWeight: '500' },
   cellNumFaded:   { color: '#DDD' },
-  cellToday:      { backgroundColor: '#FFE4EE' },
+  cellToday:      { backgroundColor: Colors.softPink },
   cellNumToday:   { color: PINK, fontWeight: '800' },
   cellSelected:   { backgroundColor: PINK },
-  cellNumSelected:{ color: '#fff', fontWeight: '800' },
+  cellNumSelected:{ color: Colors.white, fontWeight: '800' },
 });
 
 // ─── Single Event Card ────────────────────────────────────────────────────────
@@ -244,12 +244,12 @@ function EventCard({ ev, onPress }: { ev: CalEvent; onPress: () => void }) {
 }
 
 const ec = StyleSheet.create({
-  row:     { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, padding: 12, marginBottom: 8, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  row:     { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.white, borderRadius: 14, padding: 12, marginBottom: 8, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
   iconWrap:{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   info:    { flex: 1 },
   title:   { fontSize: 13, fontWeight: '700', color: DARK, marginBottom: 2 },
   sub:     { fontSize: 11, color: GRAY },
-  notes:   { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
+  notes:   { fontSize: 11, color: Colors.lightGray, marginTop: 2 },
   chevron: { fontSize: 20, color: '#DDD', marginLeft: 8 },
 });
 
@@ -266,7 +266,7 @@ function WeeklySummaryBar({ events, t }: { events: CalEvent[]; t: (k: string, o?
     : t('calendar.summary_events_week', { count: thisWeek.length });
   const nextEv = thisWeek[0];
   return (
-    <LinearGradient colors={['#FFE4EE', '#FFF5F8']} style={ws.bar} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+    <LinearGradient colors={[Colors.softPink, '#FFF5F8']} style={ws.bar} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
       <Text style={{ fontSize: 22 }}>{thisWeek.length === 0 ? '🎉' : '📋'}</Text>
       <View style={{ flex: 1 }}>
         <Text style={ws.msg}>{msg}</Text>
@@ -353,7 +353,7 @@ function ReminderModal({ visible, editing, presetDate, onClose, onSave, onDelete
           {/* Header */}
           <LinearGradient colors={['#F06292', '#F48FB1']} style={rm.header}>
             <TouchableOpacity onPress={onClose} style={rm.closeBtn}>
-              <Text style={{ fontSize: 18, color: '#fff', fontWeight: '800' }}>✕</Text>
+              <Text style={{ fontSize: 18, color: Colors.white, fontWeight: '800' }}>✕</Text>
             </TouchableOpacity>
             <Text style={rm.headerTitle}>{editing ? t('calendar.edit_reminder') : t('calendar.add_reminder')}</Text>
           </LinearGradient>
@@ -374,7 +374,7 @@ function ReminderModal({ visible, editing, presetDate, onClose, onSave, onDelete
                     style={[rm.catChip, { backgroundColor: sel ? CAT[cat].color : CAT[cat].bg, borderColor: CAT[cat].color }]}
                     onPress={() => upd('category')(cat)} activeOpacity={0.8}>
                     <Text style={{ fontSize: 14 }}>{CAT[cat].icon}</Text>
-                    <Text style={[rm.catLabel, { color: sel ? '#fff' : CAT[cat].color }]}>{t(`calendar.${cat}`)}</Text>
+                    <Text style={[rm.catLabel, { color: sel ? Colors.white : CAT[cat].color }]}>{t(`calendar.${cat}`)}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -411,7 +411,7 @@ function ReminderModal({ visible, editing, presetDate, onClose, onSave, onDelete
               <TouchableOpacity key={o.key}
                 style={[rm.optChip, form.repeatType === o.key && rm.optChipSel]}
                 onPress={() => upd('repeatType')(o.key)} activeOpacity={0.8}>
-                <Text style={[rm.optLabel, form.repeatType === o.key && { color: '#fff' }]}>{t(o.i18n)}</Text>
+                <Text style={[rm.optLabel, form.repeatType === o.key && { color: Colors.white }]}>{t(o.i18n)}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -423,7 +423,7 @@ function ReminderModal({ visible, editing, presetDate, onClose, onSave, onDelete
               <TouchableOpacity key={o.val}
                 style={[rm.optChip, form.notifyMinutesBefore === o.val && rm.optChipSel]}
                 onPress={() => upd('notifyMinutesBefore')(o.val)} activeOpacity={0.8}>
-                <Text style={[rm.optLabel, form.notifyMinutesBefore === o.val && { color: '#fff' }]}>{t(o.i18n)}</Text>
+                <Text style={[rm.optLabel, form.notifyMinutesBefore === o.val && { color: Colors.white }]}>{t(o.i18n)}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -458,12 +458,12 @@ function ReminderModal({ visible, editing, presetDate, onClose, onSave, onDelete
 }
 
 const rm = StyleSheet.create({
-  container:   { flex: 1, backgroundColor: '#FAFAFA' },
+  container:   { flex: 1, backgroundColor: Colors.background },
   header:      { flexDirection: 'row', alignItems: 'center', padding: 16, paddingTop: 20, gap: 12 },
   closeBtn:    { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white },
   label:       { fontSize: 13, fontWeight: '700', color: DARK, marginBottom: 6, marginTop: 14, paddingHorizontal: 16 },
-  input:       { marginHorizontal: 16, borderRadius: 12, borderWidth: 1.5, borderColor: '#F0E0E8', backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: DARK, marginBottom: 4 },
+  input:       { marginHorizontal: 16, borderRadius: 12, borderWidth: 1.5, borderColor: '#F0E0E8', backgroundColor: Colors.white, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: DARK, marginBottom: 4 },
   toggleRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 8, marginBottom: 4 },
   toggleLabel: { fontSize: 13, fontWeight: '700', color: DARK },
   chipRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, marginBottom: 4 },
@@ -473,7 +473,7 @@ const rm = StyleSheet.create({
   optChipSel:  { backgroundColor: PINK, borderColor: PINK },
   optLabel:    { fontSize: 12, fontWeight: '600', color: GRAY },
   saveBtn:     { borderRadius: 16, paddingVertical: 16, alignItems: 'center', shadowColor: PINK, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  saveTxt:     { color: '#fff', fontSize: 16, fontWeight: '800' },
+  saveTxt:     { color: Colors.white, fontSize: 16, fontWeight: '800' },
   deleteBtn:   { borderRadius: 16, paddingVertical: 14, alignItems: 'center', marginHorizontal: 16, marginTop: 12, borderWidth: 1.5, borderColor: '#E53E3E' },
   deleteTxt:   { color: '#E53E3E', fontSize: 14, fontWeight: '700' },
 });
@@ -536,7 +536,7 @@ function NotifSettingsPanel({ t }: { t: (k: string) => string }) {
 }
 
 const ns = StyleSheet.create({
-  card:      { backgroundColor: '#fff', borderRadius: 18, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
+  card:      { backgroundColor: Colors.white, borderRadius: 18, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
   header:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   title:     { fontSize: 14, fontWeight: '800', color: DARK },
   body:      { paddingHorizontal: 16, paddingBottom: 16 },
@@ -592,14 +592,14 @@ function DayEventsSheet({
 
 const ds = StyleSheet.create({
   overlay:     { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
-  sheet:       { backgroundColor: '#FAFAFA', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 12, minHeight: 260 },
+  sheet:       { backgroundColor: Colors.background, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 12, minHeight: 260 },
   handle:      { width: 48, height: 5, backgroundColor: '#DDD', borderRadius: 3, alignSelf: 'center', marginBottom: 12 },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 },
   sheetTitle:  { fontSize: 15, fontWeight: '800', color: DARK, flex: 1 },
   empty:       { alignItems: 'center', paddingVertical: 28 },
   emptyTxt:    { fontSize: 14, color: GRAY, fontWeight: '600' },
   addBtn:      { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
-  addTxt:      { color: '#fff', fontSize: 15, fontWeight: '800' },
+  addTxt:      { color: Colors.white, fontSize: 15, fontWeight: '800' },
 });
 
 // ─── Main Calendar Screen ─────────────────────────────────────────────────────
@@ -812,13 +812,13 @@ export default function CalendarScreen() {
           <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 2, paddingBottom: 4 }}>
             {(['all', ...ALL_CATS] as (ReminderCategory | 'all')[]).map(cat => {
               const sel = filterCat === cat;
-              const cfg = cat === 'all' ? { color: PINK, bg: '#FFE4EE', icon: '🗓' } : CAT[cat];
+              const cfg = cat === 'all' ? { color: PINK, bg: Colors.softPink, icon: '🗓' } : CAT[cat];
               return (
                 <TouchableOpacity key={cat}
-                  style={[fc.chip, { backgroundColor: sel ? cfg.color : '#fff', borderColor: cfg.color }]}
+                  style={[fc.chip, { backgroundColor: sel ? cfg.color : Colors.white, borderColor: cfg.color }]}
                   onPress={() => setFilterCat(cat)} activeOpacity={0.8}>
                   <Text style={{ fontSize: 13 }}>{cfg.icon}</Text>
-                  <Text style={[fc.label, { color: sel ? '#fff' : cfg.color }]}>
+                  <Text style={[fc.label, { color: sel ? Colors.white : cfg.color }]}>
                     {cat === 'all' ? t('calendar.filter_all') : t(`calendar.${cat}`)}
                   </Text>
                 </TouchableOpacity>
@@ -858,7 +858,7 @@ export default function CalendarScreen() {
 
         {/* Find BHS / RHU */}
         <TouchableOpacity activeOpacity={0.85}>
-          <LinearGradient colors={['#1A73C8', '#4A9DE8']} style={sc.bhsBtn}>
+          <LinearGradient colors={[Colors.blue, '#4A9DE8']} style={sc.bhsBtn}>
             <Text style={sc.bhsTxt}>{t('calendar.find_bhs')}</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -868,8 +868,8 @@ export default function CalendarScreen() {
 
       {/* FAB */}
       <TouchableOpacity style={sc.fab} onPress={() => openAdd()} activeOpacity={0.85}>
-        <LinearGradient colors={['#F06292', '#E63B6F']} style={sc.fabGrad}>
-          <Text style={{ fontSize: 28, color: '#fff', lineHeight: 32 }}>+</Text>
+        <LinearGradient colors={['#F06292', Colors.primaryPink]} style={sc.fabGrad}>
+          <Text style={{ fontSize: 28, color: Colors.white, lineHeight: 32 }}>+</Text>
         </LinearGradient>
       </TouchableOpacity>
 
@@ -905,12 +905,12 @@ const sc = StyleSheet.create({
   sectionTitle: { fontSize: 13, fontWeight: '800', color: PINK, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   sectionSub:   { fontSize: 11, color: GRAY },
   dateLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  dateLabel:    { fontSize: 12, fontWeight: '800', color: PINK, backgroundColor: '#FFE4EE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  dateLabel:    { fontSize: 12, fontWeight: '800', color: PINK, backgroundColor: Colors.softPink, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   dateNum:      { fontSize: 11, color: GRAY },
-  emptyBox:     { alignItems: 'center', backgroundColor: '#fff', borderRadius: 18, padding: 32, marginBottom: 16 },
+  emptyBox:     { alignItems: 'center', backgroundColor: Colors.white, borderRadius: 18, padding: 32, marginBottom: 16 },
   emptyTxt:     { fontSize: 14, color: GRAY, fontWeight: '600' },
-  bhsBtn:       { borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginBottom: 12, shadowColor: '#1A73C8', shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 },
-  bhsTxt:       { color: '#fff', fontSize: 15, fontWeight: '800' },
+  bhsBtn:       { borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginBottom: 12, shadowColor: Colors.blue, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 },
+  bhsTxt:       { color: Colors.white, fontSize: 15, fontWeight: '800' },
   fab:          { position: 'absolute', bottom: 88, right: 20, shadowColor: PINK, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
   fabGrad:      { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },
 });

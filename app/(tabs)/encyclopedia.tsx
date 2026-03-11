@@ -23,6 +23,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES, Article, AgeStage, Topic } from '../../constants/articles';
+import Colors from '../../constants/Colors';
 
 const { width: SW } = Dimensions.get('window');
 type LangKey = 'en' | 'fil' | 'zh';
@@ -128,7 +129,7 @@ function MarkdownText({ content }: { content: string }) {
       <View key={`n-${key}`} style={{ marginBottom: 10 }}>
         {numBuffer.map(({ n, text }, j) => (
           <View key={j} style={{ flexDirection: 'row', marginBottom: 5 }}>
-            <Text style={[s.mdPara, { width: 22, fontWeight: '700', color: '#1C1C3A' }]}>{n}.</Text>
+            <Text style={[s.mdPara, { width: 22, fontWeight: '700', color: Colors.dark }]}>{n}.</Text>
             <Text style={[s.mdPara, { flex: 1 }]}>{renderInline(text, s.mdPara)}</Text>
           </View>
         ))}
@@ -380,7 +381,7 @@ function ArticleCard({
               {/* Bookmark icon (no emoji) */}
               <TouchableOpacity onPress={onToggleSave} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <View style={s.bookmarkOuter}>
-                  <View style={[s.bookmarkFlag, isSaved && { backgroundColor: '#E63B6F' }]} />
+                  <View style={[s.bookmarkFlag, isSaved && { backgroundColor: Colors.primaryPink }]} />
                 </View>
               </TouchableOpacity>
             </View>
@@ -514,7 +515,7 @@ export default function EncyclopediaScreen() {
   const borderAnim = useRef(new Animated.Value(0)).current;
   const onFocus = () => Animated.timing(borderAnim, { toValue: 1, duration: 180, useNativeDriver: false }).start();
   const onBlur  = () => Animated.timing(borderAnim, { toValue: 0, duration: 180, useNativeDriver: false }).start();
-  const borderColor = borderAnim.interpolate({ inputRange: [0, 1], outputRange: ['#E8E8EE', '#27AE7A'] });
+  const borderColor = borderAnim.interpolate({ inputRange: [0, 1], outputRange: ['#E8E8EE', Colors.mint] });
 
   const toggleSave = useCallback((id: string) => {
     setSavedIds(prev => {
@@ -689,30 +690,30 @@ export default function EncyclopediaScreen() {
    Styles
 ───────────────────────────────────────────────────────────────────────── */
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAFA' },
+  safe: { flex: 1, backgroundColor: Colors.background },
 
   /* Tab bar */
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F8',
     paddingHorizontal: 24,
   },
   tabItem:       { flex: 1, alignItems: 'center', paddingVertical: 14, position: 'relative' },
   tabText:       { fontSize: 15, fontWeight: '600', color: '#9E9EBE' },
-  tabTextActive: { color: '#E63B6F', fontWeight: '800' },
+  tabTextActive: { color: Colors.primaryPink, fontWeight: '800' },
   tabUnderline:  {
     position: 'absolute', bottom: 0,
     left: '20%', right: '20%',
-    height: 2.5, backgroundColor: '#E63B6F', borderRadius: 2,
+    height: 2.5, backgroundColor: Colors.primaryPink, borderRadius: 2,
   },
 
   /* Search */
   searchWrap: { padding: 16, paddingBottom: 8 },
   searchBox: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', borderRadius: 14, borderWidth: 1.5,
+    backgroundColor: Colors.white, borderRadius: 14, borderWidth: 1.5,
     paddingHorizontal: 14, paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     gap: 10,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
@@ -721,7 +722,7 @@ const s = StyleSheet.create({
     width: 14, height: 14, borderRadius: 7,
     borderWidth: 2, borderColor: '#9E9EBE',
   },
-  searchInput: { flex: 1, fontSize: 14, color: '#1C1C3A' },
+  searchInput: { flex: 1, fontSize: 14, color: Colors.dark },
 
   /* Filter labels + chips */
   filterLabel: {
@@ -735,19 +736,19 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
     backgroundColor: '#F0F0F8',
   },
-  chipActive:     { backgroundColor: '#E63B6F' },
-  chipText:       { fontSize: 13, fontWeight: '600', color: '#4A4A6A' },
-  chipTextActive: { color: '#fff', fontWeight: '700' },
+  chipActive:     { backgroundColor: Colors.primaryPink },
+  chipText:       { fontSize: 13, fontWeight: '600', color: Colors.midGray },
+  chipTextActive: { color: Colors.white, fontWeight: '700' },
 
   /* Section headings */
   sectionTitle: {
-    fontSize: 16, fontWeight: '800', color: '#1C1C3A',
+    fontSize: 16, fontWeight: '800', color: Colors.dark,
     marginHorizontal: 16, marginTop: 18, marginBottom: 12,
   },
 
   /* Recommended card */
   recCard: {
-    width: 190, borderRadius: 18, backgroundColor: '#fff', overflow: 'hidden',
+    width: 190, borderRadius: 18, backgroundColor: Colors.white, overflow: 'hidden',
     shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
   recCardTop: { height: 72, padding: 10, justifyContent: 'flex-end' },
@@ -755,15 +756,15 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.28)', alignSelf: 'flex-start',
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
   },
-  recChipText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  recChipText: { color: Colors.white, fontSize: 11, fontWeight: '700' },
   recCardBody: { padding: 12 },
-  recCardTitle: { fontSize: 13, fontWeight: '800', color: '#1C1C3A', marginBottom: 4, lineHeight: 17 },
-  recCardSub:   { fontSize: 12, color: '#4A4A6A', lineHeight: 16, marginBottom: 5 },
+  recCardTitle: { fontSize: 13, fontWeight: '800', color: Colors.dark, marginBottom: 4, lineHeight: 17 },
+  recCardSub:   { fontSize: 12, color: Colors.midGray, lineHeight: 16, marginBottom: 5 },
   recCardTime:  { fontSize: 11, color: '#9E9EBE', fontWeight: '600' },
 
   /* Article card */
   card: {
-    backgroundColor: '#fff', borderRadius: 18, marginBottom: 12, overflow: 'hidden',
+    backgroundColor: Colors.white, borderRadius: 18, marginBottom: 12, overflow: 'hidden',
     flexDirection: 'row',
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
   },
@@ -774,8 +775,8 @@ const s = StyleSheet.create({
   topicTag:     { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   topicTagText: { fontSize: 11, fontWeight: '700' },
 
-  cardTitle:   { fontSize: 14, fontWeight: '800', color: '#1C1C3A', marginBottom: 4, lineHeight: 19 },
-  cardSummary: { fontSize: 13, color: '#4A4A6A', lineHeight: 18, marginBottom: 10 },
+  cardTitle:   { fontSize: 14, fontWeight: '800', color: Colors.dark, marginBottom: 4, lineHeight: 19 },
+  cardSummary: { fontSize: 13, color: Colors.midGray, lineHeight: 18, marginBottom: 10 },
 
   cardFooter:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardFooterRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -799,7 +800,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.35)',
     borderRadius: 3, borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
   },
-  detailBookmarkFlagSaved: { backgroundColor: '#FFFFFF' },
+  detailBookmarkFlagSaved: { backgroundColor: Colors.white },
   detailBookmarkBase: {
     width: 0, height: 0,
     borderLeftWidth: 10, borderRightWidth: 10, borderTopWidth: 8,
@@ -807,7 +808,7 @@ const s = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.35)',
     marginTop: -1,
   },
-  detailBookmarkBaseSaved: { borderTopColor: '#FFFFFF' },
+  detailBookmarkBaseSaved: { borderTopColor: Colors.white },
 
   /* Empty / no results */
   emptyState: {
@@ -815,20 +816,20 @@ const s = StyleSheet.create({
     paddingVertical: 80, paddingHorizontal: 40,
   },
   emptyIconCircle: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: '#FFE4EE',
+    width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.softPink,
     alignItems: 'center', justifyContent: 'center', marginBottom: 20,
   },
   emptyIconDiamond: {
-    width: 32, height: 32, backgroundColor: '#E63B6F', opacity: 0.25,
+    width: 32, height: 32, backgroundColor: Colors.primaryPink, opacity: 0.25,
     transform: [{ rotate: '45deg' }], borderRadius: 4,
   },
-  emptyTitle: { fontSize: 17, fontWeight: '800', color: '#1C1C3A', textAlign: 'center', marginBottom: 8 },
+  emptyTitle: { fontSize: 17, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginBottom: 8 },
   emptySub:   { fontSize: 14, color: '#9E9EBE', textAlign: 'center', lineHeight: 20 },
   noResults:  { alignItems: 'center', paddingVertical: 40 },
   noResultsText: { fontSize: 14, color: '#9E9EBE', fontStyle: 'italic' },
 
   /* Detail modal */
-  detailSafe: { flex: 1, backgroundColor: '#FAFAFA' },
+  detailSafe: { flex: 1, backgroundColor: Colors.background },
   detailHeader: {
     paddingTop: 16, paddingBottom: 20, paddingHorizontal: 16,
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
@@ -837,20 +838,20 @@ const s = StyleSheet.create({
   backArrow: {
     width: 10, height: 10,
     borderLeftWidth: 2.5, borderBottomWidth: 2.5,
-    borderColor: '#fff',
+    borderColor: Colors.white,
     transform: [{ rotate: '45deg' }],
   },
-  detailTitle: { fontSize: 18, fontWeight: '800', color: '#fff', flex: 1, lineHeight: 24 },
+  detailTitle: { fontSize: 18, fontWeight: '800', color: Colors.white, flex: 1, lineHeight: 24 },
   detailMeta:  { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4, fontWeight: '600' },
 
-  langBar:          { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F0F0F8', paddingHorizontal: 20 },
+  langBar:          { flexDirection: 'row', backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: '#F0F0F8', paddingHorizontal: 20 },
   langBtn:          { flex: 1, alignItems: 'center', paddingVertical: 12 },
-  langBtnActive:    { borderBottomWidth: 2.5, borderBottomColor: '#E63B6F' },
+  langBtnActive:    { borderBottomWidth: 2.5, borderBottomColor: Colors.primaryPink },
   langBtnText:      { fontSize: 13, fontWeight: '600', color: '#9E9EBE' },
-  langBtnActiveText:{ color: '#E63B6F', fontWeight: '800' },
+  langBtnActiveText:{ color: Colors.primaryPink, fontWeight: '800' },
 
   detailScroll:  { padding: 16 },
-  detailSummary: { fontSize: 15, color: '#4A4A6A', lineHeight: 22, marginBottom: 16, fontStyle: 'italic' },
+  detailSummary: { fontSize: 15, color: Colors.midGray, lineHeight: 22, marginBottom: 16, fontStyle: 'italic' },
 
   /* Key Takeaways */
   ktBox:   { borderRadius: 16, padding: 16, marginBottom: 20 },
@@ -859,19 +860,19 @@ const s = StyleSheet.create({
     marginBottom: 10, letterSpacing: 0.8, textTransform: 'uppercase',
   },
   ktRow:   { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8, gap: 10 },
-  ktCheck: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#27AE7A', marginTop: 2 },
+  ktCheck: { width: 16, height: 16, borderRadius: 8, backgroundColor: Colors.mint, marginTop: 2 },
   ktText:  { flex: 1, fontSize: 14, color: '#1A6A40', lineHeight: 20, fontWeight: '500' },
 
   /* Markdown */
-  mdH2:   { fontSize: 17, fontWeight: '800', color: '#1C1C3A', marginTop: 20, marginBottom: 8 },
-  mdH3:   { fontSize: 15, fontWeight: '700', color: '#1C1C3A', marginTop: 14, marginBottom: 6 },
-  mdPara: { fontSize: 14, color: '#4A4A6A', lineHeight: 22, marginBottom: 8 },
+  mdH2:   { fontSize: 17, fontWeight: '800', color: Colors.dark, marginTop: 20, marginBottom: 8 },
+  mdH3:   { fontSize: 15, fontWeight: '700', color: Colors.dark, marginTop: 14, marginBottom: 6 },
+  mdPara: { fontSize: 14, color: Colors.midGray, lineHeight: 22, marginBottom: 8 },
   bulletDot: {
     width: 6, height: 6, borderRadius: 3,
-    backgroundColor: '#27AE7A', marginTop: 8, marginRight: 10,
+    backgroundColor: Colors.mint, marginTop: 8, marginRight: 10,
   },
   mdQuote: {
-    borderLeftWidth: 3, borderLeftColor: '#27AE7A',
+    borderLeftWidth: 3, borderLeftColor: Colors.mint,
     paddingLeft: 12, paddingVertical: 6, marginVertical: 8,
     backgroundColor: '#F0FBF6', borderRadius: 4,
   },
@@ -884,9 +885,9 @@ const s = StyleSheet.create({
 
   /* Disclaimer */
   disclaimer: {
-    marginTop: 16, backgroundColor: '#FFF8E8',
+    marginTop: 16, backgroundColor: Colors.softGold,
     borderRadius: 12, padding: 12,
-    borderLeftWidth: 3, borderLeftColor: '#F5A623',
+    borderLeftWidth: 3, borderLeftColor: Colors.gold,
   },
   disclaimerText: { fontSize: 12, color: '#7A6030', lineHeight: 18, fontStyle: 'italic' },
 });

@@ -237,10 +237,10 @@ const s = StyleSheet.create({
 
   backBtn:       { marginBottom: 28 },
   backText:      { fontSize: 16, color: 'rgba(255,255,255,0.9)', fontWeight: '600' },
-  title:         { fontSize: 28, fontWeight: '900', color: '#fff', marginBottom: 6 },
+  title:         { fontSize: 28, fontWeight: '900', color: Colors.white, marginBottom: 6 },
   subtitle:      { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginBottom: 28 },
 
-  card:          { backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  card:          { backgroundColor: Colors.white, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
 
   lockoutBox:    { alignItems: 'center', paddingVertical: 16, marginBottom: 16, backgroundColor: Colors.softPink, borderRadius: 14 },
   lockoutEmoji:  { fontSize: 32, marginBottom: 6 },
@@ -248,15 +248,15 @@ const s = StyleSheet.create({
   lockoutTimer:  { fontSize: 20, fontWeight: '800', color: Colors.dark },
 
   otpRow:        { flexDirection: 'row', gap: 8, justifyContent: 'center', marginBottom: 8 },
-  otpBox:        { width: 46, height: 56, borderWidth: 2, borderColor: Colors.border, borderRadius: 14, fontSize: 24, fontWeight: '800', color: Colors.dark, backgroundColor: '#fff' },
+  otpBox:        { width: 46, height: 56, borderWidth: 2, borderColor: Colors.border, borderRadius: 14, fontSize: 24, fontWeight: '800', color: Colors.dark, backgroundColor: Colors.white },
   otpBoxFilled:  { borderColor: Colors.primaryPink, backgroundColor: Colors.softPink },
   otpBoxLocked:  { opacity: 0.4 },
 
-  attemptText:   { fontSize: 12, color: '#EF4444', textAlign: 'center', marginBottom: 8 },
+  attemptText:   { fontSize: 12, color: Colors.danger, textAlign: 'center', marginBottom: 8 },
 
   verifyBtn:     { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 12, marginBottom: 12 },
   btnDisabled:   { opacity: 0.45 },
-  verifyBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  verifyBtnText: { color: Colors.white, fontSize: 16, fontWeight: '700' },
 
   resendRow:     { alignItems: 'center', minHeight: 24 },
   countdownText: { fontSize: 13, color: Colors.lightGray },

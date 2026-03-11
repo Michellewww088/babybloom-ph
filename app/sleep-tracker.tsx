@@ -97,7 +97,7 @@ function IconBack({ size = 24 }: { size?: number }) {
   );
 }
 
-function IconPlus({ size = 22, color = '#fff' }: { size?: number; color?: string }) {
+function IconPlus({ size = 22, color = Colors.white }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M12 5v14M5 12h14" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
@@ -173,7 +173,7 @@ function IconDelete({ size = 18 }: { size?: number }) {
 }
 
 function IconNight({ size = 18, active = false }: { size?: number; active?: boolean }) {
-  const c = active ? '#FFFFFF' : NIGHT_COLOR;
+  const c = active ? Colors.white : NIGHT_COLOR;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill={active ? 'rgba(255,255,255,0.3)' : 'none'} />
@@ -182,7 +182,7 @@ function IconNight({ size = 18, active = false }: { size?: number; active?: bool
 }
 
 function IconSunSmall({ size = 18, active = false }: { size?: number; active?: boolean }) {
-  const c = active ? '#FFFFFF' : NAP_COLOR;
+  const c = active ? Colors.white : NAP_COLOR;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx={12} cy={12} r={5} stroke={c} strokeWidth={2} fill={active ? 'rgba(255,255,255,0.3)' : 'none'} />
@@ -601,7 +601,7 @@ function ActiveTimerCard({
       {/* Stop button */}
       <TouchableOpacity style={act.stopBtn} onPress={onStop} activeOpacity={0.85}>
         <LinearGradient
-          colors={['#F59E0B', '#F97316']}
+          colors={[Colors.warning, '#F97316']}
           style={act.stopBtnGrad}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
         >
@@ -725,7 +725,7 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
     ? { color: Colors.mint,        bg: Colors.softMint,  emoji: '🌟' }
     : summary.overallScore === 'good'
     ? { color: Colors.gold,        bg: Colors.softGold,  emoji: '😊' }
-    : { color: '#EF4444',          bg: '#FEF2F2',        emoji: '💤' };
+    : { color: Colors.danger,          bg: Colors.dangerBg,        emoji: '💤' };
 
   const napInfo = summary.napCount === 0
     ? ''
@@ -858,7 +858,7 @@ function DeleteConfirmModal({ visible, sleepType, onCancel, onConfirm }: {
               <Text style={del.cancelTxt}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onConfirm} activeOpacity={0.85}>
-              <LinearGradient colors={['#EF4444', '#DC2626']} style={del.deleteBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+              <LinearGradient colors={[Colors.danger, '#DC2626']} style={del.deleteBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
                 <Text style={del.deleteTxt}>{t('common.delete')}</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -1401,7 +1401,7 @@ export default function SleepTrackerScreen() {
         {/* Dev button for testing */}
         {typeof __DEV__ !== 'undefined' && __DEV__ && (
           <TouchableOpacity
-            style={{ margin: 16, padding: 12, backgroundColor: '#F3F4F6', borderRadius: 12, alignItems: 'center' }}
+            style={{ margin: 16, padding: 12, backgroundColor: Colors.divider, borderRadius: 12, alignItems: 'center' }}
             onPress={() => {
               const store  = (window as any).__sleepStore?.getState?.();
               const child  = (window as any).__childStore?.getState?.()?.activeChild;
@@ -1448,29 +1448,29 @@ const s = StyleSheet.create({
   screen:           { flex: 1, backgroundColor: Colors.background },
   header:           { flexDirection: 'row', alignItems: 'center', paddingHorizontal: PAD, paddingTop: Platform.OS === 'ios' ? 52 : 16, paddingBottom: 14 },
   backBtn:          { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  headerTitle:      { fontSize: 17, fontWeight: '800', color: '#FFFFFF' },
+  headerTitle:      { fontSize: 17, fontWeight: '800', color: Colors.white },
   headerSub:        { fontSize: 11, color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginTop: 1 },
   addBtn:           { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
   scroll:           { flex: 1 },
   content:          { paddingBottom: 40 },
   startSleepBtn:    { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, paddingVertical: 18, paddingHorizontal: 24, shadowColor: NIGHT_COLOR, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6 },
   startSleepEmoji:  { fontSize: 36 },
-  startSleepText:   { fontSize: 17, fontWeight: '800', color: '#FFFFFF' },
+  startSleepText:   { fontSize: 17, fontWeight: '800', color: Colors.white },
   startSleepSub:    { fontSize: 11, color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginTop: 2 },
-  statsStrip:       { flexDirection: 'row', marginHorizontal: PAD, marginTop: 14, backgroundColor: '#FFFFFF', borderRadius: 18, padding: 14, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.border },
+  statsStrip:       { flexDirection: 'row', marginHorizontal: PAD, marginTop: 14, backgroundColor: Colors.white, borderRadius: 18, padding: 14, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.border },
   statChip:         { flex: 1, alignItems: 'center', gap: 2 },
   statChipVal:      { fontSize: 18, fontWeight: '800', color: NIGHT_COLOR },
   statChipLbl:      { fontSize: 10, color: Colors.lightGray, fontWeight: '700', textTransform: 'uppercase' },
   statDivider:      { width: 1, backgroundColor: Colors.border, marginVertical: 4 },
-  chartCard:        { backgroundColor: '#FFFFFF', borderRadius: 22, marginHorizontal: PAD, marginTop: 14, padding: 16, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: Colors.border, alignItems: 'center' },
+  chartCard:        { backgroundColor: Colors.white, borderRadius: 22, marginHorizontal: PAD, marginTop: 14, padding: 16, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: Colors.border, alignItems: 'center' },
   chartTitle:       { fontSize: 14, fontWeight: '800', color: Colors.dark, marginBottom: 12, alignSelf: 'flex-start' },
   filterRow:        { flexDirection: 'row', gap: 8, marginHorizontal: PAD, marginTop: 16, marginBottom: 10 },
-  filterTab:        { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: Colors.border },
+  filterTab:        { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 12, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.border },
   filterTabActive:  { backgroundColor: NIGHT_COLOR, borderColor: NIGHT_COLOR },
   filterTabTxt:     { fontSize: 12, fontWeight: '700', color: Colors.midGray },
-  filterTabTxtActive:{ color: '#FFFFFF' },
+  filterTabTxtActive:{ color: Colors.white },
   dateHeader:       { fontSize: 11, fontWeight: '800', color: Colors.lightGray, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 14, marginBottom: 6 },
-  entryGroup:       { backgroundColor: '#FFFFFF', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.border },
+  entryGroup:       { backgroundColor: Colors.white, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.border },
   entryDivider:     { height: 1, backgroundColor: Colors.border, marginLeft: 60 },
   empty:            { alignItems: 'center', paddingVertical: 48, gap: 8 },
   emptyTitle:       { fontSize: 16, fontWeight: '700', color: Colors.dark, textAlign: 'center' },
@@ -1482,23 +1482,23 @@ const act = StyleSheet.create({
   card:         { borderRadius: 24, padding: 24, alignItems: 'center', gap: 6, overflow: 'hidden', shadowColor: NIGHT_COLOR, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8 },
   glow:         { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(167,139,250,0.25)', top: -40, alignSelf: 'center' },
   typeBadge:    { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6 },
-  typeBadgeText:{ fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
-  timerText:    { fontSize: 52, fontWeight: '900', color: '#FFFFFF', letterSpacing: 2, marginTop: 4 },
+  typeBadgeText:{ fontSize: 13, fontWeight: '700', color: Colors.white },
+  timerText:    { fontSize: 52, fontWeight: '900', color: Colors.white, letterSpacing: 2, marginTop: 4 },
   startedLabel: { fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
-  stopBtn:      { marginTop: 12, borderRadius: 16, overflow: 'hidden', shadowColor: '#F59E0B', shadowOpacity: 0.4, shadowRadius: 8 },
+  stopBtn:      { marginTop: 12, borderRadius: 16, overflow: 'hidden', shadowColor: Colors.warning, shadowOpacity: 0.4, shadowRadius: 8 },
   stopBtnGrad:  { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 28, paddingVertical: 14 },
-  stopBtnText:  { fontSize: 15, fontWeight: '800', color: '#FFFFFF' },
+  stopBtnText:  { fontSize: 15, fontWeight: '800', color: Colors.white },
 });
 
 // Selectors
 const sel = StyleSheet.create({
   row:               { flexDirection: 'row', gap: 8, marginTop: 6 },
-  pill:              { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: '#FFFFFF' },
+  pill:              { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.white },
   pillActiveNight:   { backgroundColor: NIGHT_COLOR, borderColor: NIGHT_COLOR },
   pillActiveNap:     { backgroundColor: NAP_COLOR, borderColor: NAP_COLOR },
   pillText:          { fontSize: 13, fontWeight: '700', color: Colors.midGray },
-  pillTextActive:    { color: '#FFFFFF' },
-  qualPill:          { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: '#FFFFFF', gap: 3 },
+  pillTextActive:    { color: Colors.white },
+  qualPill:          { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.white, gap: 3 },
   qualPillActive:    { borderColor: NAP_COLOR, backgroundColor: NIGHT_LIGHT },
   qualEmoji:         { fontSize: 18 },
   qualText:          { fontSize: 10, fontWeight: '700', color: Colors.midGray, textAlign: 'center' },
@@ -1561,41 +1561,41 @@ const dsc = StyleSheet.create({
 // Delete modal
 const del = StyleSheet.create({
   overlay:   { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' },
-  sheet:     { backgroundColor: '#FFFFFF', borderRadius: 28, padding: 28, margin: 32, alignItems: 'center', gap: 12 },
+  sheet:     { backgroundColor: Colors.white, borderRadius: 28, padding: 28, margin: 32, alignItems: 'center', gap: 12 },
   iconWrap:  { width: 80, height: 80, borderRadius: 24, alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  sadBadge:  { position: 'absolute', bottom: -6, right: -6, backgroundColor: '#FFFFFF', borderRadius: 12, width: 28, height: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4 },
+  sadBadge:  { position: 'absolute', bottom: -6, right: -6, backgroundColor: Colors.white, borderRadius: 12, width: 28, height: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4 },
   title:     { fontSize: 17, fontWeight: '800', color: Colors.dark, textAlign: 'center' },
   body:      { fontSize: 13, color: Colors.midGray, textAlign: 'center', lineHeight: 19 },
   btnRow:    { flexDirection: 'row', gap: 12, marginTop: 4, width: '100%' },
   cancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: Colors.softPink, alignItems: 'center' },
   cancelTxt: { fontSize: 14, fontWeight: '800', color: Colors.primaryPink },
   deleteBtn: { flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
-  deleteTxt: { fontSize: 14, fontWeight: '800', color: '#FFFFFF' },
+  deleteTxt: { fontSize: 14, fontWeight: '800', color: Colors.white },
 });
 
 // Add modal
 const mod = StyleSheet.create({
   overlay:       { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet:         { backgroundColor: '#FFFFFF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24 },
+  sheet:         { backgroundColor: Colors.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24 },
   handle:        { width: 44, height: 4, borderRadius: 2, backgroundColor: Colors.border, alignSelf: 'center', marginBottom: 16 },
   title:         { fontSize: 18, fontWeight: '800', color: Colors.dark, marginBottom: 16 },
   modeTabs:      { flexDirection: 'row', gap: 8, marginBottom: 16 },
   modeTab:       { flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: Colors.background, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
   modeTabActive: { backgroundColor: NIGHT_COLOR, borderColor: NIGHT_COLOR },
   modeTabTxt:    { fontSize: 13, fontWeight: '700', color: Colors.midGray },
-  modeTabTxtActive:{ color: '#FFFFFF' },
+  modeTabTxtActive:{ color: Colors.white },
   sectionLabel:  { fontSize: 11, fontWeight: '800', color: Colors.lightGray, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   timerSection:  { alignItems: 'center', paddingVertical: 16 },
   timerDisplay:  { fontSize: 44, fontWeight: '900', color: NIGHT_COLOR, letterSpacing: 2 },
   timerSub:      { fontSize: 11, color: Colors.lightGray, marginTop: 4 },
   startBtn:      { borderRadius: 16, paddingVertical: 14, paddingHorizontal: 28, alignItems: 'center' },
-  startBtnTxt:   { fontSize: 15, fontWeight: '800', color: '#FFFFFF' },
+  startBtnTxt:   { fontSize: 15, fontWeight: '800', color: Colors.white },
   prefillRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.softBlue, borderRadius: 14, padding: 12, marginTop: 8 },
   prefillLabel:  { fontSize: 10, color: Colors.lightGray, fontWeight: '700' },
   prefillVal:    { fontSize: 13, fontWeight: '800', color: NIGHT_COLOR },
   prefillArrow:  { fontSize: 14, color: Colors.lightGray },
   input:         { backgroundColor: Colors.background, borderRadius: 14, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: Colors.dark },
-  error:         { fontSize: 12, color: '#EF4444', marginTop: 8, fontWeight: '600' },
+  error:         { fontSize: 12, color: Colors.danger, marginTop: 8, fontWeight: '600' },
   saveBtn:       { borderRadius: 18, paddingVertical: 16, alignItems: 'center', shadowColor: NAP_COLOR, shadowOpacity: 0.35, shadowRadius: 10, elevation: 5 },
-  saveBtnTxt:    { fontSize: 16, fontWeight: '800', color: '#FFFFFF' },
+  saveBtnTxt:    { fontSize: 16, fontWeight: '800', color: Colors.white },
 });
