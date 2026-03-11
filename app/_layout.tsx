@@ -2,6 +2,7 @@ import '../src/i18n';
 import { useEffect, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { Stack, router } from 'expo-router';
+import { fontAssets } from '../constants/Typography';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -31,7 +32,7 @@ export function clearDevSkip() {
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [loaded, fontError] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    ...fontAssets,
   });
 
   // Tracks whether we've already done the initial navigation decision.
