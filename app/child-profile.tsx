@@ -20,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
+import { Baby, Camera, Check, Heart, ImageIcon, Sparkles } from 'lucide-react-native';
+
 import Colors from '../constants/Colors';
 import { useChildStore, Child, Sex, BirthType, BloodType } from '../store/childStore';
 import { useOnboardingStore } from '../store/onboardingStore';
@@ -31,12 +33,12 @@ const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O
 
 const PRESET_ALLERGIES = ['Nuts', 'Dairy', 'Eggs', 'Shellfish', 'Wheat', 'Soy', 'Fish'];
 
-/** 4 default avatar options: colour + emoji */
+/** 4 default avatar options: colour + icon */
 const DEFAULT_AVATARS = [
-  { bg: Colors.softBlue, emoji: '👶🏻', label: 'Boy (light)' },
-  { bg: Colors.softPink, emoji: '👶🏽', label: 'Girl (medium)' },
-  { bg: Colors.softMint, emoji: '👶🏾', label: 'Baby (dark)' },
-  { bg: Colors.softGold, emoji: '👶',   label: 'Baby (neutral)' },
+  { bg: Colors.softBlue, label: 'Boy (light)' },
+  { bg: Colors.softPink, label: 'Girl (medium)' },
+  { bg: Colors.softMint, label: 'Baby (dark)' },
+  { bg: Colors.softGold, label: 'Baby (neutral)' },
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -418,7 +420,7 @@ export default function ChildProfileScreen() {
     const av = DEFAULT_AVATARS[avatarIndex ?? 0];
     return (
       <View style={[s.avatarDefault, { backgroundColor: av.bg }]}>
-        <Text style={s.avatarEmoji}>{av.emoji}</Text>
+        <Baby size={56} strokeWidth={1.5} color={Colors.primaryPink} />
       </View>
     );
   };
@@ -460,14 +462,20 @@ export default function ChildProfileScreen() {
             <View style={[s.progressFill, { width: `${progress}%` as any }]} />
           </View>
           {progress === 100 && (
-            <Text style={s.progressComplete}>✓ {t('profile.progress_complete')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <Check size={14} color={Colors.mint} />
+              <Text style={s.progressComplete}>{t('profile.progress_complete')}</Text>
+            </View>
           )}
         </View>
 
         {/* ── Pre-fill notice ── */}
         {prefillActive && (
           <View style={s.prefillBanner}>
-            <Text style={s.prefillText}>✨ {t('profile.prefilled_notice')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Sparkles size={14} color={Colors.blue} />
+              <Text style={s.prefillText}>{t('profile.prefilled_notice')}</Text>
+            </View>
           </View>
         )}
 
@@ -493,17 +501,23 @@ export default function ChildProfileScreen() {
                   avatarIndex === idx && !photoUri && s.defaultAvatarSelected,
                 ]}
               >
-                <Text style={s.defaultAvatarEmoji}>{av.emoji}</Text>
+                <Baby size={26} strokeWidth={1.5} color={Colors.primaryPink} />
               </TouchableOpacity>
             ))}
           </View>
 
           <View style={s.photoActions}>
             <TouchableOpacity style={s.photoBtn} onPress={takePhoto}>
-              <Text style={s.photoBtnText}>📷 {t('profile.take_photo')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Camera size={14} color={Colors.primaryPink} />
+                <Text style={s.photoBtnText}>{t('profile.take_photo')}</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity style={s.photoBtn} onPress={pickFromGallery}>
-              <Text style={s.photoBtnText}>🖼 {t('profile.choose_gallery')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <ImageIcon size={14} color={Colors.primaryPink} />
+                <Text style={s.photoBtnText}>{t('profile.choose_gallery')}</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -560,11 +574,16 @@ export default function ChildProfileScreen() {
                 style={[s.toggleBtn, sex === v && s.toggleBtnActive]}
                 onPress={() => setSex(v)}
               >
-                <Text style={[s.toggleBtnText, sex === v && s.toggleBtnTextActive]}>
-                  {v === 'male'   ? `💙 ${t('profile.sex_boy')}`
-                   : v === 'female' ? `💗 ${t('profile.sex_girl')}`
-                   : `🌈 ${t('profile.sex_other')}`}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Heart
+                    size={14}
+                    color={v === 'male' ? Colors.blue : v === 'female' ? Colors.primaryPink : Colors.gold}
+                    fill={v === 'male' ? Colors.blue : v === 'female' ? Colors.primaryPink : Colors.gold}
+                  />
+                  <Text style={[s.toggleBtnText, sex === v && s.toggleBtnTextActive]}>
+                    {v === 'male' ? t('profile.sex_boy') : v === 'female' ? t('profile.sex_girl') : t('profile.sex_other')}
+                  </Text>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -951,8 +970,6 @@ const s = StyleSheet.create({
     borderWidth: 3,
     borderColor: Colors.softPink,
   },
-  avatarEmoji: { fontSize: 56 },
-
   defaultAvatarsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -970,8 +987,6 @@ const s = StyleSheet.create({
   defaultAvatarSelected: {
     borderColor: Colors.primaryPink,
   },
-  defaultAvatarEmoji: { fontSize: 26 },
-
   photoActions: {
     flexDirection: 'row',
     gap: 10,

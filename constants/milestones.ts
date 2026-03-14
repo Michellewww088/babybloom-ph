@@ -168,7 +168,7 @@ export const STAGE_CHECKLISTS: Stage[] = [
   {
     key: '0_1m',
     labelKey: 'milestones.stage_0_1m',
-    emoji: '🌱',
+    emoji: 'sprout',
     items: [
       { id: '0_1m_1',  category: 'medical',     en: 'Schedule 1st well-baby checkup within 1 week of hospital discharge',           fil: 'Mag-schedule ng unang well-baby checkup sa loob ng 1 linggo',                          zh: '出院后1周内安排首次体检' },
       { id: '0_1m_2',  category: 'admin',       en: 'Register birth at LCR (Local Civil Registry) — within 30 days (PSA)',          fil: 'Irerehistro ang kapanganakan sa LCR sa loob ng 30 araw (PSA)',                         zh: '30天内在民政局登记出生（PSA）' },
@@ -186,7 +186,7 @@ export const STAGE_CHECKLISTS: Stage[] = [
   {
     key: '1_3m',
     labelKey: 'milestones.stage_1_3m',
-    emoji: '🌼',
+    emoji: 'flower',
     items: [
       { id: '1_3m_1', category: 'medical',     en: '6-week vaccines at BHS: Pentavalent (1), OPV (1), PCV (1), Rotavirus (1)',    fil: 'Bakuna sa 6 na linggo sa BHS: Pentavalent (1), OPV (1), PCV (1), Rotavirus (1)',   zh: '6周疫苗（BHS）：五联苗(1)、OPV(1)、PCV(1)、轮状病毒(1)' },
       { id: '1_3m_2', category: 'medical',     en: '10-week vaccines: Pentavalent (2), OPV (2), PCV (2), Rotavirus (2)',          fil: 'Bakuna sa 10 linggo: Pentavalent (2), OPV (2), PCV (2), Rotavirus (2)',             zh: '10周疫苗：五联苗(2)、OPV(2)、PCV(2)、轮状病毒(2)' },
@@ -199,7 +199,7 @@ export const STAGE_CHECKLISTS: Stage[] = [
   {
     key: '3_6m',
     labelKey: 'milestones.stage_3_6m',
-    emoji: '🌸',
+    emoji: 'flower2',
     items: [
       { id: '3_6m_1', category: 'medical',     en: '14-week vaccines: Pentavalent (3), OPV (3), IPV (1), PCV (3)',                fil: 'Bakuna sa 14 linggo: Pentavalent (3), OPV (3), IPV (1), PCV (3)',                  zh: '14周疫苗：五联苗(3)、OPV(3)、IPV(1)、PCV(3)' },
       { id: '3_6m_2', category: 'medical',     en: '4-month well-baby checkup',                                                   fil: '4-buwang well-baby checkup',                                                         zh: '4个月体检' },
@@ -211,7 +211,7 @@ export const STAGE_CHECKLISTS: Stage[] = [
   {
     key: '6_9m',
     labelKey: 'milestones.stage_6_9m',
-    emoji: '🌻',
+    emoji: 'sunflower',
     items: [
       { id: '6_9m_1', category: 'medical',     en: '6-month well-baby checkup',                                                   fil: '6-buwang well-baby checkup',                                                         zh: '6个月体检' },
       { id: '6_9m_2', category: 'nutrition',   en: 'Start solid foods (single-ingredient purees: kamote, kalabasa, saging)',       fil: 'Simulan ang solid foods (iisang sangkap na puree: kamote, kalabasa, saging)',      zh: '开始辅食（单一成分泥：甘薯、南瓜、香蕉）' },
@@ -224,7 +224,7 @@ export const STAGE_CHECKLISTS: Stage[] = [
   {
     key: '9_12m',
     labelKey: 'milestones.stage_9_12m',
-    emoji: '🌟',
+    emoji: 'star',
     items: [
       { id: '9_12m_1', category: 'medical',   en: '9-month vaccines: MMR (1), Hepatitis A (1) — check with Pedia',               fil: 'Bakuna sa 9 buwan: MMR (1), Hepatitis A (1) — alamin sa Pedia',                   zh: '9个月疫苗：MMR(1)、甲肝(1)——与医生确认' },
       { id: '9_12m_2', category: 'medical',   en: '9-month well-baby checkup',                                                   fil: '9-buwang well-baby checkup',                                                         zh: '9个月体检' },
@@ -236,7 +236,7 @@ export const STAGE_CHECKLISTS: Stage[] = [
   {
     key: '12_18m',
     labelKey: 'milestones.stage_12_18m',
-    emoji: '🎉',
+    emoji: 'party-popper',
     items: [
       { id: '12_18m_1', category: 'medical',     en: '12-month well-baby checkup',                                                fil: '12-buwang well-baby checkup',                                                        zh: '12个月体检' },
       { id: '12_18m_2', category: 'medical',     en: 'Vaccines at 12M: Varicella (1), Hep A (2), Typhoid (discuss with Pedia)',   fil: 'Bakuna sa 12M: Varicella (1), Hep A (2), Typhoid (pag-usapan sa Pedia)',          zh: '12月疫苗：水痘(1)、甲肝(2)、伤寒（与医生商议）' },
@@ -254,18 +254,18 @@ export const STAGE_CHECKLISTS: Stage[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const FIRST_TIMES: FirstTimeCategory[] = [
-  { id: 'smile',      emoji: '😊', labelEn: 'First Smile',        labelFil: 'Unang Ngiti',             labelZh: '第一次微笑' },
-  { id: 'laugh',      emoji: '😂', labelEn: 'First Laugh',        labelFil: 'Unang Tawa',              labelZh: '第一次大笑' },
-  { id: 'roll',       emoji: '🔄', labelEn: 'First Roll Over',    labelFil: 'Unang Pag-ikot',          labelZh: '第一次翻身' },
-  { id: 'sit',        emoji: '🪑', labelEn: 'First Sit',          labelFil: 'Unang Pag-upo',           labelZh: '第一次独坐' },
-  { id: 'crawl',      emoji: '🐛', labelEn: 'First Crawl',        labelFil: 'Unang Paggapang',         labelZh: '第一次爬行' },
-  { id: 'steps',      emoji: '👣', labelEn: 'First Steps',        labelFil: 'Unang Hakbang',           labelZh: '第一步' },
-  { id: 'word',       emoji: '🗣️', labelEn: 'First Word',         labelFil: 'Unang Salita',            labelZh: '第一个词',       hasNote: true, noteLabelEn: 'What was the word?', noteLabelFil: 'Anong salita?', noteLabelZh: '说的是什么词？' },
-  { id: 'tooth',      emoji: '🦷', labelEn: 'First Tooth',        labelFil: 'Unang Ngipin',            labelZh: '第一颗牙' },
-  { id: 'solid_food', emoji: '🥣', labelEn: 'First Solid Food',   labelFil: 'Unang Solid na Pagkain',  labelZh: '第一次辅食',     hasNote: true, noteLabelEn: 'What food?',       noteLabelFil: 'Anong pagkain?', noteLabelZh: '吃的是什么食物？' },
-  { id: 'bath',       emoji: '🛁', labelEn: 'First Bath',         labelFil: 'Unang Paligo',            labelZh: '第一次洗澡' },
-  { id: 'haircut',    emoji: '✂️', labelEn: 'First Haircut',      labelFil: 'Unang Gupit ng Buhok',    labelZh: '第一次剪头发' },
-  { id: 'birthday',   emoji: '🎂', labelEn: 'First Birthday',     labelFil: 'Unang Kaarawan',          labelZh: '第一个生日' },
+  { id: 'smile',      emoji: 'smile',          labelEn: 'First Smile',        labelFil: 'Unang Ngiti',             labelZh: '第一次微笑' },
+  { id: 'laugh',      emoji: 'laugh',          labelEn: 'First Laugh',        labelFil: 'Unang Tawa',              labelZh: '第一次大笑' },
+  { id: 'roll',       emoji: 'rotate-ccw',     labelEn: 'First Roll Over',    labelFil: 'Unang Pag-ikot',          labelZh: '第一次翻身' },
+  { id: 'sit',        emoji: 'armchair',       labelEn: 'First Sit',          labelFil: 'Unang Pag-upo',           labelZh: '第一次独坐' },
+  { id: 'crawl',      emoji: 'bug',            labelEn: 'First Crawl',        labelFil: 'Unang Paggapang',         labelZh: '第一次爬行' },
+  { id: 'steps',      emoji: 'footprints',     labelEn: 'First Steps',        labelFil: 'Unang Hakbang',           labelZh: '第一步' },
+  { id: 'word',       emoji: 'message-circle', labelEn: 'First Word',         labelFil: 'Unang Salita',            labelZh: '第一个词',       hasNote: true, noteLabelEn: 'What was the word?', noteLabelFil: 'Anong salita?', noteLabelZh: '说的是什么词？' },
+  { id: 'tooth',      emoji: 'candy',          labelEn: 'First Tooth',        labelFil: 'Unang Ngipin',            labelZh: '第一颗牙' },
+  { id: 'solid_food', emoji: 'utensils',       labelEn: 'First Solid Food',   labelFil: 'Unang Solid na Pagkain',  labelZh: '第一次辅食',     hasNote: true, noteLabelEn: 'What food?',       noteLabelFil: 'Anong pagkain?', noteLabelZh: '吃的是什么食物？' },
+  { id: 'bath',       emoji: 'bath',           labelEn: 'First Bath',         labelFil: 'Unang Paligo',            labelZh: '第一次洗澡' },
+  { id: 'haircut',    emoji: 'scissors',       labelEn: 'First Haircut',      labelFil: 'Unang Gupit ng Buhok',    labelZh: '第一次剪头发' },
+  { id: 'birthday',   emoji: 'cake',           labelEn: 'First Birthday',     labelFil: 'Unang Kaarawan',          labelZh: '第一个生日' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -275,8 +275,8 @@ export const FIRST_TIMES: FirstTimeCategory[] = [
 export const DOMAIN_META: Record<MilestoneDomain, {
   emoji: string; color: string; bgColor: string; labelKey: string;
 }> = {
-  social:    { emoji: '❤️', color: '#E63B6F', bgColor: '#FFE4EE', labelKey: 'milestones.domain_social' },
-  cognitive: { emoji: '🧠', color: '#7B5CF0', bgColor: '#EDE8FF', labelKey: 'milestones.domain_cognitive' },
-  language:  { emoji: '💬', color: '#1A73C8', bgColor: '#E8F2FF', labelKey: 'milestones.domain_language' },
-  motor:     { emoji: '🤸', color: '#27AE7A', bgColor: '#E0F7EF', labelKey: 'milestones.domain_motor' },
+  social:    { emoji: 'heart', color: '#E63B6F', bgColor: '#FFE4EE', labelKey: 'milestones.domain_social' },
+  cognitive: { emoji: 'brain', color: '#7B5CF0', bgColor: '#EDE8FF', labelKey: 'milestones.domain_cognitive' },
+  language:  { emoji: 'message-circle', color: '#1A73C8', bgColor: '#E8F2FF', labelKey: 'milestones.domain_language' },
+  motor:     { emoji: 'activity', color: '#27AE7A', bgColor: '#E0F7EF', labelKey: 'milestones.domain_motor' },
 };

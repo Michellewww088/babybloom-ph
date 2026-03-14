@@ -20,6 +20,7 @@ import Svg, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { Bot, ClipboardList, CheckCircle2, Clock, AlertTriangle, SkipForward, Droplets, Moon, Syringe, TrendingUp } from 'lucide-react-native';
 
 import Colors from '../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
@@ -363,7 +364,7 @@ function AISummaryCard({
     <TouchableOpacity style={ai.card} onPress={handleExpand} activeOpacity={0.9}>
       <View style={ai.row}>
         <View style={ai.iconWrap}>
-          <Text style={{ fontSize: 20 }}>🤖</Text>
+          <Bot size={20} color={PINK} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={ai.title}>{title}</Text>
@@ -421,7 +422,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 function DemoBanner({ t }: { t: (k: string) => string }) {
   return (
     <View style={db.wrap}>
-      <Text style={db.emoji}>📋</Text>
+      <ClipboardList size={22} color={GOLD} />
       <View>
         <Text style={db.title}>{t('insights.demo_banner')}</Text>
         <Text style={db.sub}>{t('insights.demo_sub')}</Text>
@@ -797,8 +798,11 @@ function VaccineTab({
   const statusColor: Record<VaccineStatus, string> = {
     given: MINT, upcoming: BLUE, overdue: GOLD, skipped: GRAY,
   };
-  const statusIcon: Record<VaccineStatus, string> = {
-    given: '✅', upcoming: '⏳', overdue: '⚠️', skipped: '⏭️',
+  const statusIcon: Record<VaccineStatus, React.ReactNode> = {
+    given: <CheckCircle2 size={14} color={Colors.mint} />,
+    upcoming: <Clock size={14} color={Colors.blue} />,
+    overdue: <AlertTriangle size={14} color={Colors.gold} />,
+    skipped: <SkipForward size={14} color={Colors.midGray} />,
   };
 
   const aiPrompt = `In 2-3 warm sentences, give a vaccination status summary for ${child?.nickname || 'baby'} (${ageMonths} months). Given: ${given.length}, Upcoming in 30 days: ${next30.length}, Overdue: ${overdue.length}. Next vaccine: ${next30[0]?.nameEN || 'none soon'}. Reference DOH Philippines EPI schedule. Language: ${lang}.`;
@@ -841,7 +845,7 @@ function VaccineTab({
                       <Text style={{ fontSize: 11, color: GRAY }}>{phDate(r.scheduledDate)}</Text>
                     )}
                   </View>
-                  <Text style={{ fontSize: 16 }}>{statusIcon[r.status]}</Text>
+                  <View>{statusIcon[r.status]}</View>
                 </View>
               ))}
               {childRecs.length > 12 && (
@@ -958,11 +962,11 @@ body { font-family: Arial, sans-serif; color: #1C1C3A; margin: 0; padding: 0; }
 // Main Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TABS: { id: TabId; labelKey: string; emoji: string }[] = [
-  { id: 'feeding',     labelKey: 'insights.tab_feeding',     emoji: '🍼' },
-  { id: 'sleep',       labelKey: 'insights.tab_sleep',       emoji: '😴' },
-  { id: 'growth',      labelKey: 'insights.tab_growth',      emoji: '📏' },
-  { id: 'vaccination', labelKey: 'insights.tab_vaccine',     emoji: '💉' },
+const TABS: { id: TabId; labelKey: string; icon: React.ReactNode }[] = [
+  { id: 'feeding',     labelKey: 'insights.tab_feeding',     icon: <Droplets size={16} color={GRAY} /> },
+  { id: 'sleep',       labelKey: 'insights.tab_sleep',       icon: <Moon size={16} color={GRAY} /> },
+  { id: 'growth',      labelKey: 'insights.tab_growth',      icon: <TrendingUp size={16} color={GRAY} /> },
+  { id: 'vaccination', labelKey: 'insights.tab_vaccine',     icon: <Syringe size={16} color={GRAY} /> },
 ];
 
 const DATE_RANGES: { id: DateRange; labelKey: string }[] = [
@@ -1217,7 +1221,7 @@ export default function InsightsScreen() {
             style={[s.tab, activeTab === tab.id && s.tabActive]}
             onPress={() => setActiveTab(tab.id)}
           >
-            <Text style={{ fontSize: 16 }}>{tab.emoji}</Text>
+            {tab.icon}
             <Text style={[s.tabTxt, activeTab === tab.id && s.tabTxtActive]}>
               {t(tab.labelKey)}
             </Text>
@@ -1288,7 +1292,6 @@ const cc = StyleSheet.create({
 
 const db = StyleSheet.create({
   wrap:  { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.softGold, borderRadius: 12, margin: PAD, marginBottom: 4, padding: 12 },
-  emoji: { fontSize: 22 },
   title: { fontSize: 13, fontWeight: '700', color: GOLD },
   sub:   { fontSize: 11, color: GRAY },
 });

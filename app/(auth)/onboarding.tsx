@@ -12,6 +12,7 @@ import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import { supabase } from '../../src/lib/supabase';
 import Colors from '../../constants/Colors';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { Calendar, Star, Lightbulb, Heart, Cake, Check, PartyPopper } from 'lucide-react-native';
 
 // ── Types ────────────────────────────────────────────────────────────────
 type Status      = 'pregnant' | 'parenting' | null;
@@ -429,8 +430,8 @@ export default function OnboardingScreen() {
               {/* Different question for pregnant vs parenting */}
               <Text style={s.question}>
                 {status === 'pregnant'
-                  ? 'How many babies are you expecting? 🤰'
-                  : 'How many children do you have? 👶'}
+                  ? 'How many babies are you expecting?'
+                  : 'How many children do you have?'}
               </Text>
               <View style={s.optionGrid}>
                 <OptionCard
@@ -466,7 +467,10 @@ export default function OnboardingScreen() {
           {step === 4 && status === 'pregnant' && (
             <>
               <Text style={s.stepLabel}>STEP {displayStepNum()} OF {visibleSteps}</Text>
-              <Text style={s.question}>When is your due date? 📅</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <Text style={[s.question, { marginBottom: 0, marginRight: 8 }]}>When is your due date?</Text>
+                <Calendar size={16} strokeWidth={1.5} color={Colors.dark} />
+              </View>
               <DateSelector value={dateValue} onChange={setDateValue} isPregnant />
             </>
           )}
@@ -475,12 +479,18 @@ export default function OnboardingScreen() {
           {step === 4 && status === 'parenting' && (
             <>
               <Text style={s.stepLabel}>STEP 4 OF {visibleSteps}</Text>
-              <Text style={s.question}>Tell us about your child 🌟</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <Text style={[s.question, { marginBottom: 0, marginRight: 8 }]}>Tell us about your child</Text>
+                <Star size={16} strokeWidth={1.5} color={Colors.gold} />
+              </View>
               {babyCount && babyCount !== 'single' && (
                 <View style={s.infoBanner}>
-                  <Text style={s.infoBannerText}>
-                    💡 You can add more children from your dashboard later
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                    <Lightbulb size={16} strokeWidth={1.5} color={Colors.dark} style={{ marginRight: 6 }} />
+                    <Text style={s.infoBannerText}>
+                      You can add more children from your dashboard later
+                    </Text>
+                  </View>
                 </View>
               )}
 
@@ -499,13 +509,16 @@ export default function OnboardingScreen() {
               {/* Gender selector */}
               <Text style={s.fieldLabel}>Gender</Text>
               <View style={s.genderRow}>
-                <GenderCard icon={<IconBoy />}         label="Boy 💙"   selected={childGender === 'boy'}   onPress={() => setChildGender('boy')}   />
-                <GenderCard icon={<IconGirl />}        label="Girl 💗"  selected={childGender === 'girl'}  onPress={() => setChildGender('girl')}  />
-                <GenderCard icon={<IconGenderOther />} label="Other 🌈" selected={childGender === 'other'} onPress={() => setChildGender('other')} />
+                <GenderCard icon={<IconBoy />}         label="Boy"   labelSuffix={<Heart size={14} strokeWidth={1.5} color={Colors.blue} style={{ marginLeft: 4 }} />}   selected={childGender === 'boy'}   onPress={() => setChildGender('boy')}   />
+                <GenderCard icon={<IconGirl />}        label="Girl"  labelSuffix={<Heart size={14} strokeWidth={1.5} color={Colors.primaryPink} style={{ marginLeft: 4 }} />}  selected={childGender === 'girl'}  onPress={() => setChildGender('girl')}  />
+                <GenderCard icon={<IconGenderOther />} label="Other" selected={childGender === 'other'} onPress={() => setChildGender('other')} />
               </View>
 
               {/* Birthday */}
-              <Text style={s.fieldLabel}>Birthday 🎂</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginTop: 4 }}>
+                <Text style={[s.fieldLabel, { marginBottom: 0, marginTop: 0, marginRight: 6 }]}>Birthday</Text>
+                <Cake size={16} strokeWidth={1.5} color={Colors.midGray} />
+              </View>
               <DateSelector value={dateValue} onChange={setDateValue} isPregnant={false} />
             </>
           )}
@@ -528,7 +541,7 @@ export default function OnboardingScreen() {
                   >
                     <Text style={s.langEmoji}>{flag}</Text>
                     <Text style={[s.langLabel, language === code && s.langLabelActive]}>{label}</Text>
-                    {language === code && <Text style={s.checkmark}>✓</Text>}
+                    {language === code && <Check size={14} strokeWidth={2.5} color={Colors.primaryPink} />}
                   </TouchableOpacity>
                 ))}
               </View>
@@ -543,9 +556,12 @@ export default function OnboardingScreen() {
           >
             {saving
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.nextBtnText}>
-                  {isLastStep ? `🎉 ${t('onboarding.finish')}` : `${t('onboarding.next')} →`}
-                </Text>
+              : <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  {isLastStep && <PartyPopper size={16} strokeWidth={1.5} color={Colors.white} style={{ marginRight: 6 }} />}
+                  <Text style={s.nextBtnText}>
+                    {isLastStep ? t('onboarding.finish') : `${t('onboarding.next')} →`}
+                  </Text>
+                </View>
             }
           </TouchableOpacity>
 
@@ -568,7 +584,7 @@ function OptionCard({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {selected && <Text style={s.optCheck}>✓</Text>}
+      {selected && <View style={s.optCheck}><Check size={14} strokeWidth={2.5} color={Colors.primaryPink} /></View>}
       <View style={s.optIconWrap}>
         {icon}
         {badge && (
@@ -585,9 +601,9 @@ function OptionCard({
 
 // ── Gender Card (compact, 3 per row) ─────────────────────────────────────
 function GenderCard({
-  icon, label, selected, onPress,
+  icon, label, labelSuffix, selected, onPress,
 }: {
-  icon: React.ReactNode; label: string; selected: boolean; onPress: () => void;
+  icon: React.ReactNode; label: string; labelSuffix?: React.ReactNode; selected: boolean; onPress: () => void;
 }) {
   return (
     <TouchableOpacity
@@ -595,9 +611,12 @@ function GenderCard({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {selected && <Text style={s.genderCheck}>✓</Text>}
+      {selected && <View style={s.genderCheck}><Check size={14} strokeWidth={2.5} color={Colors.primaryPink} /></View>}
       {icon}
-      <Text style={[s.genderLabel, selected && s.genderLabelSelected]}>{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+        <Text style={[s.genderLabel, selected && s.genderLabelSelected, { marginTop: 0 }]}>{label}</Text>
+        {labelSuffix}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -698,7 +717,7 @@ const s = StyleSheet.create({
   optCardSelected:{ borderColor: Colors.primaryPink, backgroundColor: '#FFF0F4' },
   optCardWide:   { minWidth: '100%' },
   optIconWrap:   { marginBottom: 10, position: 'relative' },
-  optCheck:      { position: 'absolute', top: 10, right: 12, fontSize: 14, color: Colors.primaryPink, fontWeight: '800' },
+  optCheck:      { position: 'absolute', top: 10, right: 12 },
   optLabel:      { fontSize: 14, fontWeight: '700', color: Colors.dark, textAlign: 'center' },
   optLabelSelected: { color: Colors.primaryPink },
   optSublabel:   { fontSize: 11, color: Colors.midGray, marginTop: 4, textAlign: 'center', fontWeight: '500' },
@@ -713,7 +732,7 @@ const s = StyleSheet.create({
   genderRow:     { flexDirection: 'row', gap: 10, marginBottom: 16 },
   genderCard:    { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.background, position: 'relative' },
   genderCardSelected: { borderColor: Colors.primaryPink, backgroundColor: '#FFF0F4' },
-  genderCheck:   { position: 'absolute', top: 6, right: 8, fontSize: 12, color: Colors.primaryPink, fontWeight: '800' },
+  genderCheck:   { position: 'absolute', top: 6, right: 8 },
   genderLabel:   { fontSize: 12, fontWeight: '600', color: Colors.dark, marginTop: 6, textAlign: 'center' },
   genderLabelSelected: { color: Colors.primaryPink },
 
@@ -724,7 +743,7 @@ const s = StyleSheet.create({
   langEmoji:     { fontSize: 28, marginRight: 14 },
   langLabel:     { fontSize: 16, fontWeight: '700', color: Colors.dark, flex: 1 },
   langLabelActive:{ color: Colors.primaryPink },
-  checkmark:     { fontSize: 18, color: Colors.primaryPink, fontWeight: '800' },
+  checkmark:     { },
 
   // Button
   nextBtn:        { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },

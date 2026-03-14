@@ -18,6 +18,49 @@ import {
   DOMAIN_META, MilestoneDomain, AgeGroup,
 } from '../../constants/milestones';
 import Colors from '../../constants/Colors';
+import {
+  BookOpen, Trophy, CircleCheck, Sparkles, Star, Camera, CalendarDays,
+  MapPin, Clock, Flag, Save, Hospital, ClipboardList, Salad, Puzzle, Lock,
+  Sprout, Flower, Flower2, Sunflower, PartyPopper,
+  Smile, Laugh, RotateCcw, Armchair, Bug, Footprints, MessageCircle,
+  Candy, Utensils, Bath, Scissors, Cake,
+  Heart, Brain, Activity,
+} from 'lucide-react-native';
+
+/** Maps icon-name strings from milestones constants to Lucide components. */
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  // Stage icons
+  sprout: Sprout,
+  flower: Flower,
+  flower2: Flower2,
+  sunflower: Sunflower,
+  star: Star,
+  'party-popper': PartyPopper,
+  // First-time category icons
+  smile: Smile,
+  laugh: Laugh,
+  'rotate-ccw': RotateCcw,
+  armchair: Armchair,
+  bug: Bug,
+  footprints: Footprints,
+  'message-circle': MessageCircle,
+  candy: Candy,
+  utensils: Utensils,
+  bath: Bath,
+  scissors: Scissors,
+  cake: Cake,
+  // Domain icons
+  heart: Heart,
+  brain: Brain,
+  activity: Activity,
+};
+
+/** Render a Lucide icon for a given icon-name string from milestones constants. */
+function MilestoneIcon({ name, size, color }: { name: string; size: number; color?: string }) {
+  const IconComponent = ICON_MAP[name];
+  if (!IconComponent) return <Star size={size} color={color ?? '#888'} />;
+  return <IconComponent size={size} color={color ?? '#888'} />;
+}
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -229,8 +272,8 @@ export default function MilestonesScreen() {
     development: Colors.gold,
     safety:      '#7B5CF0',
   };
-  const CATEGORY_EMOJIS: Record<string, string> = {
-    medical: '🏥', admin: '📋', nutrition: '🥗', development: '🧩', safety: '🔒',
+  const CATEGORY_ICONS: Record<string, typeof Hospital> = {
+    medical: Hospital, admin: ClipboardList, nutrition: Salad, development: Puzzle, safety: Lock,
   };
 
   // ── First Time label by language ───────────────────────────────────────────
@@ -255,17 +298,17 @@ export default function MilestonesScreen() {
       {/* ── Top Tab Switcher ── */}
       <View style={s.tabBar}>
         {([
-          { key: 'memory',     label: t('milestones.tab_memory'),      emoji: '📔' },
-          { key: 'milestones', label: t('milestones.tab_milestones'),  emoji: '🏆' },
-          { key: 'checklist',  label: t('milestones.tab_checklist'),   emoji: '✅' },
-        ] as { key: TopTab; label: string; emoji: string }[]).map(({ key, label, emoji }) => (
+          { key: 'memory',     label: t('milestones.tab_memory'),      icon: BookOpen },
+          { key: 'milestones', label: t('milestones.tab_milestones'),  icon: Trophy },
+          { key: 'checklist',  label: t('milestones.tab_checklist'),   icon: CircleCheck },
+        ] as { key: TopTab; label: string; icon: typeof BookOpen }[]).map(({ key, label, icon: Icon }) => (
           <TouchableOpacity
             key={key}
             style={[s.tabBtn, activeTab === key && s.tabBtnActive]}
             activeOpacity={0.75}
             onPress={() => setActiveTab(key)}
           >
-            <Text style={s.tabEmoji}>{emoji}</Text>
+            <Icon size={18} color={activeTab === key ? Colors.primaryPink : '#BBB'} />
             <Text style={[s.tabLabel, activeTab === key && s.tabLabelActive]}>{label}</Text>
           </TouchableOpacity>
         ))}
@@ -279,7 +322,7 @@ export default function MilestonesScreen() {
 
           {/* Hero */}
           <LinearGradient colors={['#FFDDE8', '#FFB3C6']} style={s.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-            <Text style={s.heroEmoji}>📖</Text>
+            <BookOpen size={40} color="#880E4F" />
             <View style={{ flex: 1 }}>
               <Text style={s.heroTitle}>{t('milestones.memory_book_title', { name: childName })}</Text>
               <Text style={s.heroSub}>{t('milestones.memory_book_sub')}</Text>
@@ -289,7 +332,7 @@ export default function MilestonesScreen() {
           {/* AI Summary */}
           <View style={s.aiCard}>
             <LinearGradient colors={['#F8E4F0', '#FFDDE8']} style={s.aiGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={s.aiLabel}>✨ {t('milestones.ate_ai_says')}</Text>
+              <View style={s.aiLabelRow}><Sparkles size={12} color="#C2185B" /><Text style={s.aiLabel}>{t('milestones.ate_ai_says')}</Text></View>
               <Text style={s.aiText}>{buildMemorySummary(childName, Object.keys(firstTimeLogs).length + memories.length, lang)}</Text>
               <Text style={s.aiDisclaimer}>{t('milestones.ai_disclaimer')}</Text>
             </LinearGradient>
@@ -297,7 +340,7 @@ export default function MilestonesScreen() {
 
           {/* ── FIRST TIMES timeline ── */}
           <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>⭐ {t('milestones.first_times_title')}</Text>
+            <View style={s.sectionTitleRow}><Star size={15} color="#C2185B" /><Text style={s.sectionTitle}>{t('milestones.first_times_title')}</Text></View>
             <Text style={s.sectionSub}>{t('milestones.first_times_sub')}</Text>
           </View>
 
@@ -315,7 +358,7 @@ export default function MilestonesScreen() {
                     colors={log ? ['#FFDDE8', '#FFB3C6'] : [Colors.background, '#F0F0F0']}
                     style={s.ftGrad}
                   >
-                    <Text style={s.ftEmoji}>{ft.emoji}</Text>
+                    <MilestoneIcon name={ft.emoji} size={26} color="#E63B6F" />
                     <Text style={[s.ftLabel, log && s.ftLabelDone]}>{getFTLabel(ft)}</Text>
                     {log ? (
                       <>
@@ -336,13 +379,13 @@ export default function MilestonesScreen() {
 
           {/* ── GROWTH PHOTOS ── */}
           <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>📸 {t('milestones.growth_photos_title')}</Text>
+            <View style={s.sectionTitleRow}><Camera size={15} color="#C2185B" /><Text style={s.sectionTitle}>{t('milestones.growth_photos_title')}</Text></View>
             <Text style={s.sectionSub}>{t('milestones.growth_photos_sub')}</Text>
           </View>
 
           {memories.length === 0 ? (
             <View style={s.emptyPhotos}>
-              <Text style={s.emptyPhotoEmoji}>📷</Text>
+              <Camera size={48} color="#999" />
               <Text style={s.emptyPhotoTitle}>{t('milestones.no_memories_title')}</Text>
               <Text style={s.emptyPhotoSub}>{t('milestones.no_memories_sub')}</Text>
             </View>
@@ -363,7 +406,7 @@ export default function MilestonesScreen() {
           {/* Add Memory FAB row */}
           <TouchableOpacity activeOpacity={0.85} onPress={() => setShowAddMemoryModal(true)}>
             <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.addBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={s.addBtnText}>📷  {t('milestones.add_memory')}</Text>
+              <View style={s.addBtnContent}><Camera size={18} color={Colors.white} /><Text style={s.addBtnText}>{t('milestones.add_memory')}</Text></View>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -379,7 +422,7 @@ export default function MilestonesScreen() {
 
           {/* Hero */}
           <LinearGradient colors={['#EDE8FF', '#D4C8FF']} style={s.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-            <Text style={s.heroEmoji}>🏆</Text>
+            <Trophy size={40} color="#5B3FC5" />
             <View style={{ flex: 1 }}>
               <Text style={[s.heroTitle, { color: '#5B3FC5' }]}>{t('milestones.dev_title', { name: childName })}</Text>
               <Text style={[s.heroSub, { color: '#7B5CF0' }]}>{t('milestones.dev_sub')}</Text>
@@ -387,7 +430,7 @@ export default function MilestonesScreen() {
           </LinearGradient>
 
           {/* Age selector chips */}
-          <Text style={s.sectionTitle}>📅 {t('milestones.select_age')}</Text>
+          <View style={s.sectionTitleRow}><CalendarDays size={15} color="#C2185B" /><Text style={s.sectionTitle}>{t('milestones.select_age')}</Text></View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
             {MILESTONES.map((ag, idx) => (
               <TouchableOpacity
@@ -425,7 +468,7 @@ export default function MilestonesScreen() {
             return (
               <View key={domain} style={[s.domainCard, { borderLeftColor: meta.color }]}>
                 <View style={[s.domainHeader, { backgroundColor: meta.bgColor }]}>
-                  <Text style={s.domainEmoji}>{meta.emoji}</Text>
+                  <MilestoneIcon name={meta.emoji} size={20} color={meta.color} />
                   <Text style={[s.domainLabel, { color: meta.color }]}>{t(meta.labelKey)}</Text>
                   <View style={[s.domainCount, { backgroundColor: meta.color }]}>
                     <Text style={s.domainCountText}>{items.filter((m) => checkedMilestones[m.id]).length}/{items.length}</Text>
@@ -445,7 +488,7 @@ export default function MilestonesScreen() {
                         {done && <Text style={s.checkmark}>✓</Text>}
                       </View>
                       <Text style={[s.milestoneText, done && s.milestoneTextDone]}>{label}</Text>
-                      {done && <Text style={s.achievedEmoji}>🌟</Text>}
+                      {done && <Star size={14} color={Colors.gold} fill={Colors.gold} />}
                     </TouchableOpacity>
                   );
                 })}
@@ -456,7 +499,7 @@ export default function MilestonesScreen() {
           {/* AI Summary */}
           <View style={s.aiCard}>
             <LinearGradient colors={['#EDE8FF', '#D4C8FF']} style={s.aiGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={[s.aiLabel, { color: '#5B3FC5' }]}>✨ {t('milestones.ate_ai_says')}</Text>
+              <View style={s.aiLabelRow}><Sparkles size={12} color="#5B3FC5" /><Text style={[s.aiLabel, { color: '#5B3FC5' }]}>{t('milestones.ate_ai_says')}</Text></View>
               <Text style={s.aiText}>
                 {buildMilestoneSummary(childName, ageMonths, milestoneProgress.done, milestoneProgress.total, lang)}
               </Text>
@@ -468,7 +511,7 @@ export default function MilestonesScreen() {
           {ageMonths < currentAgeGroup.ageMonths && (
             <View style={s.ageFutureCard}>
               <Text style={s.ageFutureText}>
-                ⏳ {t('milestones.age_future_note', { age: currentAgeGroup.ageMonths < 12 ? `${currentAgeGroup.ageMonths}` : `${currentAgeGroup.ageMonths / 12}` })}
+                <Clock size={12} color="#A07020" />{' '}{t('milestones.age_future_note', { age: currentAgeGroup.ageMonths < 12 ? `${currentAgeGroup.ageMonths}` : `${currentAgeGroup.ageMonths / 12}` })}
               </Text>
             </View>
           )}
@@ -485,7 +528,7 @@ export default function MilestonesScreen() {
 
           {/* Hero */}
           <LinearGradient colors={['#D8F5E8', '#A8ECC4']} style={s.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-            <Text style={s.heroEmoji}>✅</Text>
+            <CircleCheck size={40} color="#1A6E48" />
             <View style={{ flex: 1 }}>
               <Text style={[s.heroTitle, { color: '#1A6E48' }]}>{t('milestones.checklist_title', { name: childName })}</Text>
               <Text style={[s.heroSub, { color: Colors.mint }]}>{t('milestones.checklist_sub')}</Text>
@@ -493,7 +536,7 @@ export default function MilestonesScreen() {
           </LinearGradient>
 
           {/* Stage selector */}
-          <Text style={s.sectionTitle}>📍 {t('milestones.select_stage')}</Text>
+          <View style={s.sectionTitleRow}><MapPin size={15} color="#C2185B" /><Text style={s.sectionTitle}>{t('milestones.select_stage')}</Text></View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
             {STAGE_CHECKLISTS.map((stage, idx) => (
               <TouchableOpacity
@@ -502,7 +545,7 @@ export default function MilestonesScreen() {
                 onPress={() => setSelectedStageIdx(idx)}
                 activeOpacity={0.78}
               >
-                <Text style={s.stageChipEmoji}>{stage.emoji}</Text>
+                <MilestoneIcon name={stage.emoji} size={16} color={selectedStageIdx === idx ? '#FFF' : '#777'} />
                 <Text style={[s.stageChipText, selectedStageIdx === idx && s.stageChipTextActive]}>
                   {t(stage.labelKey)}
                 </Text>
@@ -526,9 +569,9 @@ export default function MilestonesScreen() {
 
           {/* Category legend */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.legendRow}>
-            {Object.entries(CATEGORY_EMOJIS).map(([cat, emoji]) => (
+            {Object.entries(CATEGORY_ICONS).map(([cat, Icon]) => (
               <View key={cat} style={[s.legendItem, { borderColor: CATEGORY_COLORS[cat] }]}>
-                <Text style={s.legendEmoji}>{emoji}</Text>
+                <Icon size={12} color={CATEGORY_COLORS[cat]} />
                 <Text style={[s.legendLabel, { color: CATEGORY_COLORS[cat] }]}>{t(`milestones.cat_${cat}`)}</Text>
               </View>
             ))}
@@ -540,7 +583,7 @@ export default function MilestonesScreen() {
               const done  = !!checkedStageItems[item.id];
               const label = lang === 'fil' ? item.fil : lang === 'zh' ? item.zh : item.en;
               const catColor = CATEGORY_COLORS[item.category];
-              const catEmoji = CATEGORY_EMOJIS[item.category];
+              const CatIcon = CATEGORY_ICONS[item.category];
               return (
                 <TouchableOpacity
                   key={item.id}
@@ -549,7 +592,7 @@ export default function MilestonesScreen() {
                   onPress={() => toggleStageItem(item.id)}
                 >
                   <View style={[s.stageCatDot, { backgroundColor: catColor }]}>
-                    <Text style={s.stageCatEmoji}>{catEmoji}</Text>
+                    <CatIcon size={13} color={Colors.white} />
                   </View>
                   <Text style={[s.checklistText, done && s.checklistTextDone]}>{label}</Text>
                   <View style={[s.stageCheckbox, done && { backgroundColor: Colors.mint, borderColor: Colors.mint }]}>
@@ -563,7 +606,7 @@ export default function MilestonesScreen() {
           {/* AI Summary */}
           <View style={s.aiCard}>
             <LinearGradient colors={['#D8F5E8', '#A8ECC4']} style={s.aiGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={[s.aiLabel, { color: '#1A6E48' }]}>✨ {t('milestones.ate_ai_says')}</Text>
+              <View style={s.aiLabelRow}><Sparkles size={12} color="#1A6E48" /><Text style={[s.aiLabel, { color: '#1A6E48' }]}>{t('milestones.ate_ai_says')}</Text></View>
               <Text style={s.aiText}>
                 {buildStageSummary(childName, stageProgress.done, stageProgress.total, lang)}
               </Text>
@@ -573,7 +616,7 @@ export default function MilestonesScreen() {
 
           {/* PH Tip */}
           <View style={s.phTipCard}>
-            <Text style={s.phTipText}>🇵🇭 {t('milestones.ph_tip')}</Text>
+            <View style={s.phTipRow}><Flag size={12} color="#8B6914" /><Text style={s.phTipText}>{t('milestones.ph_tip')}</Text></View>
           </View>
 
           <View style={{ height: 30 }} />
@@ -587,7 +630,7 @@ export default function MilestonesScreen() {
         <View style={s.modalBackdrop}>
           <View style={s.modalSheet}>
             <LinearGradient colors={['#FFDDE8', '#FFE8F0']} style={s.modalHeaderGrad}>
-              <Text style={s.modalHeaderEmoji}>{selectedFirstTime?.emoji}</Text>
+              {selectedFirstTime ? <MilestoneIcon name={selectedFirstTime.emoji} size={36} color="#880E4F" /> : null}
               <View style={{ flex: 1 }}>
                 <Text style={s.modalTitle}>{selectedFirstTime ? getFTLabel(selectedFirstTime) : ''}</Text>
                 <Text style={s.modalSubtitle}>{t('milestones.log_first_time_sub')}</Text>
@@ -622,7 +665,7 @@ export default function MilestonesScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveFirstTime} style={{ flex: 1 }}>
                   <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.modalSave}>
-                    <Text style={s.modalSaveText}>🌟 {t('milestones.save_first_time')}</Text>
+                    <View style={s.modalSaveContent}><Star size={14} color={Colors.white} /><Text style={s.modalSaveText}>{t('milestones.save_first_time')}</Text></View>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -649,7 +692,7 @@ export default function MilestonesScreen() {
         <View style={s.modalBackdrop}>
           <View style={s.modalSheet}>
             <LinearGradient colors={['#FFDDE8', '#FFE8F0']} style={s.modalHeaderGrad}>
-              <Text style={s.modalHeaderEmoji}>📷</Text>
+              <Camera size={36} color="#880E4F" />
               <View style={{ flex: 1 }}>
                 <Text style={s.modalTitle}>{t('milestones.add_memory_title')}</Text>
                 <Text style={s.modalSubtitle}>{t('milestones.add_memory_sub')}</Text>
@@ -660,7 +703,7 @@ export default function MilestonesScreen() {
               {/* Photo placeholder row */}
               <View style={s.photoPlaceholderRow}>
                 <View style={s.photoPlaceholderBox}>
-                  <Text style={s.photoPlaceholderEmoji}>📷</Text>
+                  <Camera size={28} color={Colors.primaryPink} />
                   <Text style={s.photoPlaceholderText}>{t('milestones.add_photo')}</Text>
                 </View>
                 <Text style={s.photoHint}>{t('milestones.photo_hint')}</Text>
@@ -702,7 +745,7 @@ export default function MilestonesScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveMemory} style={{ flex: 1 }}>
                   <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.modalSave}>
-                    <Text style={s.modalSaveText}>💾 {t('milestones.save_memory')}</Text>
+                    <View style={s.modalSaveContent}><Save size={14} color={Colors.white} /><Text style={s.modalSaveText}>{t('milestones.save_memory')}</Text></View>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -734,7 +777,6 @@ const s = StyleSheet.create({
     borderBottomColor: 'transparent', gap: 2,
   },
   tabBtnActive: { borderBottomColor: Colors.primaryPink },
-  tabEmoji:     { fontSize: 18 },
   tabLabel:     { fontSize: 11, fontWeight: '600', color: '#BBB', textAlign: 'center' },
   tabLabelActive: { color: Colors.primaryPink, fontWeight: '800' },
 
@@ -744,20 +786,21 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 14,
     shadowColor: Colors.primaryPink, shadowOpacity: 0.18, shadowRadius: 10, elevation: 4,
   },
-  heroEmoji: { fontSize: 40 },
   heroTitle: { fontSize: 15, fontWeight: '800', color: '#880E4F', lineHeight: 20 },
   heroSub:   { fontSize: 12, color: '#E87090', fontWeight: '600', marginTop: 3 },
 
   // ── AI card ─────────────────────────────────────────────────────────────────
   aiCard: { marginBottom: 18 },
   aiGrad: { borderRadius: 18, padding: 16, gap: 8 },
+  aiLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   aiLabel: { fontSize: 11, fontWeight: '800', color: '#C2185B', letterSpacing: 0.5, textTransform: 'uppercase' },
   aiText:  { fontSize: 14, color: '#3C1C2C', fontWeight: '500', lineHeight: 21 },
   aiDisclaimer: { fontSize: 10, color: '#999', fontStyle: 'italic', marginTop: 4 },
 
   // ── Section header ──────────────────────────────────────────────────────────
   sectionHeader: { marginBottom: 10 },
-  sectionTitle:  { fontSize: 15, fontWeight: '800', color: '#C2185B', marginBottom: 3 },
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
+  sectionTitle:  { fontSize: 15, fontWeight: '800', color: '#C2185B' },
   sectionSub:    { fontSize: 12, color: '#888', fontWeight: '500' },
 
   // ── First Times grid ────────────────────────────────────────────────────────
@@ -793,8 +836,7 @@ const s = StyleSheet.create({
   memCaption: { fontSize: 10, fontWeight: '700', color: '#C2185B', textAlign: 'center', lineHeight: 14 },
   memDate:    { fontSize: 9, color: '#999' },
 
-  emptyPhotos: { alignItems: 'center', paddingVertical: 32, marginBottom: 16 },
-  emptyPhotoEmoji: { fontSize: 48, marginBottom: 10 },
+  emptyPhotos: { alignItems: 'center', paddingVertical: 32, marginBottom: 16, gap: 10 },
   emptyPhotoTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginBottom: 4 },
   emptyPhotoSub:   { fontSize: 12, color: '#999', textAlign: 'center', paddingHorizontal: 20 },
 
@@ -803,6 +845,7 @@ const s = StyleSheet.create({
     borderRadius: 18, paddingVertical: 16, alignItems: 'center', marginBottom: 10,
     shadowColor: Colors.primaryPink, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
   },
+  addBtnContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   addBtnText: { color: Colors.white, fontSize: 16, fontWeight: '800' },
 
   // ── Age chip row ─────────────────────────────────────────────────────────────
@@ -846,7 +889,6 @@ const s = StyleSheet.create({
   checkmark:        { fontSize: 12, color: Colors.white, fontWeight: '900' },
   milestoneText:    { flex: 1, fontSize: 13, color: '#444', fontWeight: '500', lineHeight: 19 },
   milestoneTextDone: { color: '#BBB', textDecorationLine: 'line-through' },
-  achievedEmoji:    { fontSize: 14 },
 
   // ── Age future note ──────────────────────────────────────────────────────────
   ageFutureCard: {
@@ -868,7 +910,6 @@ const s = StyleSheet.create({
   // ── Category legend ───────────────────────────────────────────────────────────
   legendRow:   { paddingHorizontal: 2, gap: 6, marginBottom: 12, alignItems: 'center' },
   legendItem:  { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: 1.5, paddingHorizontal: 8, paddingVertical: 4, gap: 4 },
-  legendEmoji: { fontSize: 12 },
   legendLabel: { fontSize: 10, fontWeight: '700' },
 
   // ── Checklist ─────────────────────────────────────────────────────────────────
@@ -882,7 +923,6 @@ const s = StyleSheet.create({
   },
   checklistRowDone: { backgroundColor: '#F9FFF9' },
   stageCatDot:  { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  stageCatEmoji: { fontSize: 13 },
   checklistText: { flex: 1, fontSize: 13, color: '#333', fontWeight: '500', lineHeight: 19 },
   checklistTextDone: { color: '#AAA', textDecorationLine: 'line-through' },
   stageCheckbox: {
@@ -895,7 +935,8 @@ const s = StyleSheet.create({
     backgroundColor: '#FFF5C8', borderRadius: 14, padding: 12, marginTop: 4,
     borderLeftWidth: 3, borderLeftColor: Colors.gold,
   },
-  phTipText: { fontSize: 12, color: '#8B6914', fontWeight: '600', lineHeight: 18 },
+  phTipRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
+  phTipText: { fontSize: 12, color: '#8B6914', fontWeight: '600', lineHeight: 18, flex: 1 },
 
   // ── Modals ────────────────────────────────────────────────────────────────────
   modalBackdrop: {
@@ -926,7 +967,6 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', gap: 4,
     borderWidth: 2, borderColor: '#F48FB1', borderStyle: 'dashed',
   },
-  photoPlaceholderEmoji: { fontSize: 28 },
   photoPlaceholderText:  { fontSize: 9, color: Colors.primaryPink, fontWeight: '700' },
   photoHint: { flex: 1, fontSize: 12, color: '#999', fontStyle: 'italic', lineHeight: 18 },
 
@@ -942,6 +982,7 @@ const s = StyleSheet.create({
   },
   modalCancelText: { fontSize: 14, fontWeight: '700', color: '#888' },
   modalSave: { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  modalSaveContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   modalSaveText: { fontSize: 14, fontWeight: '800', color: Colors.white },
 
   clearBtn: { marginTop: 12, alignItems: 'center' },

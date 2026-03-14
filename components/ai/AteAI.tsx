@@ -37,6 +37,7 @@ import {
   ChatMessage, WeeklySummary, Language,
   streamAteAIResponse, detectLanguage, getAISummary,
 } from '../../src/lib/claude';
+import { Droplets, Moon, Shield, Syringe, TrendingUp, Thermometer, Salad } from 'lucide-react-native';
 import Colors from '../../constants/Colors';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -343,40 +344,51 @@ const mb = StyleSheet.create({
 // ── Quick suggestion chips ────────────────────────────────────────────────────
 
 function SuggestionChips({ lang, onSelect }: { lang: Language; onSelect: (q: string) => void }) {
-  const suggestions: Record<Language, { icon: string; text: string }[]> = {
+  const iconSize = 16;
+  const iconColor = PINK;
+  const icons: React.ReactNode[] = [
+    <Droplets size={iconSize} color={iconColor} />,
+    <Moon size={iconSize} color={iconColor} />,
+    <Syringe size={iconSize} color={iconColor} />,
+    <TrendingUp size={iconSize} color={iconColor} />,
+    <Thermometer size={iconSize} color={iconColor} />,
+    <Salad size={iconSize} color={iconColor} />,
+  ];
+
+  const texts: Record<Language, string[]> = {
     en: [
-      { icon: '🍼', text: 'Is my baby eating enough?' },
-      { icon: '😴', text: 'How much sleep does baby need?' },
-      { icon: '💉', text: 'Which vaccines are due soon?' },
-      { icon: '📈', text: 'How is baby growing?' },
-      { icon: '🤒', text: 'What are signs baby is unwell?' },
-      { icon: '🥦', text: 'When to start solid foods?' },
+      'Is my baby eating enough?',
+      'How much sleep does baby need?',
+      'Which vaccines are due soon?',
+      'How is baby growing?',
+      'What are signs baby is unwell?',
+      'When to start solid foods?',
     ],
     fil: [
-      { icon: '🍼', text: 'Kumakain ba nang sapat ang anak ko?' },
-      { icon: '😴', text: 'Gaano katagal dapat tulog ng sanggol?' },
-      { icon: '💉', text: 'Anong bakuna ang dapat sa susunod?' },
-      { icon: '📈', text: 'Paano ang paglaki ng anak ko?' },
-      { icon: '🤒', text: 'Ano ang palatandaan ng sakit?' },
-      { icon: '🥦', text: 'Kailan magsimula ng solid foods?' },
+      'Kumakain ba nang sapat ang anak ko?',
+      'Gaano katagal dapat tulog ng sanggol?',
+      'Anong bakuna ang dapat sa susunod?',
+      'Paano ang paglaki ng anak ko?',
+      'Ano ang palatandaan ng sakit?',
+      'Kailan magsimula ng solid foods?',
     ],
     zh: [
-      { icon: '🍼', text: '宝宝吃得够吗？' },
-      { icon: '😴', text: '宝宝需要睡多久？' },
-      { icon: '💉', text: '近期需要接种哪些疫苗？' },
-      { icon: '📈', text: '宝宝的发育情况如何？' },
-      { icon: '🤒', text: '宝宝不舒服有哪些迹象？' },
-      { icon: '🥦', text: '何时开始添加辅食？' },
+      '宝宝吃得够吗？',
+      '宝宝需要睡多久？',
+      '近期需要接种哪些疫苗？',
+      '宝宝的发育情况如何？',
+      '宝宝不舒服有哪些迹象？',
+      '何时开始添加辅食？',
     ],
   };
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={sc.scroll}>
       <View style={sc.row}>
-        {suggestions[lang].map((s, i) => (
-          <TouchableOpacity key={i} style={sc.chip} onPress={() => onSelect(s.text)} activeOpacity={0.75}>
-            <Text style={{ fontSize: 15 }}>{s.icon}</Text>
-            <Text style={sc.chipText}>{s.text}</Text>
+        {texts[lang].map((text, i) => (
+          <TouchableOpacity key={i} style={sc.chip} onPress={() => onSelect(text)} activeOpacity={0.75}>
+            {icons[i]}
+            <Text style={sc.chipText}>{text}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -397,9 +409,9 @@ const sc = StyleSheet.create({
 // ── AI Summary Card (for embedding on other screens) ──────────────────────────
 
 export function AteAISummaryCard({
-  title, emoji, prompt, onChatPress,
+  title, emoji, icon, prompt, onChatPress,
 }: {
-  title: string; emoji: string; prompt: string; onChatPress?: () => void;
+  title: string; emoji?: string; icon?: React.ReactNode; prompt: string; onChatPress?: () => void;
 }) {
   const { activeChild } = useChildStore();
   const { t }           = useTranslation();
@@ -435,7 +447,7 @@ export function AteAISummaryCard({
             <AteAIAvatar size={36} animate />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={asc.title}>{emoji} {title}</Text>
+            <Text style={asc.title}>{icon ?? emoji} {title}</Text>
             <Text style={asc.subtitle}>{t('ateai.powered_by')}</Text>
           </View>
           <Text style={asc.chevron}>{expanded ? '▲' : '▼'}</Text>
@@ -722,7 +734,10 @@ export function AteAIChat({ visible, onClose }: { visible: boolean; onClose: () 
 
           {/* WHO/DOH badge */}
           <View style={chat.trustBar}>
-            <Text style={chat.trustText}>🛡️ {t('ateai.trust_badge')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Shield size={12} color={Colors.blue} />
+              <Text style={chat.trustText}>{t('ateai.trust_badge')}</Text>
+            </View>
           </View>
 
           {/* Messages */}

@@ -49,6 +49,15 @@ import {
   getCorrectedAgeMonths,
 } from '../../lib/who-growth';
 import { AteAIButton, AteAIChat, AteAISummaryCard } from '../../components/ai/AteAI';
+import {
+  Baby,
+  Flower2,
+  Bell,
+  TrendingUp,
+  Sparkles,
+  Lightbulb,
+  ClipboardList,
+} from 'lucide-react-native';
 
 const { width: W } = Dimensions.get('window');
 const PAD      = 16;
@@ -336,7 +345,7 @@ function MiniSparkLine({ width = 120, data }: { width?: number; data?: number[] 
 // Mini Avatar
 // ─────────────────────────────────────────────────────────────────────────────
 const AVATAR_BG    = [Colors.softBlue, Colors.softPink, Colors.softMint, Colors.softGold];
-const AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
+// Avatar fallback uses lucide Baby icon instead of emoji
 
 function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
   const idx = (child.avatarIndex ?? 0) % AVATAR_BG.length;
@@ -354,7 +363,7 @@ function MiniAvatar({ child, size = 36 }: { child: Child; size?: number }) {
       backgroundColor: AVATAR_BG[idx],
       alignItems: 'center', justifyContent: 'center',
     }}>
-      <Text style={{ fontSize: size * 0.46 }}>{AVATAR_EMOJI[idx]}</Text>
+      <Baby size={size * 0.5} strokeWidth={1.5} color={Colors.textMid} />
     </View>
   );
 }
@@ -403,7 +412,10 @@ function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
             {ageStr && <Text style={nav.age} numberOfLines={1}>{ageStr}</Text>}
           </>
         ) : (
-          <Text style={nav.appName}>{t('app.name')} 🌸</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={nav.appName}>{t('app.name')} </Text>
+            <Flower2 size={20} strokeWidth={1.5} color={Colors.primary} />
+          </View>
         )}
       </View>
 
@@ -411,7 +423,7 @@ function TopNavBar({ onAteAIPress }: { onAteAIPress: () => void }) {
       <View style={nav.right}>
         <AteAIButton onPress={onAteAIPress} />
         <TouchableOpacity style={nav.iconBtn} activeOpacity={0.7}>
-          <Text style={nav.iconEmoji}>🔔</Text>
+          <Bell size={20} strokeWidth={1.5} color={Colors.textMid} />
         </TouchableOpacity>
       </View>
 
@@ -614,7 +626,10 @@ function GrowthSnapshotCard() {
     <>
       <View style={gc.card}>
         <View style={gc.row}>
-          <Text style={gc.title}>{t('growth.snapshot_title')} 📈</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={gc.title}>{t('growth.snapshot_title')} </Text>
+            <TrendingUp size={20} strokeWidth={1.5} color={Colors.textMid} />
+          </View>
           <TouchableOpacity onPress={() => router.push('/growth-analysis')} activeOpacity={0.75}>
             <Text style={gc.link}>{t('growth.view_full')} →</Text>
           </TouchableOpacity>
@@ -641,9 +656,15 @@ function GrowthSnapshotCard() {
 
         {/* WHO badge + Add button */}
         <View style={gc.percentRow}>
-          <View style={[gc.badge, { backgroundColor: badgeBg }]}>
+          <View style={[gc.badge, { backgroundColor: badgeBg, flexDirection: 'row', alignItems: 'center' }]}>
+            <View style={{
+              width: 10, height: 10, borderRadius: 5, marginRight: 6,
+              backgroundColor: wPct
+                ? (wPct.percentile >= 15 && wPct.percentile <= 85 ? Colors.mint : wPct.percentile >= 5 && wPct.percentile <= 97 ? Colors.gold : Colors.danger)
+                : Colors.lightGray,
+            }} />
             <Text style={[gc.badgeText, { color: badgeFg }]}>
-              {wPct ? (wPct.percentile >= 15 && wPct.percentile <= 85 ? '🟢' : wPct.percentile >= 5 && wPct.percentile <= 97 ? '🟡' : '🔴') : '⬜'} {badgeTxt}
+              {badgeTxt}
             </Text>
           </View>
           <TouchableOpacity
@@ -661,11 +682,14 @@ function GrowthSnapshotCard() {
           <MiniSparkLine width={CARD_W - 48} data={sparkData.length >= 2 ? sparkData : undefined} />
         </View>
 
-        <Text style={gc.aiText}>
-          ✨ {latest
-            ? t('growth.ai_summary_prompt')
-            : t('growth.ai_add_prompt')}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Sparkles size={16} strokeWidth={1.5} color={Colors.gold} />
+          <Text style={[gc.aiText, { marginLeft: 6 }]}>
+            {latest
+              ? t('growth.ai_summary_prompt')
+              : t('growth.ai_add_prompt')}
+          </Text>
+        </View>
       </View>
 
       {/* ── Add Measurement Modal ── */}
@@ -759,7 +783,10 @@ function GrowthSnapshotCard() {
 
               {/* WHO tip */}
               <View style={mm.tip}>
-                <Text style={mm.tipText}>💡 {t('growth.who_tip')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Lightbulb size={16} strokeWidth={1.5} color={Colors.gold} />
+                  <Text style={[mm.tipText, { marginLeft: 6 }]}>{t('growth.who_tip')}</Text>
+                </View>
               </View>
             </ScrollView>
           </View>
@@ -897,7 +924,10 @@ function InsightsCard() {
   return (
     <View style={ic.card}>
       <View style={ic.titleRow}>
-        <Text style={ic.title}>This Week's Summary 📋</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={ic.title}>This Week's Summary </Text>
+          <ClipboardList size={20} strokeWidth={1.5} color={Colors.textMid} />
+        </View>
         <TouchableOpacity><Text style={ic.link}>View Full Reports →</Text></TouchableOpacity>
       </View>
 
@@ -1015,7 +1045,7 @@ export default function HomeScreen() {
         {/* Ate AI Weekly Summary Card */}
         <AteAISummaryCard
           title={t('ateai.weekly_summary_title')}
-          emoji="✨"
+          icon={<Sparkles size={20} strokeWidth={1.5} color={Colors.gold} />}
           prompt="Give a 2-sentence friendly weekly health summary for this baby based on the data. Include one specific WHO/DOH tip relevant to their age."
           onChatPress={() => setAteAIOpen(true)}
         />

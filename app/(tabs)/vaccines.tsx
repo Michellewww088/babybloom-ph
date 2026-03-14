@@ -13,6 +13,13 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import {
+  Baby, Sprout, Leaf, Flower2, Heart, Moon, Cake, Star,
+  Footprints, School, CheckCircle2, Clock, AlertTriangle, XCircle,
+  Sparkles, Bot, Shield, Lightbulb, Calendar, Syringe, ClipboardList,
+  Building2, Trash2, Globe, Search, MapPin, BookOpen, Zap, Hash, Pill,
+  Microscope, Thermometer, Ban, CircleDot, Coins, Cross,
+} from 'lucide-react-native';
 
 import Colors from '../../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../../store/childStore';
@@ -35,9 +42,17 @@ type LangKey = 'en' | 'fil' | 'zh';
 type MainTab = 'knowledge' | 'records';
 type FilterKey = 'all' | 'free' | 'optional';
 
-const AGE_EMOJIS: Record<number, string> = {
-  0: '👶', 6: '🌱', 10: '🌿', 14: '🌸',
-  26: '🎀', 39: '🌙', 52: '🎂', 54: '🌟', 65: '🚶', 156: '🏫',
+const AGE_ICONS: Record<number, (size: number, color: string) => React.ReactNode> = {
+  0:   (size, color) => <Baby size={size} color={color} />,
+  6:   (size, color) => <Sprout size={size} color={color} />,
+  10:  (size, color) => <Leaf size={size} color={color} />,
+  14:  (size, color) => <Flower2 size={size} color={color} />,
+  26:  (size, color) => <Heart size={size} color={color} />,
+  39:  (size, color) => <Moon size={size} color={color} />,
+  52:  (size, color) => <Cake size={size} color={color} />,
+  54:  (size, color) => <Star size={size} color={color} />,
+  65:  (size, color) => <Footprints size={size} color={color} />,
+  156: (size, color) => <School size={size} color={color} />,
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -65,11 +80,11 @@ function statusBg(s: VaccineStatus) {
   if (s === 'overdue')  return '#FFF5F5';
   return '#F5F5F5';
 }
-function statusIcon(s: VaccineStatus) {
-  if (s === 'given')    return '✅';
-  if (s === 'upcoming') return '⏳';
-  if (s === 'overdue')  return '⚠️';
-  return '❌';
+function statusIcon(s: VaccineStatus): React.ReactNode {
+  if (s === 'given')    return <CheckCircle2 size={16} color={MINT} />;
+  if (s === 'upcoming') return <Clock size={16} color={BLUE} />;
+  if (s === 'overdue')  return <AlertTriangle size={16} color={'#E53E3E'} />;
+  return <XCircle size={16} color={GRAY} />;
 }
 
 // ── AI Report for My Records ───────────────────────────────────────────────────
@@ -165,7 +180,7 @@ function VaccineAISection({
       <TouchableOpacity style={ai.hdrRow} onPress={() => { setOpen(!open); if (!open && !fetched.current) doFetch(); }} activeOpacity={0.8}>
         <View style={ai.hdrLeft}>
           <LinearGradient colors={['#7B68EE','#9B8EFF']} style={ai.iconBox}>
-            <Text style={ai.iconTxt}>✨</Text>
+            <Sparkles size={22} strokeWidth={1.5} color={Colors.white} />
           </LinearGradient>
           <View style={{ flex: 1 }}>
             <Text style={ai.hdrTitle}>{t('vaccine_log.ai_title')}</Text>
@@ -177,12 +192,12 @@ function VaccineAISection({
       {open && (
         <View style={ai.body}>
           {load ? (
-            <View style={ai.loadRow}><Text style={ai.loadTxt}>✨ {t('vaccine_log.ai_loading')}</Text></View>
+            <View style={ai.loadRow}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Sparkles size={16} strokeWidth={1.5} color={PURPLE} /><Text style={ai.loadTxt}>{t('vaccine_log.ai_loading')}</Text></View></View>
           ) : report ? (
             <>
               {isDemo && (
                 <View style={ai.demoBadge}>
-                  <Text style={ai.demoIcon}>🤖</Text>
+                  <Bot size={26} strokeWidth={1.5} color={'#5B4FCF'} />
                   <View style={{ flex: 1 }}>
                     <Text style={ai.demoTitle}>{t('vaccine_log.ai_demo_title')}</Text>
                     <Text style={ai.demoSub}>{t('vaccine_log.ai_demo_sub')}</Text>
@@ -190,21 +205,21 @@ function VaccineAISection({
                 </View>
               )}
               <View style={[ai.section, { backgroundColor: Colors.softMint }]}>
-                <Text style={[ai.sLabel, { color: MINT }]}>🛡️ {t('vaccine_log.ai_section_coverage')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Shield size={12} strokeWidth={1.5} color={MINT} /><Text style={[ai.sLabel, { color: MINT }]}>{t('vaccine_log.ai_section_coverage')}</Text></View>
                 <Text style={ai.sBody}>{report.coverageSummary}</Text>
               </View>
               {overdueList.length > 0 && (
                 <View style={[ai.section, { backgroundColor: '#FFF5F5' }]}>
-                  <Text style={[ai.sLabel, { color: '#E53E3E' }]}>⚠️ {t('vaccine_log.ai_section_action')}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><AlertTriangle size={12} strokeWidth={1.5} color={'#E53E3E'} /><Text style={[ai.sLabel, { color: '#E53E3E' }]}>{t('vaccine_log.ai_section_action')}</Text></View>
                   <Text style={ai.sBody}>{report.actionNeeded}</Text>
                 </View>
               )}
               <View style={[ai.section, { backgroundColor: Colors.softGold }]}>
-                <Text style={[ai.sLabel, { color: GOLD }]}>💡 {t('vaccine_log.ai_section_tip')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Lightbulb size={12} strokeWidth={1.5} color={GOLD} /><Text style={[ai.sLabel, { color: GOLD }]}>{t('vaccine_log.ai_section_tip')}</Text></View>
                 <Text style={ai.sBody}>{report.ateTip}</Text>
               </View>
               <View style={[ai.section, { backgroundColor: Colors.softBlue }]}>
-                <Text style={[ai.sLabel, { color: BLUE }]}>📅 {t('vaccine_log.ai_section_next')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Calendar size={12} strokeWidth={1.5} color={BLUE} /><Text style={[ai.sLabel, { color: BLUE }]}>{t('vaccine_log.ai_section_next')}</Text></View>
                 <Text style={ai.sBody}>{report.nextStep}</Text>
               </View>
               <Text style={ai.disclaimer}>{t('vaccine_log.ai_disclaimer')}</Text>
@@ -253,7 +268,7 @@ function CoverageHero({
   return (
     <LinearGradient colors={[Colors.blue,'#4A9DE8']} start={{ x:0,y:0 }} end={{ x:1,y:1 }} style={h.card}>
       <View style={h.topRow}>
-        <Text style={h.emoji}>💉</Text>
+        <Syringe size={36} strokeWidth={1.5} color={Colors.white} />
         <View style={{ flex: 1 }}>
           <Text style={h.title}>{name} · {ageMonths}M</Text>
           <Text style={h.subtitle}>{t('vaccine_log.subtitle')}</Text>
@@ -265,16 +280,16 @@ function CoverageHero({
       </View>
       <View style={h.barBg}><View style={[h.barFill, { width: barW }]} /></View>
       <View style={h.statsRow}>
-        <View style={h.stat}><Text style={h.statN}>{givenCount}</Text><Text style={h.statL}>✅ {t('vaccine_log.tab_given')}</Text></View>
+        <View style={h.stat}><Text style={h.statN}>{givenCount}</Text><View style={h.statLRow}><CheckCircle2 size={12} color="rgba(255,255,255,0.85)" /><Text style={h.statL}>{t('vaccine_log.tab_given')}</Text></View></View>
         <View style={h.div} />
-        <View style={h.stat}><Text style={h.statN}>{upcomingCount}</Text><Text style={h.statL}>⏳ {t('vaccine_log.tab_upcoming')}</Text></View>
+        <View style={h.stat}><Text style={h.statN}>{upcomingCount}</Text><View style={h.statLRow}><Clock size={12} color="rgba(255,255,255,0.85)" /><Text style={h.statL}>{t('vaccine_log.tab_upcoming')}</Text></View></View>
         <View style={h.div} />
         <View style={h.stat}>
           <Text style={[h.statN, overdueCount > 0 && { color: '#FFD6D6' }]}>{overdueCount}</Text>
-          <Text style={h.statL}>⚠️ {t('vaccine_log.tab_overdue')}</Text>
+          <View style={h.statLRow}><AlertTriangle size={12} color="rgba(255,255,255,0.85)" /><Text style={h.statL}>{t('vaccine_log.tab_overdue')}</Text></View>
         </View>
       </View>
-      <Text style={h.autoNote}>📋 {t('vaccine_log.auto_populated')}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}><ClipboardList size={12} strokeWidth={1.5} color={'rgba(255,255,255,0.75)'} /><Text style={h.autoNote}>{t('vaccine_log.auto_populated')}</Text></View>
     </LinearGradient>
   );
 }
@@ -293,7 +308,8 @@ const h = StyleSheet.create({
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
   stat:     { alignItems: 'center' },
   statN:    { fontSize: 20, fontWeight: '900', color: Colors.white },
-  statL:    { fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginTop: 2 },
+  statL:    { fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: '700' },
+  statLRow: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, marginTop: 2 },
   div:      { width: 1, backgroundColor: 'rgba(255,255,255,0.3)' },
   autoNote: { fontSize: 10, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
 });
@@ -309,7 +325,7 @@ function VaccineRow({ record, onPress }: { record: VaccineRecord; onPress: () =>
   return (
     <TouchableOpacity style={[vr.card, { borderLeftColor: statusColor(record.status) }]} onPress={onPress} activeOpacity={0.85}>
       <View style={[vr.iconCol, { backgroundColor: statusBg(record.status) }]}>
-        <Text style={vr.iconTxt}>{statusIcon(record.status)}</Text>
+        {statusIcon(record.status)}
       </View>
       <View style={vr.center}>
         <Text style={vr.name} numberOfLines={2}>{record.nameEN}</Text>
@@ -327,7 +343,7 @@ function VaccineRow({ record, onPress }: { record: VaccineRecord; onPress: () =>
             </Text>
           )}
         </View>
-        {record.clinicName ? <Text style={vr.clinic} numberOfLines={1}>🏥 {record.clinicName}</Text> : null}
+        {record.clinicName ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Building2 size={10} strokeWidth={1.5} color={GRAY} /><Text style={vr.clinic} numberOfLines={1}>{record.clinicName}</Text></View> : null}
       </View>
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         <View style={[vr.badge, record.isFreeEPI ? vr.badgeFree : vr.badgePriv]}>
@@ -344,7 +360,6 @@ function VaccineRow({ record, onPress }: { record: VaccineRecord; onPress: () =>
 const vr = StyleSheet.create({
   card:      { backgroundColor: Colors.white, borderRadius: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 12, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
   iconCol:   { width: 48, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', paddingVertical: 14 },
-  iconTxt:   { fontSize: 20 },
   center:    { flex: 1, paddingVertical: 12, gap: 3 },
   name:      { fontSize: 13, fontWeight: '700', color: DARK, lineHeight: 18 },
   meta:      { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
@@ -405,10 +420,10 @@ function VaccineEditModal({
     onClose();
   };
 
-  const STATUS_OPTS: { v: VaccineStatus; l: string; c: string }[] = [
-    { v: 'given',    l: '✅ ' + t('vaccine_log.status_given'),    c: MINT },
-    { v: 'upcoming', l: '⏳ ' + t('vaccine_log.status_upcoming'), c: BLUE },
-    { v: 'skipped',  l: '❌ ' + t('vaccine_log.status_skipped'),  c: GRAY },
+  const STATUS_OPTS: { v: VaccineStatus; icon: React.ReactNode; l: string; c: string }[] = [
+    { v: 'given',    icon: <CheckCircle2 size={14} color={MINT} />, l: t('vaccine_log.status_given'),    c: MINT },
+    { v: 'upcoming', icon: <Clock size={14} color={BLUE} />,        l: t('vaccine_log.status_upcoming'), c: BLUE },
+    { v: 'skipped',  icon: <XCircle size={14} color={GRAY} />,      l: t('vaccine_log.status_skipped'),  c: GRAY },
   ];
 
   return (
@@ -425,21 +440,24 @@ function VaccineEditModal({
               <Text style={mo.hdrAge}>{ageLabel} · {fmtDate(record.scheduledDate)}</Text>
             </View>
             <View style={[mo.epiBadge, { backgroundColor: record.isFreeEPI ? '#C8F7DC' : '#FFF0C8' }]}>
-              <Text style={[mo.epiBadgeTxt, { color: record.isFreeEPI ? '#1A7A4A' : '#A05C00' }]}>
-                {record.isFreeEPI ? '✅ FREE' : '💰 Private'}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                {record.isFreeEPI ? <CheckCircle2 size={12} strokeWidth={1.5} color={'#1A7A4A'} /> : <Coins size={12} strokeWidth={1.5} color={'#A05C00'} />}
+                <Text style={[mo.epiBadgeTxt, { color: record.isFreeEPI ? '#1A7A4A' : '#A05C00' }]}>
+                  {record.isFreeEPI ? 'FREE' : 'Private'}
+                </Text>
+              </View>
             </View>
           </LinearGradient>
           <ScrollView style={{ flex: 1 }} contentContainerStyle={mo.content} showsVerticalScrollIndicator={false}>
             {vaccInfo && (
               <View style={mo.infoCard}>
-                <Text style={mo.infoLbl}>🛡️ {t('vaccine_log.protects_against')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Shield size={12} strokeWidth={1.5} color={BLUE} /><Text style={mo.infoLbl}>{t('vaccine_log.protects_against')}</Text></View>
                 <Text style={mo.infoVal}>{vaccInfo.protectsAgainst.en}</Text>
-                <Text style={mo.infoLbl}>💉 {t('vaccine_log.route_label')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Syringe size={12} strokeWidth={1.5} color={BLUE} /><Text style={mo.infoLbl}>{t('vaccine_log.route_label')}</Text></View>
                 <Text style={mo.infoVal}>{vaccInfo.route}</Text>
-                <Text style={mo.infoLbl}>⚡ {t('vaccine_log.side_effects')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Zap size={12} strokeWidth={1.5} color={BLUE} /><Text style={mo.infoLbl}>{t('vaccine_log.side_effects')}</Text></View>
                 <Text style={mo.infoVal}>{vaccInfo.sideEffects}</Text>
-                <Text style={mo.infoLbl}>🏥 {t('vaccine_log.where_to_get')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Building2 size={12} strokeWidth={1.5} color={BLUE} /><Text style={mo.infoLbl}>{t('vaccine_log.where_to_get')}</Text></View>
                 <Text style={mo.infoVal}>{vaccInfo.whereToGet.en}</Text>
               </View>
             )}
@@ -447,7 +465,10 @@ function VaccineEditModal({
             <View style={mo.statusRow}>
               {STATUS_OPTS.map(o => (
                 <TouchableOpacity key={o.v} style={[mo.statusBtn, status === o.v && { borderColor: o.c, backgroundColor: statusBg(o.v) }]} onPress={() => setStatus(o.v)} activeOpacity={0.8}>
-                  <Text style={[mo.statusBtnTxt, status === o.v && { color: o.c }]}>{o.l}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    {o.icon}
+                    <Text style={[mo.statusBtnTxt, status === o.v && { color: o.c }]}>{o.l}</Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
@@ -486,7 +507,7 @@ function VaccineEditModal({
             </View>
             <TouchableOpacity onPress={save} activeOpacity={0.85}>
               <LinearGradient colors={[BLUE,'#4A9DE8']} style={mo.saveBtn}>
-                <Text style={mo.saveBtnTxt}>💉 {t('vaccine_log.save')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Syringe size={18} strokeWidth={1.5} color={Colors.white} /><Text style={mo.saveBtnTxt}>{t('vaccine_log.save')}</Text></View>
               </LinearGradient>
             </TouchableOpacity>
             {onDelete && (
@@ -494,12 +515,12 @@ function VaccineEditModal({
                 { text: t('common.cancel'), style: 'cancel' },
                 { text: t('common.delete'), style: 'destructive', onPress: () => { onDelete(record.id); onClose(); } },
               ])} activeOpacity={0.85}>
-                <Text style={mo.deleteBtnTxt}>🗑 {t('vaccine_log.delete')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Trash2 size={16} strokeWidth={1.5} color={'#E53E3E'} /><Text style={mo.deleteBtnTxt}>{t('vaccine_log.delete')}</Text></View>
               </TouchableOpacity>
             )}
             {status === 'given' && vaccInfo && (
               <View style={mo.postCare}>
-                <Text style={mo.postCareLbl}>🩹 {t('vaccine_log.post_care')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Cross size={12} strokeWidth={1.5} color={GOLD} /><Text style={mo.postCareLbl}>{t('vaccine_log.post_care')}</Text></View>
                 <Text style={mo.postCareVal}>{vaccInfo.postVaccineCare}</Text>
               </View>
             )}
@@ -635,7 +656,7 @@ function VaccineDetailAI({
     <View style={kbai.card}>
       <TouchableOpacity style={kbai.hdr} onPress={() => setOpen(!open)} activeOpacity={0.8}>
         <LinearGradient colors={[PURPLE, '#9B8EFF']} style={kbai.iconBox}>
-          <Text style={kbai.iconTxt}>✨</Text>
+          <Sparkles size={20} strokeWidth={1.5} color={Colors.white} />
         </LinearGradient>
         <View style={{ flex: 1 }}>
           <Text style={kbai.title}>{t('vaccine_kb.ai_title')}</Text>
@@ -739,7 +760,7 @@ function VaccineDetailModal({
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <View style={det.routeRow}>
-              <Text style={det.routeIcon}>{isOral ? '💊' : '💉'}</Text>
+              {isOral ? <Pill size={18} strokeWidth={1.5} color={'rgba(255,255,255,0.85)'} /> : <Syringe size={18} strokeWidth={1.5} color={'rgba(255,255,255,0.85)'} />}
               <Text style={det.routeTxt}>{isOral ? t('vaccine_kb.oral_route') : t('vaccine_kb.inj_route')}</Text>
             </View>
             <Text style={det.hdrName} numberOfLines={3}>{getName()}</Text>
@@ -765,31 +786,31 @@ function VaccineDetailModal({
               </TouchableOpacity>
             ))}
             <View style={{ flex: 1 }} />
-            <Text style={det.langHint}>Trilingual 🌏</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Text style={det.langHint}>Trilingual</Text><Globe size={12} strokeWidth={1.5} color={GRAY} /></View>
           </View>
 
           {/* Protects Against (big highlight) */}
           <LinearGradient colors={vaccine.isFreeEPI ? [Colors.softBlue,'#D0E8FF'] : [Colors.softGold,'#FFEEcc']} style={det.protectsBox}>
-            <Text style={[det.protectsLbl, { color: vaccine.isFreeEPI ? BLUE : '#A05C00' }]}>🛡️ {t('vaccine_kb.detail_protects')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Shield size={12} strokeWidth={1.5} color={vaccine.isFreeEPI ? BLUE : '#A05C00'} /><Text style={[det.protectsLbl, { color: vaccine.isFreeEPI ? BLUE : '#A05C00' }]}>{t('vaccine_kb.detail_protects')}</Text></View>
             <Text style={[det.protectsTxt, { color: vaccine.isFreeEPI ? DARK : '#6B3A00' }]}>{getProtects()}</Text>
           </LinearGradient>
 
           {/* Info Grid */}
           <View style={det.infoGrid}>
             <View style={det.infoCell}>
-              <Text style={det.infoCellIcon}>{isOral ? '💊' : '💉'}</Text>
+              {isOral ? <Pill size={20} strokeWidth={1.5} color={GRAY} /> : <Syringe size={20} strokeWidth={1.5} color={GRAY} />}
               <Text style={det.infoCellLbl}>{t('vaccine_kb.detail_route')}</Text>
               <Text style={det.infoCellVal}>{vaccine.route.split('(')[0].trim()}</Text>
             </View>
             <View style={det.infoDivider} />
             <View style={det.infoCell}>
-              <Text style={det.infoCellIcon}>🔢</Text>
+              <Hash size={20} strokeWidth={1.5} color={GRAY} />
               <Text style={det.infoCellLbl}>{t('vaccine_kb.detail_doses')}</Text>
               <Text style={det.infoCellVal}>{vaccine.doses}-dose series</Text>
             </View>
             <View style={det.infoDivider} />
             <View style={det.infoCell}>
-              <Text style={det.infoCellIcon}>{vaccine.isFreeEPI ? '🟢' : '💰'}</Text>
+              {vaccine.isFreeEPI ? <CircleDot size={20} strokeWidth={1.5} color={MINT} /> : <Coins size={20} strokeWidth={1.5} color={GOLD} />}
               <Text style={det.infoCellLbl}>Cost</Text>
               <Text style={[det.infoCellVal, { color: vaccine.isFreeEPI ? MINT : GOLD }]}>
                 {vaccine.isFreeEPI ? 'FREE' : 'Optional'}
@@ -799,7 +820,7 @@ function VaccineDetailModal({
 
           {/* Side Effects (collapsible) */}
           <TouchableOpacity style={det.collapsibleHdr} onPress={() => setSideOpen(!sideOpen)} activeOpacity={0.8}>
-            <Text style={det.collapsibleLbl}>⚡ {t('vaccine_kb.detail_side_effects')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Zap size={16} strokeWidth={1.5} color={DARK} /><Text style={det.collapsibleLbl}>{t('vaccine_kb.detail_side_effects')}</Text></View>
             <Text style={det.collapsibleChevron}>{sideOpen ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           {sideOpen && (
@@ -810,7 +831,7 @@ function VaccineDetailModal({
 
           {/* Post-Vaccine Care (collapsible) */}
           <TouchableOpacity style={det.collapsibleHdr} onPress={() => setCareOpen(!careOpen)} activeOpacity={0.8}>
-            <Text style={det.collapsibleLbl}>🩹 {t('vaccine_kb.detail_post_care')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Cross size={16} strokeWidth={1.5} color={DARK} /><Text style={det.collapsibleLbl}>{t('vaccine_kb.detail_post_care')}</Text></View>
             <Text style={det.collapsibleChevron}>{careOpen ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           {careOpen && (
@@ -821,7 +842,7 @@ function VaccineDetailModal({
 
           {/* Where to Get (collapsible) */}
           <TouchableOpacity style={det.collapsibleHdr} onPress={() => setWhereOpen(!whereOpen)} activeOpacity={0.8}>
-            <Text style={det.collapsibleLbl}>📍 {t('vaccine_kb.detail_where')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><MapPin size={16} strokeWidth={1.5} color={DARK} /><Text style={det.collapsibleLbl}>{t('vaccine_kb.detail_where')}</Text></View>
             <Text style={det.collapsibleChevron}>{whereOpen ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           {whereOpen && (
@@ -837,9 +858,10 @@ function VaccineDetailModal({
           {childRecord && (
             <View style={det.childStatusBox}>
               <Text style={det.childStatusLbl}>{t('vaccine_kb.child_status_lbl')} {childName}</Text>
-              <View style={[det.childStatusChip, { backgroundColor: statusBg(childRecord.status) }]}>
+              <View style={[det.childStatusChip, { backgroundColor: statusBg(childRecord.status), flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
+                {statusIcon(childRecord.status)}
                 <Text style={[det.childStatusTxt, { color: statusColor(childRecord.status) }]}>
-                  {statusIcon(childRecord.status)} {childRecord.status.charAt(0).toUpperCase() + childRecord.status.slice(1)}
+                  {childRecord.status.charAt(0).toUpperCase() + childRecord.status.slice(1)}
                   {childRecord.status === 'given' && childRecord.givenDate ? ` · ${fmtDate(childRecord.givenDate)}` : ''}
                   {childRecord.status === 'upcoming' ? ` · ${fmtDate(childRecord.scheduledDate)}` : ''}
                 </Text>
@@ -918,35 +940,35 @@ const det = StyleSheet.create({
 
 const PARENT_RESOURCES = [
   {
-    icon: '🟢',
+    iconComponent: (color: string) => <CircleDot size={20} strokeWidth={1.5} color={color} />,
     titleKey: 'vaccine_kb.res_1_title',
     bodyKey:  'vaccine_kb.res_1_body',
     color: MINT,
     bg: Colors.softMint,
   },
   {
-    icon: '🔬',
+    iconComponent: (color: string) => <Microscope size={20} strokeWidth={1.5} color={color} />,
     titleKey: 'vaccine_kb.res_2_title',
     bodyKey:  'vaccine_kb.res_2_body',
     color: BLUE,
     bg: Colors.softBlue,
   },
   {
-    icon: '🌡️',
+    iconComponent: (color: string) => <Thermometer size={20} strokeWidth={1.5} color={color} />,
     titleKey: 'vaccine_kb.res_3_title',
     bodyKey:  'vaccine_kb.res_3_body',
     color: '#E53E3E',
     bg: '#FFF5F5',
   },
   {
-    icon: '🚫',
+    iconComponent: (color: string) => <Ban size={20} strokeWidth={1.5} color={color} />,
     titleKey: 'vaccine_kb.res_4_title',
     bodyKey:  'vaccine_kb.res_4_body',
     color: PURPLE,
     bg: '#F0EDFF',
   },
   {
-    icon: '📅',
+    iconComponent: (color: string) => <Calendar size={20} strokeWidth={1.5} color={color} />,
     titleKey: 'vaccine_kb.res_5_title',
     bodyKey:  'vaccine_kb.res_5_body',
     color: GOLD,
@@ -954,7 +976,7 @@ const PARENT_RESOURCES = [
   },
 ];
 
-function ParentResourceCard({ icon, titleKey, bodyKey, color, bg }: typeof PARENT_RESOURCES[0]) {
+function ParentResourceCard({ iconComponent, titleKey, bodyKey, color, bg }: typeof PARENT_RESOURCES[0]) {
   const { t }      = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -962,7 +984,7 @@ function ParentResourceCard({ icon, titleKey, bodyKey, color, bg }: typeof PAREN
     <View style={[res.card, { borderLeftColor: color }]}>
       <TouchableOpacity style={res.hdr} onPress={() => setOpen(!open)} activeOpacity={0.8}>
         <View style={[res.iconBox, { backgroundColor: bg }]}>
-          <Text style={res.iconTxt}>{icon}</Text>
+          {iconComponent(color)}
         </View>
         <Text style={res.title} numberOfLines={open ? undefined : 2}>{t(titleKey)}</Text>
         <Text style={[res.chevron, { color }]}>{open ? '▲' : '▼'}</Text>
@@ -971,7 +993,7 @@ function ParentResourceCard({ icon, titleKey, bodyKey, color, bg }: typeof PAREN
         <View style={res.body}>
           <Text style={res.bodyTxt}>{t(bodyKey)}</Text>
           <View style={[res.sourceBadge, { backgroundColor: bg }]}>
-            <Text style={[res.sourceTxt, { color }]}>📚 Source: DOH Philippines · WHO · PPS</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><BookOpen size={12} strokeWidth={1.5} color={color} /><Text style={[res.sourceTxt, { color }]}>Source: DOH Philippines · WHO · PPS</Text></View>
           </View>
         </View>
       )}
@@ -1004,7 +1026,7 @@ function AgeGroupAccordion({
 }) {
   const { t }         = useTranslation();
   const [open, setOpen] = useState(defaultOpen);
-  const emoji  = AGE_EMOJIS[group.recommendedAgeWeeks] ?? '💉';
+  const renderAgeIcon = AGE_ICONS[group.recommendedAgeWeeks];
   const ageLabel = group.ageLabel.en;
 
   const groupRecords = childRecords.filter(r =>
@@ -1019,7 +1041,7 @@ function AgeGroupAccordion({
     <View style={acc.card}>
       <TouchableOpacity style={acc.hdr} onPress={() => setOpen(!open)} activeOpacity={0.85}>
         <View style={acc.ageBox}>
-          <Text style={acc.ageEmoji}>{emoji}</Text>
+          {renderAgeIcon ? renderAgeIcon(24, DARK) : <Baby size={24} color={DARK} />}
         </View>
         <View style={{ flex: 1 }}>
           <Text style={acc.ageLabel}>{ageLabel}</Text>
@@ -1031,13 +1053,19 @@ function AgeGroupAccordion({
               backgroundColor: givenInGroup === totalInGroup ? Colors.softMint :
                 hasOverdue ? '#FFF5F5' : Colors.softBlue,
             }]}>
-              <Text style={[acc.progressTxt, {
-                color: givenInGroup === totalInGroup ? MINT :
-                  hasOverdue ? '#E53E3E' : BLUE,
-              }]}>
-                {givenInGroup === totalInGroup ? '✅' : hasOverdue ? '⚠️' : '⏳'}{' '}
-                {givenInGroup}/{totalInGroup}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                {givenInGroup === totalInGroup
+                  ? <CheckCircle2 size={12} color={MINT} />
+                  : hasOverdue
+                  ? <AlertTriangle size={12} color={'#E53E3E'} />
+                  : <Clock size={12} color={BLUE} />}
+                <Text style={[acc.progressTxt, {
+                  color: givenInGroup === totalInGroup ? MINT :
+                    hasOverdue ? '#E53E3E' : BLUE,
+                }]}>
+                  {givenInGroup}/{totalInGroup}
+                </Text>
+              </View>
             </View>
           )}
           <Text style={acc.chevron}>{open ? '▲' : '▼'}</Text>
@@ -1065,10 +1093,10 @@ function AgeGroupAccordion({
                     </View>
                   </View>
                   <View style={acc.vaccMeta}>
-                    <Text style={acc.vaccRoute}>
-                      {vaccine.route.toLowerCase().includes('oral') ? '💊 ' : '💉 '}
-                      {vaccine.route.split('(')[0].trim()}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      {vaccine.route.toLowerCase().includes('oral') ? <Pill size={11} strokeWidth={1.5} color={GRAY} /> : <Syringe size={11} strokeWidth={1.5} color={GRAY} />}
+                      <Text style={acc.vaccRoute}>{vaccine.route.split('(')[0].trim()}</Text>
+                    </View>
                     <Text style={acc.vaccDot}>·</Text>
                     <Text style={acc.vaccProtects} numberOfLines={1}>
                       {vaccine.protectsAgainst.en}
@@ -1077,8 +1105,8 @@ function AgeGroupAccordion({
                 </View>
                 <View style={{ alignItems: 'center', gap: 4 }}>
                   {record ? (
-                    <View style={[acc.statusDot, { backgroundColor: statusColor(record.status) }]}>
-                      <Text style={acc.statusDotTxt}>{statusIcon(record.status)}</Text>
+                    <View style={[acc.statusDot, { backgroundColor: statusBg(record.status) }]}>
+                      {statusIcon(record.status)}
                     </View>
                   ) : null}
                   <Text style={acc.vaccChevron}>›</Text>
@@ -1096,7 +1124,6 @@ const acc = StyleSheet.create({
   card:         { backgroundColor: Colors.white, borderRadius: 18, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 3, overflow: 'hidden' },
   hdr:          { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   ageBox:       { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F5F5FA', alignItems: 'center', justifyContent: 'center' },
-  ageEmoji:     { fontSize: 24 },
   ageLabel:     { fontSize: 15, fontWeight: '800', color: DARK },
   vaccineCount: { fontSize: 11, color: GRAY, marginTop: 2, fontWeight: '500' },
   progressBadge:{ borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
@@ -1113,7 +1140,6 @@ const acc = StyleSheet.create({
   vaccDot:      { fontSize: 11, color: '#ccc' },
   vaccProtects: { fontSize: 11, color: GRAY, flex: 1 },
   statusDot:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  statusDotTxt: { fontSize: 14 },
   vaccChevron:  { fontSize: 18, color: '#ccc' },
 });
 
@@ -1157,7 +1183,7 @@ function KnowledgeBaseTab({
     <View>
       {/* Search Bar */}
       <View style={kb.searchRow}>
-        <Text style={kb.searchIcon}>🔍</Text>
+        <Search size={16} strokeWidth={1.5} color={GRAY} />
         <TextInput
           style={kb.searchInput}
           value={search}
@@ -1189,14 +1215,14 @@ function KnowledgeBaseTab({
       {/* EPI Coverage Banner */}
       {filter !== 'optional' && (
         <LinearGradient colors={[Colors.softMint,'#C8F7DC']} style={kb.epiBanner}>
-          <Text style={kb.epiBannerTxt}>🟢 {t('vaccine_kb.epi_banner')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><CircleDot size={14} strokeWidth={1.5} color={'#1A5C3A'} /><Text style={kb.epiBannerTxt}>{t('vaccine_kb.epi_banner')}</Text></View>
         </LinearGradient>
       )}
 
       {/* Age Group Accordions */}
       {filteredGroups.length === 0 ? (
         <View style={kb.noResults}>
-          <Text style={kb.noResultsIcon}>🔍</Text>
+          <Search size={36} strokeWidth={1.5} color={GRAY} />
           <Text style={kb.noResultsTxt}>{t('vaccine_kb.no_results')}</Text>
         </View>
       ) : (
@@ -1214,7 +1240,7 @@ function KnowledgeBaseTab({
       {/* Parent Resources */}
       <View style={kb.resourcesHeader}>
         <LinearGradient colors={[PURPLE,'#9B8EFF']} style={kb.resourcesIconBox}>
-          <Text style={kb.resourcesIconTxt}>📚</Text>
+          <BookOpen size={22} strokeWidth={1.5} color={Colors.white} />
         </LinearGradient>
         <View style={{ flex: 1 }}>
           <Text style={kb.resourcesTitle}>{t('vaccine_kb.resources_title')}</Text>
@@ -1228,7 +1254,7 @@ function KnowledgeBaseTab({
       {/* BHS Locator CTA */}
       <TouchableOpacity activeOpacity={0.85} style={{ marginTop: 6 }}>
         <LinearGradient colors={[Colors.blue,'#4A9DE8']} style={kb.bhsBtn}>
-          <Text style={kb.bhsBtnTxt}>🏥 {t('vaccine_log.find_center')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Building2 size={18} strokeWidth={1.5} color={Colors.white} /><Text style={kb.bhsBtnTxt}>{t('vaccine_log.find_center')}</Text></View>
         </LinearGradient>
       </TouchableOpacity>
 
@@ -1319,7 +1345,7 @@ function RecordsTab({
         })}
       </ScrollView>
       {filteredRecs.length === 0 ? (
-        <View style={rt.emptyList}><Text style={{ fontSize: 32 }}>💉</Text><Text style={rt.emptyTxt}>{t('vaccine_log.no_records')}</Text></View>
+        <View style={rt.emptyList}><Syringe size={32} strokeWidth={1.5} color={GRAY} /><Text style={rt.emptyTxt}>{t('vaccine_log.no_records')}</Text></View>
       ) : (
         <View>{filteredRecs.map(rec => <VaccineRow key={rec.id} record={rec} onPress={() => onEditRecord(rec)} />)}</View>
       )}
@@ -1403,7 +1429,7 @@ export default function VaccinesScreen() {
     return (
       <ScrollView style={sc.container} contentContainerStyle={sc.content}>
         <LinearGradient colors={[Colors.blue,'#4A9DE8']} style={sc.emptyHero}>
-          <Text style={{ fontSize: 48 }}>💉</Text>
+          <Syringe size={48} strokeWidth={1.5} color={Colors.white} />
           <Text style={sc.emptyTitle}>{t('vaccine_log.title')}</Text>
           <Text style={sc.emptySub}>{t('vaccine_log.error_no_child')}</Text>
         </LinearGradient>
@@ -1419,18 +1445,20 @@ export default function VaccinesScreen() {
           style={[sc.mainTab, mainTab === 'knowledge' && sc.mainTabActive]}
           onPress={() => setMainTab('knowledge')} activeOpacity={0.8}
         >
-          <Text style={[sc.mainTabTxt, mainTab === 'knowledge' && sc.mainTabTxtActive]}>
-            🔬 {t('vaccine_kb.tab_knowledge')}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Microscope size={14} strokeWidth={1.5} color={mainTab === 'knowledge' ? Colors.white : GRAY} />
+            <Text style={[sc.mainTabTxt, mainTab === 'knowledge' && sc.mainTabTxtActive]}>{t('vaccine_kb.tab_knowledge')}</Text>
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[sc.mainTab, mainTab === 'records' && sc.mainTabActive]}
           onPress={() => setMainTab('records')} activeOpacity={0.8}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={[sc.mainTabTxt, mainTab === 'records' && sc.mainTabTxtActive]}>
-              📋 {t('vaccine_kb.tab_records')}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <ClipboardList size={14} strokeWidth={1.5} color={mainTab === 'records' ? Colors.white : GRAY} />
+              <Text style={[sc.mainTabTxt, mainTab === 'records' && sc.mainTabTxtActive]}>{t('vaccine_kb.tab_records')}</Text>
+            </View>
             {overdueCount > 0 && (
               <View style={sc.overdueDot}>
                 <Text style={sc.overdueDotTxt}>{overdueCount}</Text>

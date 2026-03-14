@@ -18,6 +18,11 @@ import Svg, {
 } from 'react-native-svg';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import {
+  Pill, Leaf, FlaskConical, Syringe, Building2, BookOpen,
+  AlertTriangle, Clock, Stethoscope, Star, ClipboardList,
+  FileText, Pencil, Trash2, CheckCircle, Microscope,
+} from 'lucide-react-native';
 
 import Colors from '../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
@@ -118,15 +123,17 @@ function PriorityBadge({ priority }: { priority: 'high' | 'medium' | 'low' }) {
 // Type chip
 // ─────────────────────────────────────────────────────────────────────────────
 function TypeChip({ type }: { type: EntryType }) {
-  const config: Record<EntryType, { bg: string; color: string; label: string }> = {
-    vitamin:    { bg: '#E8F5FF', color: Colors.blue,        label: '💊 Vitamin'    },
-    supplement: { bg: '#E8FFF4', color: Colors.mint,        label: '🌿 Supplement' },
-    mineral:    { bg: '#FFF3E0', color: '#E65100',          label: '⚗️ Mineral'    },
-    medication: { bg: '#FCE4EC', color: Colors.primaryPink, label: '💉 Medication' },
+  const config: Record<EntryType, { bg: string; color: string; label: string; Icon: React.ComponentType<any> }> = {
+    vitamin:    { bg: '#E8F5FF', color: Colors.blue,        label: 'Vitamin',    Icon: Pill    },
+    supplement: { bg: '#E8FFF4', color: Colors.mint,        label: 'Supplement', Icon: Leaf    },
+    mineral:    { bg: '#FFF3E0', color: '#E65100',          label: 'Mineral',    Icon: FlaskConical },
+    medication: { bg: '#FCE4EC', color: Colors.primaryPink, label: 'Medication', Icon: Syringe },
   };
   const c = config[type];
+  const IconComp = c.Icon;
   return (
-    <View style={[s.badge, { backgroundColor: c.bg }]}>
+    <View style={[s.badge, { backgroundColor: c.bg, flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
+      <IconComp size={14} strokeWidth={1.5} color={c.color} />
       <Text style={[s.badgeTxt, { color: c.color }]}>{c.label}</Text>
     </View>
   );
@@ -151,7 +158,7 @@ function RecommendationCard({
           <View style={s.recNameRow}>
             {rec.isFreeGovProgram && (
               <View style={s.freeBadge}>
-                <Text style={s.freeBadgeTxt}>🏥 FREE</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Building2 size={14} strokeWidth={1.5} color={Colors.mint} /><Text style={s.freeBadgeTxt}>FREE</Text></View>
               </View>
             )}
             <Text style={s.recName}>{rec.name}</Text>
@@ -165,7 +172,7 @@ function RecommendationCard({
       <Text style={s.recReason} numberOfLines={3}>{reason}</Text>
 
       <View style={s.recFooter}>
-        <Text style={s.recSource}>📚 {rec.source}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><BookOpen size={14} strokeWidth={1.5} color={Colors.textMid} /><Text style={s.recSource}>{rec.source}</Text></View>
         {!isLogged && (
           <TouchableOpacity style={s.addRecBtn} onPress={() => onQuickAdd(rec)}>
             <Text style={s.addRecBtnTxt}>+ Log</Text>
@@ -203,9 +210,10 @@ function EntryCard({
     <View style={[s.entryCard, isPast && { opacity: 0.72 }]}>
       {/* Antibiotic warning banner */}
       {entry.isAntibiotic && !isPast && (
-        <View style={s.antibioticBanner}>
+        <View style={[s.antibioticBanner, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
+          <AlertTriangle size={16} strokeWidth={1.5} color={Colors.primaryPink} />
           <Text style={s.antibioticTxt}>
-            ⚠️ {tKey('vitamins.antibiotic_warning')}
+            {tKey('vitamins.antibiotic_warning')}
           </Text>
         </View>
       )}
@@ -227,10 +235,10 @@ function EntryCard({
           </View>
           <Text style={s.entryMeta}>{entry.dose} · {entry.frequency.replace('_', ' ')}</Text>
           {entry.reminderTime && (
-            <Text style={s.entryReminder}>⏰ {entry.reminderTime}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Clock size={14} strokeWidth={1.5} color={Colors.textMid} /><Text style={s.entryReminder}>{entry.reminderTime}</Text></View>
           )}
           {entry.prescribedBy && (
-            <Text style={s.entryMeta}>👨‍⚕️ {entry.prescribedBy}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Stethoscope size={14} strokeWidth={1.5} color={Colors.textMid} /><Text style={s.entryMeta}>{entry.prescribedBy}</Text></View>
           )}
         </View>
 
@@ -248,15 +256,15 @@ function EntryCard({
           )}
           <View style={s.entryActions}>
             <TouchableOpacity onPress={onEdit} style={s.iconBtn}>
-              <Text style={s.iconBtnTxt}>✏️</Text>
+              <Pencil size={18} strokeWidth={1.5} color={Colors.textMid} />
             </TouchableOpacity>
             <TouchableOpacity onPress={onDelete} style={s.iconBtn}>
-              <Text style={s.iconBtnTxt}>🗑️</Text>
+              <Trash2 size={18} strokeWidth={1.5} color={Colors.textMid} />
             </TouchableOpacity>
           </View>
         </View>
       </View>
-      {entry.notes ? <Text style={s.entryNotes}>📝 {entry.notes}</Text> : null}
+      {entry.notes ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><FileText size={14} strokeWidth={1.5} color={Colors.textMid} /><Text style={s.entryNotes}>{entry.notes}</Text></View> : null}
     </View>
   );
 }
@@ -312,7 +320,7 @@ function GPTrackerModal({
       <View style={{ flex: 1, backgroundColor: Colors.background }}>
         {/* Header */}
         <LinearGradient colors={['#FFB74D', '#FFC870']} style={gp.header}>
-          <Text style={gp.headerTitle}>🌟 {tKey('vitamins.gp.title')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Star size={20} strokeWidth={1.5} color={Colors.white} /><Text style={gp.headerTitle}>{tKey('vitamins.gp.title')}</Text></View>
           <TouchableOpacity onPress={onClose} style={gp.closeBtn}>
             <Text style={gp.closeTxt}>✕</Text>
           </TouchableOpacity>
@@ -321,13 +329,13 @@ function GPTrackerModal({
         <ScrollView contentContainerStyle={{ padding: PAD }}>
           {/* Info card */}
           <View style={gp.infoCard}>
-            <Text style={gp.infoTitle}>💊 {tKey('vitamins.gp.what_is')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Pill size={18} strokeWidth={1.5} color={Colors.dark} /><Text style={gp.infoTitle}>{tKey('vitamins.gp.what_is')}</Text></View>
             <Text style={gp.infoDesc}>{tKey('vitamins.gp.description')}</Text>
             <View style={gp.infoRow}>
-              <Text style={gp.infoItem}>✅ {tKey('vitamins.gp.vitamin_a')}</Text>
-              <Text style={gp.infoItem}>✅ {tKey('vitamins.gp.deworming')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><CheckCircle size={16} strokeWidth={1.5} color={Colors.mint} /><Text style={gp.infoItem}>{tKey('vitamins.gp.vitamin_a')}</Text></View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><CheckCircle size={16} strokeWidth={1.5} color={Colors.mint} /><Text style={gp.infoItem}>{tKey('vitamins.gp.deworming')}</Text></View>
             </View>
-            <Text style={gp.infoFree}>🏥 {tKey('vitamins.gp.free_at_bhs')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Building2 size={16} strokeWidth={1.5} color={Colors.mint} /><Text style={gp.infoFree}>{tKey('vitamins.gp.free_at_bhs')}</Text></View>
           </View>
 
           {/* Countdown */}
@@ -353,7 +361,7 @@ function GPTrackerModal({
           {/* Form */}
           {showForm && (
             <View style={gp.form}>
-              <Text style={gp.formTitle}>📋 {tKey('vitamins.gp.log_visit')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><ClipboardList size={18} strokeWidth={1.5} color={Colors.dark} /><Text style={gp.formTitle}>{tKey('vitamins.gp.log_visit')}</Text></View>
 
               <Text style={s.label}>{tKey('vitamins.gp.date')}</Text>
               <TextInput style={s.input} value={formDate}
@@ -395,7 +403,7 @@ function GPTrackerModal({
           <Text style={s.sectionTitle}>{tKey('vitamins.gp.past_visits')}</Text>
           {visits.length === 0 ? (
             <View style={s.emptyState}>
-              <Text style={s.emptyIcon}>🌿</Text>
+              <Leaf size={40} strokeWidth={1.5} color={Colors.textMid} />
               <Text style={s.emptyTxt}>{tKey('vitamins.gp.no_visits')}</Text>
             </View>
           ) : visits.map(v => (
@@ -407,7 +415,7 @@ function GPTrackerModal({
                   {v.vitaminA  && <View style={gp.pill}><Text style={gp.pillTxt}>Vitamin A ✓</Text></View>}
                   {v.deworming && <View style={gp.pill}><Text style={gp.pillTxt}>Deworming ✓</Text></View>}
                 </View>
-                {v.notes ? <Text style={s.entryNotes}>📝 {v.notes}</Text> : null}
+                {v.notes ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><FileText size={14} strokeWidth={1.5} color={Colors.textMid} /><Text style={s.entryNotes}>{v.notes}</Text></View> : null}
               </View>
               <TouchableOpacity onPress={() =>
                 Alert.alert('Delete?', 'Remove this GP visit record?', [
@@ -415,7 +423,7 @@ function GPTrackerModal({
                   { text: 'Delete', style: 'destructive', onPress: () => deleteGPVisit(v.id) },
                 ])
               }>
-                <Text style={{ fontSize: 18 }}>🗑️</Text>
+                <Trash2 size={20} strokeWidth={1.5} color={Colors.textMid} />
               </TouchableOpacity>
             </View>
           ))}
@@ -493,12 +501,12 @@ function AddEditModal({
     onClose();
   }
 
-  const typeOptions: { key: EntryType; label: string }[] = isMedication
-    ? [{ key: 'medication', label: '💉 Medication' }]
+  const typeOptions: { key: EntryType; label: string; Icon: React.ComponentType<any> }[] = isMedication
+    ? [{ key: 'medication', label: 'Medication', Icon: Syringe }]
     : [
-        { key: 'vitamin',    label: '💊 Vitamin'    },
-        { key: 'supplement', label: '🌿 Supplement' },
-        { key: 'mineral',    label: '⚗️ Mineral'    },
+        { key: 'vitamin',    label: 'Vitamin',    Icon: Pill    },
+        { key: 'supplement', label: 'Supplement', Icon: Leaf    },
+        { key: 'mineral',    label: 'Mineral',    Icon: FlaskConical },
       ];
 
   return (
@@ -524,9 +532,10 @@ function AddEditModal({
           <ScrollView contentContainerStyle={{ padding: PAD, paddingBottom: 60 }}>
             {/* Antibiotic banner */}
             {isMedication && isAntibiotic && (
-              <View style={m.antibioticBanner}>
+              <View style={[m.antibioticBanner, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
+                <AlertTriangle size={16} strokeWidth={1.5} color={Colors.primaryPink} />
                 <Text style={m.antibioticTxt}>
-                  ⚠️ {tKey('vitamins.antibiotic_warning')}
+                  {tKey('vitamins.antibiotic_warning')}
                 </Text>
               </View>
             )}
@@ -553,15 +562,21 @@ function AddEditModal({
               <>
                 <Text style={s.label}>{tKey('vitamins.fields.type')}</Text>
                 <View style={m.typeRow}>
-                  {typeOptions.map(opt => (
+                  {typeOptions.map(opt => {
+                    const OptIcon = opt.Icon;
+                    return (
                     <TouchableOpacity key={opt.key}
                       style={[m.typeChip, type === opt.key && m.typeChipActive]}
                       onPress={() => setType(opt.key)}>
-                      <Text style={[m.typeChipTxt, type === opt.key && m.typeChipTxtActive]}>
-                        {opt.label}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <OptIcon size={14} strokeWidth={1.5} color={type === opt.key ? Colors.white : Colors.textMid} />
+                        <Text style={[m.typeChipTxt, type === opt.key && m.typeChipTxtActive]}>
+                          {opt.label}
+                        </Text>
+                      </View>
                     </TouchableOpacity>
-                  ))}
+                    );
+                  })}
                 </View>
               </>
             )}
@@ -589,9 +604,12 @@ function AddEditModal({
 
             {/* Reminder */}
             <View style={m.row}>
-              <Text style={[s.label, { flex: 1, marginBottom: 0 }]}>
-                ⏰ {tKey('vitamins.fields.reminder')}
-              </Text>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 0 }}>
+                <Clock size={16} strokeWidth={1.5} color={Colors.textMid} />
+                <Text style={[s.label, { marginBottom: 0 }]}>
+                  {tKey('vitamins.fields.reminder')}
+                </Text>
+              </View>
               <Switch value={remEnabled} onValueChange={setRemEnabled}
                 thumbColor={remEnabled ? Colors.primaryPink : '#ccc'}
                 trackColor={{ true: Colors.softPink, false: '#eee' }} />
@@ -622,9 +640,12 @@ function AddEditModal({
                   placeholder="e.g. Fever, ear infection" />
 
                 <View style={m.row}>
-                  <Text style={[s.label, { flex: 1, marginBottom: 0 }]}>
-                    ⚠️ {tKey('vitamins.fields.is_antibiotic')}
-                  </Text>
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 0 }}>
+                    <AlertTriangle size={16} strokeWidth={1.5} color={Colors.gold} />
+                    <Text style={[s.label, { marginBottom: 0 }]}>
+                      {tKey('vitamins.fields.is_antibiotic')}
+                    </Text>
+                  </View>
                   <Switch value={isAntibiotic} onValueChange={setIsAntibiotic}
                     thumbColor={isAntibiotic ? Colors.primaryPink : '#ccc'}
                     trackColor={{ true: Colors.softPink, false: '#eee' }} />
@@ -735,7 +756,7 @@ export default function VitaminsScreen() {
   if (!activeChild) {
     return (
       <View style={s.emptyState}>
-        <Text style={s.emptyIcon}>💊</Text>
+        <Pill size={40} strokeWidth={1.5} color={Colors.textMid} />
         <Text style={s.emptyTxt}>{tKey('vitamins.no_child')}</Text>
       </View>
     );
@@ -749,11 +770,11 @@ export default function VitaminsScreen() {
           <Text style={s.backTxt}>‹</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={s.headerTitle}>💊 {tKey('vitamins.title')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Pill size={20} strokeWidth={1.5} color={Colors.white} /><Text style={s.headerTitle}>{tKey('vitamins.title')}</Text></View>
           <Text style={s.headerSub}>{childName}</Text>
         </View>
         <TouchableOpacity style={s.gpBtn} onPress={() => setShowGP(true)}>
-          <Text style={s.gpBtnTxt}>🌟 GP</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Star size={16} strokeWidth={1.5} color={Colors.gold} /><Text style={s.gpBtnTxt}>GP</Text></View>
         </TouchableOpacity>
       </LinearGradient>
 
@@ -763,7 +784,7 @@ export default function VitaminsScreen() {
         <View style={{ paddingHorizontal: PAD, marginTop: 14 }}>
           <AteAISummaryCard
             title={tKey('vitamins.ai_card_title')}
-            emoji="🔬"
+            icon={<Microscope size={20} strokeWidth={1.5} color={Colors.textMid} />}
             prompt={aiPrompt}
             onChatPress={() => {}}
           />
@@ -772,9 +793,12 @@ export default function VitaminsScreen() {
         {/* ── Recommended section ── */}
         {recs.length > 0 && (
           <View style={{ marginTop: 18 }}>
-            <Text style={[s.sectionTitle, { paddingHorizontal: PAD }]}>
-              🏥 {tKey('vitamins.recommended_for', { name: childName })}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: PAD }}>
+              <Building2 size={20} strokeWidth={1.5} color={Colors.dark} />
+              <Text style={s.sectionTitle}>
+                {tKey('vitamins.recommended_for', { name: childName })}
+              </Text>
+            </View>
             <Text style={[s.sectionSub, { paddingHorizontal: PAD }]}>
               {tKey('vitamins.recommended_source')}
             </Text>
@@ -797,7 +821,7 @@ export default function VitaminsScreen() {
         {/* ── GP Countdown Banner ── */}
         {isGPEligible(ageMonths) && (
           <TouchableOpacity style={s.gpBanner} onPress={() => setShowGP(true)}>
-            <Text style={s.gpBannerEmoji}>🌟</Text>
+            <Star size={24} strokeWidth={1.5} color={Colors.gold} />
             <View style={{ flex: 1 }}>
               <Text style={s.gpBannerTitle}>{tKey('vitamins.gp.banner_title')}</Text>
               <Text style={s.gpBannerSub}>
@@ -814,11 +838,16 @@ export default function VitaminsScreen() {
             <TouchableOpacity key={tab}
               style={[s.tab, activeTab === tab && s.tabActive]}
               onPress={() => setActiveTab(tab)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                {tab === 'vitamins'
+                  ? <Pill size={16} strokeWidth={1.5} color={activeTab === tab ? Colors.white : Colors.textMid} />
+                  : <Syringe size={16} strokeWidth={1.5} color={activeTab === tab ? Colors.white : Colors.textMid} />}
               <Text style={[s.tabTxt, activeTab === tab && s.tabTxtActive]}>
                 {tab === 'vitamins'
-                  ? `💊 ${tKey('vitamins.tabs.vitamins')}`
-                  : `💉 ${tKey('vitamins.tabs.medications')}`}
+                  ? tKey('vitamins.tabs.vitamins')
+                  : tKey('vitamins.tabs.medications')}
               </Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -829,7 +858,7 @@ export default function VitaminsScreen() {
 
           {shownActive.length === 0 ? (
             <View style={s.emptyCard}>
-              <Text style={s.emptyIcon}>{activeTab === 'vitamins' ? '💊' : '💉'}</Text>
+              {activeTab === 'vitamins' ? <Pill size={40} strokeWidth={1.5} color={Colors.textMid} /> : <Syringe size={40} strokeWidth={1.5} color={Colors.textMid} />}
               <Text style={s.emptyCardTxt}>
                 {activeTab === 'vitamins'
                   ? tKey('vitamins.no_active_vitamins')

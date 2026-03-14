@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 
+import { Cloud, Moon, Star, Sparkles, Flower2 } from 'lucide-react-native';
 import BearIllustration    from '../../components/intro/BearIllustration';
 import GrowthIllustration  from '../../components/intro/GrowthIllustration';
 import ReminderIllustration from '../../components/intro/ReminderIllustration';
@@ -165,12 +166,12 @@ export default function IntroScreen() {
             {/* Blob + custom bear + floating deco */}
             <View style={s.splashBlobWrap}>
               {/* Floating deco elements */}
-              <Animated.Text style={[s.dCloud1, { transform: [{ translateY: cloud1Y }] }]}>☁️</Animated.Text>
-              <Animated.Text style={[s.dCloud2, { transform: [{ translateY: cloud2Y }] }]}>☁️</Animated.Text>
-              <Animated.Text style={[s.dMoon,   { transform: [{ translateY: moonY   }] }]}>🌙</Animated.Text>
-              <Animated.Text style={[s.dStar1,  { opacity: starOp }]}>⭐</Animated.Text>
-              <Animated.Text style={[s.dStar2,  { opacity: starOp }]}>✨</Animated.Text>
-              <Animated.Text style={[s.dStar3,  { opacity: starOp }]}>⭐</Animated.Text>
+              <Animated.View style={[s.dCloud1, { transform: [{ translateY: cloud1Y }] }]}><Cloud size={36} color="#B0C4DE" /></Animated.View>
+              <Animated.View style={[s.dCloud2, { transform: [{ translateY: cloud2Y }] }]}><Cloud size={28} color="#B0C4DE" /></Animated.View>
+              <Animated.View style={[s.dMoon,   { transform: [{ translateY: moonY   }] }]}><Moon size={30} color={Colors.gold} /></Animated.View>
+              <Animated.View style={[s.dStar1,  { opacity: starOp }]}><Star size={22} color={Colors.gold} /></Animated.View>
+              <Animated.View style={[s.dStar2,  { opacity: starOp }]}><Sparkles size={17} color={Colors.gold} /></Animated.View>
+              <Animated.View style={[s.dStar3,  { opacity: starOp }]}><Star size={19} color={Colors.gold} /></Animated.View>
 
               {/* Pink gradient blob — LinearGradient as container so illustration renders on top */}
               <LinearGradient
@@ -182,7 +183,7 @@ export default function IntroScreen() {
             </View>
 
             <Animated.View style={[s.splashTextWrap, { opacity: textOp }]}>
-              <Text style={s.splashTitle}>Welcome to BabyBloom 🌸</Text>
+              <Text style={s.splashTitle}>Welcome to BabyBloom <View style={{ marginLeft: 4 }}><Flower2 size={24} color="#E8637C" /></View></Text>
               <Text style={s.splashSubtitle}>
                 A beautiful journey of watching your baby{'\n'}grow healthy and happy.
               </Text>
@@ -232,7 +233,7 @@ export default function IntroScreen() {
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                   style={s.ctaBtnGrad}
                 >
-                  <Text style={s.ctaBtnText}>🌟 {t('intro.cta_start')}</Text>
+                  <Text style={s.ctaBtnText}><View style={{ marginRight: 6 }}><Star size={17} color={Colors.white} /></View> {t('intro.cta_start')}</Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
@@ -335,12 +336,12 @@ const s = StyleSheet.create({
   },
 
   // Floating deco (positioned inside splashBlobWrap)
-  dCloud1: { position: 'absolute', fontSize: 36, top: 14,  left: 0   },
-  dCloud2: { position: 'absolute', fontSize: 28, bottom: 18, right: 6 },
-  dMoon:   { position: 'absolute', fontSize: 30, top: 6,   right: 20 },
-  dStar1:  { position: 'absolute', fontSize: 22, top: 64,  right: 0  },
-  dStar2:  { position: 'absolute', fontSize: 17, bottom: 64, left: 10 },
-  dStar3:  { position: 'absolute', fontSize: 19, top: 108, left: 28  },
+  dCloud1: { position: 'absolute', top: 14,  left: 0   },
+  dCloud2: { position: 'absolute', bottom: 18, right: 6 },
+  dMoon:   { position: 'absolute', top: 6,   right: 20 },
+  dStar1:  { position: 'absolute', top: 64,  right: 0  },
+  dStar2:  { position: 'absolute', bottom: 64, left: 10 },
+  dStar3:  { position: 'absolute', top: 108, left: 28  },
 
   splashTextWrap: {
     alignItems: 'center',

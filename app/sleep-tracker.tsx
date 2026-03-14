@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient as SvgGrad, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
 
+import { AlertTriangle, BarChart2, CheckCircle2, Clock, Lightbulb, Moon, Pencil, Sun } from 'lucide-react-native';
 import Colors                              from '../constants/Colors';
 import { analyzeOneSleep, analyzeDailySleep, DailySleepSummary, getClaudeSleepSummary, SleepInsight } from '../lib/sleepInsights';
 import { useChildStore }                   from '../store/childStore';
@@ -470,7 +471,7 @@ function WeeklyBarChart({ data, targetMin }: { data: WeekDay[]; targetMin: numbe
         padding: 10, marginTop: 10,
       }}>
         <Text style={{ fontSize: 10, color: '#78350F', lineHeight: 16 }}>
-          <Text style={{ fontWeight: '700' }}>📊 {t('sleep.chart.guide_title')} </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><BarChart2 size={14} color="#78350F" /><Text style={{ fontWeight: '700', color: '#78350F', fontSize: 10 }}>{t('sleep.chart.guide_title')} </Text></View>
           {t('sleep.chart.guide_line1')}
           {'\n'}{t('sleep.chart.guide_line2')}
           {'\n'}🎯 {t('sleep.chart.guide_line3', { hours: targetMin })}
@@ -590,7 +591,7 @@ function ActiveTimerCard({
       {/* Type badge */}
       <View style={act.typeBadge}>
         <Text style={act.typeBadgeText}>
-          {isNight ? `🌙 ${t('sleep.night_sleep')}` : `☀️ ${t('sleep.nap')}`}
+          {isNight ? <><Moon size={14} color="#fff" /> {t('sleep.night_sleep')}</> : <><Sun size={14} color="#fff" /> {t('sleep.nap')}</>}
         </Text>
       </View>
 
@@ -685,12 +686,13 @@ function PerSleepInsightCard({ insight, onDismiss }: { insight: SleepInsight; on
   const bg   = insight.type === 'good'    ? Colors.softMint
              : insight.type === 'warning' ? '#FEF3C7'
              : Colors.softBlue;
-  const icon = insight.type === 'good' ? '✅' : insight.type === 'warning' ? '⚠️' : '💡';
+  const InsightIcon = insight.type === 'good' ? CheckCircle2 : insight.type === 'warning' ? AlertTriangle : Lightbulb;
+  const iconColor = insight.type === 'good' ? Colors.mint : insight.type === 'warning' ? Colors.gold : Colors.blue;
 
   return (
     <View style={[ins.card, { borderColor: bg, backgroundColor: bg }]}>
       <View style={ins.row}>
-        <Text style={ins.icon}>{icon}</Text>
+        <View style={ins.icon}><InsightIcon size={18} color={iconColor} /></View>
         <View style={{ flex: 1 }}>
           <Text style={ins.headline}>{insight.headline}</Text>
           <Text style={ins.detail}>{insight.detail}</Text>
@@ -804,9 +806,9 @@ function DailySleepSummaryCard({ todayEntries, childAgeMonths, childName }: {
         <View style={{ marginTop: 10, gap: 6 }}>
           {summary.insights.map((ins, i) => (
             <View key={i} style={[dsc.insightRow, { backgroundColor: ins.type === 'good' ? Colors.softMint : ins.type === 'warning' ? '#FEF3C7' : Colors.softBlue }]}>
-              <Text style={dsc.insightIcon}>
-                {ins.type === 'good' ? '✅' : ins.type === 'warning' ? '⚠️' : '💡'}
-              </Text>
+              <View style={dsc.insightIcon}>
+                {ins.type === 'good' ? <CheckCircle2 size={18} color={Colors.mint} /> : ins.type === 'warning' ? <AlertTriangle size={18} color={Colors.gold} /> : <Lightbulb size={18} color={Colors.blue} />}
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={dsc.insightHead}>{ins.headline}</Text>
                 <Text style={dsc.insightDetail}>{ins.detail}</Text>
@@ -848,7 +850,7 @@ function DeleteConfirmModal({ visible, sleepType, onCancel, onConfirm }: {
       <Pressable style={del.overlay} onPress={onCancel}>
         <Pressable style={del.sheet} onPress={(e) => e.stopPropagation()}>
           <LinearGradient colors={['#EDE9FE', '#F5F3FF']} style={del.iconWrap}>
-            <Text style={{ fontSize: 40 }}>{sleepType === 'night' ? '🌙' : '☀️'}</Text>
+            {sleepType === 'night' ? <Moon size={40} color={NIGHT_COLOR} /> : <Sun size={40} color={NAP_COLOR} />}
             <View style={del.sadBadge}><Text style={{ fontSize: 14 }}>😢</Text></View>
           </LinearGradient>
           <Text style={del.title}>{t('sleep.delete_title')}</Text>
@@ -891,7 +893,7 @@ function SleepEntryRow({ entry, onRequestDelete }: { entry: SleepEntry; onReques
   return (
     <View style={er.row}>
       <View style={[er.typeIcon, { backgroundColor: isNight ? '#EDE9FE' : '#FEF3C7' }]}>
-        {isNight ? <Text style={{ fontSize: 20 }}>🌙</Text> : <Text style={{ fontSize: 20 }}>☀️</Text>}
+        {isNight ? <Moon size={20} color={NIGHT_COLOR} /> : <Sun size={20} color={NAP_COLOR} />}
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -1043,7 +1045,7 @@ function AddSleepModal({ visible, onClose, onSaved, prefillStart, prefillType }:
                   onPress={() => setMode(m)}
                 >
                   <Text style={[mod.modeTabTxt, mode === m && mod.modeTabTxtActive]}>
-                    {m === 'timer' ? `⏱ ${t('sleep.timer_mode')}` : `✏️ ${t('sleep.manual_mode')}`}
+                    {m === 'timer' ? <><Clock size={14} color={mode === m ? '#fff' : Colors.midGray} /> {t('sleep.timer_mode')}</> : <><Pencil size={14} color={mode === m ? '#fff' : Colors.midGray} /> {t('sleep.manual_mode')}</>}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -1073,7 +1075,7 @@ function AddSleepModal({ visible, onClose, onSaved, prefillStart, prefillType }:
                       style={mod.startBtn}
                       start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                     >
-                      <Text style={mod.startBtnTxt}>🌙 {t('sleep.start_sleep')}</Text>
+                      <Text style={mod.startBtnTxt}><Moon size={16} color="#fff" /> {t('sleep.start_sleep')}</Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 )}
@@ -1255,7 +1257,7 @@ export default function SleepTrackerScreen() {
           </Svg>
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={s.headerTitle}>{t('sleep.title')} 😴</Text>
+          <Text style={s.headerTitle}>{t('sleep.title')} <Moon size={18} color="#fff" /></Text>
           {activeChild && (
             <Text style={s.headerSub}>{childName} · {t('sleep.age_months', { age: ageMonths })}</Text>
           )}
@@ -1301,7 +1303,7 @@ export default function SleepTrackerScreen() {
                 style={s.startSleepBtn}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               >
-                <Text style={s.startSleepEmoji}>🌙</Text>
+                <Moon size={28} color="#fff" />
                 <View>
                   <Text style={s.startSleepText}>{t('sleep.start_sleep')}</Text>
                   <Text style={s.startSleepSub}>{t('sleep.tap_to_start')}</Text>
@@ -1345,7 +1347,7 @@ export default function SleepTrackerScreen() {
 
         {/* Weekly chart */}
         <View style={s.chartCard}>
-          <Text style={s.chartTitle}>{t('sleep.weekly_chart_title')} 📊</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Text style={s.chartTitle}>{t('sleep.weekly_chart_title')}</Text><BarChart2 size={14} color={Colors.midGray} /></View>
           <WeeklyBarChart data={weeklyData} targetMin={targetMinH} />
         </View>
 
@@ -1378,7 +1380,7 @@ export default function SleepTrackerScreen() {
         {/* Entry list */}
         {groupedEntries.length === 0 ? (
           <View style={s.empty}>
-            <Text style={{ fontSize: 48 }}>😴</Text>
+            <Moon size={48} color={NIGHT_COLOR} />
             <Text style={s.emptyTitle}>{t('sleep.no_entries')}</Text>
             <Text style={s.emptySub}>{t('sleep.empty_sub')}</Text>
           </View>

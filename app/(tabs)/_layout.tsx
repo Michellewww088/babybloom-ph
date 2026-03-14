@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect, Line, Polygon, Ellipse } from 'react-native-svg';
+import { Calendar, Syringe, BookOpen, Star, Flower2, Sparkles } from 'lucide-react-native';
 import Colors from '../../constants/Colors';
 
 const PINK   = Colors.primaryPink;  // #E63B6F
@@ -156,8 +157,8 @@ const ti = StyleSheet.create({
 // Gradient page header (tabs 2–5)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function CutePageHeader({ title, emoji, colors }: {
-  title: string; emoji: string; colors: [string, string];
+function CutePageHeader({ title, icon, colors }: {
+  title: string; icon: React.ReactNode; colors: [string, string];
 }) {
   return (
     <LinearGradient
@@ -166,11 +167,11 @@ function CutePageHeader({ title, emoji, colors }: {
       style={ph.bar}
     >
       <View style={ph.iconPill}>
-        <Text style={ph.icon}>{emoji}</Text>
+        {icon}
       </View>
       <Text style={ph.title}>{title}</Text>
-      <Text style={ph.deco1}>🌸</Text>
-      <Text style={ph.deco2}>✨</Text>
+      <Flower2 size={17} strokeWidth={1.5} color={Colors.white} style={{ opacity: 0.65 }} />
+      <Sparkles size={13} strokeWidth={1.5} color={Colors.white} style={{ opacity: 0.5 }} />
     </LinearGradient>
   );
 }
@@ -178,10 +179,7 @@ function CutePageHeader({ title, emoji, colors }: {
 const ph = StyleSheet.create({
   bar:      { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingVertical: 13, gap: 12 },
   iconPill: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.32)', alignItems: 'center', justifyContent: 'center' },
-  icon:     { fontSize: 21 },
   title:    { fontSize: 17, fontWeight: '800', color: Colors.white, flex: 1, letterSpacing: 0.3 },
-  deco1:    { fontSize: 17, opacity: 0.65 },
-  deco2:    { fontSize: 13, opacity: 0.5 },
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,7 +229,7 @@ export default function TabLayout() {
           header: () => (
             <CutePageHeader
               title={t('calendar.title')}
-              emoji="📅"
+              icon={<Calendar size={21} strokeWidth={1.5} color={Colors.white} />}
               colors={['#F06292', '#F48FB1']}
             />
           ),
@@ -249,7 +247,7 @@ export default function TabLayout() {
           header: () => (
             <CutePageHeader
               title={t('vaccines.title')}
-              emoji="💉"
+              icon={<Syringe size={21} strokeWidth={1.5} color={Colors.white} />}
               colors={['#5BC8F5', '#90D8F8']}
             />
           ),
@@ -267,7 +265,7 @@ export default function TabLayout() {
           header: () => (
             <CutePageHeader
               title={t('encyclopedia.title')}
-              emoji="📖"
+              icon={<BookOpen size={21} strokeWidth={1.5} color={Colors.white} />}
               colors={['#4CAF7D', '#81C784']}
             />
           ),
@@ -285,7 +283,7 @@ export default function TabLayout() {
           header: () => (
             <CutePageHeader
               title={t('milestones.title')}
-              emoji="⭐"
+              icon={<Star size={21} strokeWidth={1.5} color={Colors.white} />}
               colors={['#FFB74D', '#FFC870']}
             />
           ),

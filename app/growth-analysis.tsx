@@ -28,6 +28,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import {
+  Trash2, Lightbulb, Star, Smile, AlertTriangle, Scale, Ruler, Brain,
+  Sparkles, Bot, BarChart2, Users, ClipboardList, Share2, CheckCircle, CircleAlert,
+} from 'lucide-react-native';
+
 import Colors from '../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
 import { useGrowthStore, GrowthRecord } from '../store/growthStore';
@@ -313,7 +318,7 @@ function MeasurementModal({
             </TouchableOpacity>
             <Text style={mm.title}>{editRecord ? t('growth.edit_title') : t('growth.modal_title')}</Text>
             {editRecord
-              ? <TouchableOpacity onPress={del} style={mm.delBtn}><Text style={{ fontSize: 17 }}>🗑</Text></TouchableOpacity>
+              ? <TouchableOpacity onPress={del} style={mm.delBtn}><Trash2 size={20} strokeWidth={1.5} color={Colors.primaryPink} /></TouchableOpacity>
               : <View style={{ width: 36 }} />
             }
           </View>
@@ -354,7 +359,7 @@ function MeasurementModal({
 
             <View style={mm.tip}>
               <Text style={mm.tipTxt}>
-                💡 Weigh baby undressed in the morning before feeding. Use your Pediatrician's scale when possible for the most accurate reading.
+                <Lightbulb size={16} strokeWidth={1.5} color={Colors.gold} />{' '}Weigh baby undressed in the morning before feeding. Use your Pediatrician's scale when possible for the most accurate reading.
               </Text>
             </View>
           </ScrollView>
@@ -409,10 +414,10 @@ function PercentileBar({ percentile, color }: { percentile: number; color: strin
   );
 }
 
-function statusIcon(st: string) {
-  if (st === 'Normal') return '✅';
-  if (st === 'Watch')  return '🟡';
-  return '⚠️';
+function StatusIcon({ st, size = 14 }: { st: string; size?: number }) {
+  if (st === 'Normal') return <CheckCircle size={size} strokeWidth={1.5} color={Colors.mint} />;
+  if (st === 'Watch')  return <CircleAlert size={size} strokeWidth={1.5} color={Colors.gold} />;
+  return <AlertTriangle size={size} strokeWidth={1.5} color={Colors.primaryPink} />;
 }
 
 // ─── Demo report builder (no API key required) ────────────────────────────────
@@ -438,27 +443,27 @@ function buildDemoReport(
     overallSummary:
       `${name} is growing ${overall === 'great' ? 'beautifully' : 'steadily'}! At ${ageM} month${ageM !== 1 ? 's' : ''} old, ` +
       `${wPct ? `weight is at the ${wPct}th percentile` : 'measurements look good'} — ` +
-      (wTrend.includes('gaining') ? `great weight gain trend, keep up the wonderful feeding routine! 🌟` : `continue regular well-baby checkups to track progress. 💪`),
+      (wTrend.includes('gaining') ? `great weight gain trend, keep up the wonderful feeding routine!` : `continue regular well-baby checkups to track progress.`),
     overallStatus: overall,
     weight: {
       status: classify(wR?.percentile),
       explanation: wPct
         ? `${name}'s weight is at the ${wPct}th percentile — meaning ${wPct} out of 100 babies of the same age and gender weigh less. ` +
-          (wPct >= 15 && wPct <= 85 ? `This is in the healthy range — great news! 🟢` : wPct >= 5 ? `Slightly outside typical range — worth monitoring at next visit. 🟡` : `Please consult your Pediatrician for guidance. 🔴`)
+          (wPct >= 15 && wPct <= 85 ? `This is in the healthy range — great news!` : wPct >= 5 ? `Slightly outside typical range — worth monitoring at next visit.` : `Please consult your Pediatrician for guidance.`)
         : 'No weight recorded yet. Tap + Add to log a measurement.',
     },
     height: {
       status: classify(hR?.percentile),
       explanation: hPct
         ? `Height/length is at the ${hPct}th percentile for this age and gender. ` +
-          (hPct >= 15 && hPct <= 85 ? `Growing at a healthy rate according to WHO Multicentre Growth Reference Study! 🟢` : `Check with your Pedia at the next checkup. 🟡`)
+          (hPct >= 15 && hPct <= 85 ? `Growing at a healthy rate according to WHO Multicentre Growth Reference Study!` : `Check with your Pedia at the next checkup.`)
         : 'No height recorded yet. Add it for a complete analysis.',
     },
     head: {
       status: classify(hdR?.percentile),
       explanation: hdPct
         ? `Head circumference at the ${hdPct}th percentile is a good sign of brain and cognitive development. ` +
-          (hdPct >= 5 && hdPct <= 97 ? `Within the normal range — brain growth looks on track! 🟢` : `Mention this measurement to your Pediatrician. 🟡`)
+          (hdPct >= 5 && hdPct <= 97 ? `Within the normal range — brain growth looks on track!` : `Mention this measurement to your Pediatrician.`)
         : 'No head circumference recorded. This helps assess brain development.',
     },
     healthInsights:
@@ -593,18 +598,18 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
   };
 
   // Overall status colour theming
-  const OVERALL_THEME: Record<string, { bg: string; text: string; icon: string }> = {
-    great: { bg: Colors.softMint, text: Colors.mint,         icon: '🌟' },
-    good:  { bg: Colors.softGold, text: Colors.gold,         icon: '😊' },
-    watch: { bg: Colors.softPink, text: Colors.primaryPink,  icon: '⚠️' },
+  const OVERALL_THEME: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+    great: { bg: Colors.softMint, text: Colors.mint,         icon: <Star size={24} strokeWidth={1.5} color={Colors.mint} /> },
+    good:  { bg: Colors.softGold, text: Colors.gold,         icon: <Smile size={24} strokeWidth={1.5} color={Colors.gold} /> },
+    watch: { bg: Colors.softPink, text: Colors.primaryPink,  icon: <AlertTriangle size={24} strokeWidth={1.5} color={Colors.primaryPink} /> },
   };
   const theme = report ? (OVERALL_THEME[report.overallStatus] ?? OVERALL_THEME.good) : null;
 
   // Per-metric config
   const METRICS = [
-    { key: 'weight' as const, label: 'Weight',              emoji: '⚖️', pR: wR,  val: latest?.weightKg,            unit: 'kg', dec: 2 },
-    { key: 'height' as const, label: 'Height / Length',     emoji: '📏', pR: hR,  val: latest?.heightCm,             unit: 'cm', dec: 1 },
-    { key: 'head'   as const, label: 'Head Circumference',  emoji: '🧠', pR: hdR, val: latest?.headCircumferenceCm,  unit: 'cm', dec: 1 },
+    { key: 'weight' as const, label: 'Weight',              icon: <Scale size={20} strokeWidth={1.5} color={Colors.textMid} />, pR: wR,  val: latest?.weightKg,            unit: 'kg', dec: 2 },
+    { key: 'height' as const, label: 'Height / Length',     icon: <Ruler size={20} strokeWidth={1.5} color={Colors.textMid} />, pR: hR,  val: latest?.heightCm,             unit: 'cm', dec: 1 },
+    { key: 'head'   as const, label: 'Head Circumference',  icon: <Brain size={20} strokeWidth={1.5} color={Colors.textMid} />, pR: hdR, val: latest?.headCircumferenceCm,  unit: 'cm', dec: 1 },
   ];
 
   return (
@@ -617,7 +622,7 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
       >
         <View style={aig.hdrLeft}>
           <LinearGradient colors={['#C4B5FD', '#7C3AED']} style={aig.hdrGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-            <Text style={{ fontSize: 18 }}>✨</Text>
+            <Sparkles size={20} strokeWidth={1.5} color="#FFFFFF" />
           </LinearGradient>
           <View>
             <Text style={aig.hdrTitle}>{t('growth.ai_analysis_title')}</Text>
@@ -632,7 +637,7 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
           {/* Loading */}
           {load && (
             <View style={aig.loadRow}>
-              <Text style={aig.loadTxt}>🧠 {t('growth.ai_loading')}</Text>
+              <Text style={aig.loadTxt}><Brain size={16} strokeWidth={1.5} color={Colors.textMid} /> {t('growth.ai_loading')}</Text>
             </View>
           )}
 
@@ -642,7 +647,7 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
               {/* Demo badge */}
               {isDemo && (
                 <View style={aig.demoBadge}>
-                  <Text style={aig.demoIcon}>🤖</Text>
+                  <View style={aig.demoIcon}><Bot size={24} strokeWidth={1.5} color={Colors.textMid} /></View>
                   <View style={{ flex: 1 }}>
                     <Text style={aig.demoTitle}>Demo Preview</Text>
                     <Text style={aig.demoSub}>Add <Text style={{ fontWeight: '800' }}>EXPO_PUBLIC_CLAUDE_API_KEY</Text> to .env.local for live Ate AI analysis</Text>
@@ -652,7 +657,7 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
 
               {/* SECTION 1 — Overall Summary */}
               <View style={[aig.overallBanner, { backgroundColor: theme?.bg }]}>
-                <Text style={aig.overallIcon}>{theme?.icon}</Text>
+                <View style={aig.overallIcon}>{theme?.icon}</View>
                 <View style={{ flex: 1 }}>
                   <Text style={[aig.overallLabel, { color: theme?.text }]}>OVERALL GROWTH SUMMARY</Text>
                   <Text style={aig.overallText}>{report.overallSummary}</Text>
@@ -660,8 +665,8 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
               </View>
 
               {/* SECTION 2 — Per-metric detail */}
-              <Text style={aig.sectionHdr}>📊 DETAILED ANALYSIS</Text>
-              {METRICS.map(({ key, label, emoji, pR, val, unit, dec }) => {
+              <Text style={aig.sectionHdr}><BarChart2 size={16} strokeWidth={1.5} color={Colors.textMid} /> DETAILED ANALYSIS</Text>
+              {METRICS.map(({ key, label, icon, pR, val, unit, dec }) => {
                 const mr  = report[key];
                 const st  = mr?.status ?? 'Normal';
                 const stC = st === 'Normal' ? Colors.mint : st === 'Watch' ? Colors.gold : Colors.primaryPink;
@@ -669,10 +674,10 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
                 return (
                   <View key={key} style={aig.metricCard}>
                     <View style={aig.metricTop}>
-                      <Text style={aig.metricEmoji}>{emoji}</Text>
+                      <View style={aig.metricEmoji}>{icon}</View>
                       <Text style={aig.metricLabel}>{label}</Text>
                       <View style={[aig.statusBadge, { backgroundColor: stB }]}>
-                        <Text style={[aig.statusTxt, { color: stC }]}>{statusIcon(st)} {st}</Text>
+                        <Text style={[aig.statusTxt, { color: stC }]}><StatusIcon st={st} /> {st}</Text>
                       </View>
                     </View>
                     {val !== undefined && pR ? (
@@ -684,11 +689,12 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
                           <Text style={{ fontWeight: '800', color: stC }}>{Math.round(pR.percentile)}th percentile</Text>
                           {` — ${
                             pR.percentile >= 15 && pR.percentile <= 85
-                              ? `within the healthy range for babies this age 🟢`
+                              ? `within the healthy range for babies this age `
                               : pR.percentile >= 5 && pR.percentile <= 97
-                              ? `slightly outside the typical range — worth monitoring 🟡`
-                              : `outside the typical range — please consult your Pediatrician 🔴`
+                              ? `slightly outside the typical range — worth monitoring `
+                              : `outside the typical range — please consult your Pediatrician `
                           }`}
+                          <StatusIcon st={pR.percentile >= 15 && pR.percentile <= 85 ? 'Normal' : pR.percentile >= 5 && pR.percentile <= 97 ? 'Watch' : 'Alert'} size={12} />
                         </Text>
                       </>
                     ) : (
@@ -701,13 +707,13 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
 
               {/* SECTION 3 — Health Insights */}
               <View style={aig.insightCard}>
-                <Text style={aig.sectionHdr}>💡 HEALTH INSIGHTS</Text>
+                <Text style={aig.sectionHdr}><Lightbulb size={16} strokeWidth={1.5} color={Colors.textMid} /> HEALTH INSIGHTS</Text>
                 <Text style={aig.insightTxt}>{report.healthInsights}</Text>
               </View>
 
               {/* SECTION 4 — Parent Guidance */}
               <View style={aig.guidanceCard}>
-                <Text style={aig.sectionHdr}>👩‍👧 PARENT GUIDANCE</Text>
+                <Text style={aig.sectionHdr}><Users size={16} strokeWidth={1.5} color={Colors.textMid} /> PARENT GUIDANCE</Text>
                 {(report.parentGuidance ?? []).map((tip, i) => (
                   <View key={i} style={aig.tipRow}>
                     <View style={aig.tipNum}><Text style={aig.tipNumTxt}>{i + 1}</Text></View>
@@ -719,7 +725,7 @@ Rules: status = Normal | Low | High | Watch. overallStatus = great | good | watc
               {/* WHO disclaimer */}
               <View style={aig.disclaimer}>
                 <Text style={aig.disclaimerTxt}>
-                  📋 Based on WHO Multicentre Growth Reference Study (MGRS) standards.{'\n'}[This is general information. Please consult your Pedia for medical concerns.]
+                  <ClipboardList size={14} strokeWidth={1.5} color={Colors.textMid} /> Based on WHO Multicentre Growth Reference Study (MGRS) standards.{'\n'}[This is general information. Please consult your Pedia for medical concerns.]
                 </Text>
               </View>
             </>
@@ -915,7 +921,7 @@ export default function GrowthAnalysisScreen() {
           </LinearGradient>
         ) : (
           <TouchableOpacity style={sv.empty} onPress={() => { setEditRec(undefined); setModal(true); }} activeOpacity={0.8}>
-            <Text style={{ fontSize: 38, marginBottom: 10 }}>📏</Text>
+            <View style={{ marginBottom: 10 }}><Ruler size={38} strokeWidth={1.5} color={Colors.textMid} /></View>
             <Text style={sv.emptyTitle}>{t('growth.no_data')}</Text>
             <Text style={sv.emptySub}>{t('growth.no_data_sub')}</Text>
             <LinearGradient colors={[Colors.primaryPink, '#F472B6']} style={sv.emptyCta}
@@ -973,23 +979,23 @@ export default function GrowthAnalysisScreen() {
             const dateStr = new Date().toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
             const sep = '─'.repeat(36);
             const lines: string[] = [
-              `🌸 BabyBloom PH — Growth Report`,
+              `BabyBloom PH — Growth Report`,
               sep,
               `Baby   : ${name}`,
               `Age    : ${ageM} months`,
-              `Gender : ${sex === 'female' ? 'Girl 💗' : 'Boy 💙'}`,
+              `Gender : ${sex === 'female' ? 'Girl' : 'Boy'}`,
               `Date   : ${dateStr}`,
               ``,
-              `📏 LATEST MEASUREMENTS`,
+              `LATEST MEASUREMENTS`,
               sep,
             ];
 
             const addMetric = (label: string, val: number | undefined, unit: string, metric: GrowthMetric, dec: number) => {
               if (!val) return;
               const r = getWHOPercentile(sex, metric, corrected, val);
-              const zone = r.percentile >= 15 && r.percentile <= 85 ? '🟢 Normal'
-                         : r.percentile >= 5  && r.percentile <= 97 ? '🟡 Monitor'
-                         : '🔴 See Pedia';
+              const zone = r.percentile >= 15 && r.percentile <= 85 ? '[OK] Normal'
+                         : r.percentile >= 5  && r.percentile <= 97 ? '[!] Monitor'
+                         : '[!!] See Pedia';
               lines.push(`${label.padEnd(16)}: ${val.toFixed(dec)} ${unit}`);
               lines.push(`${'Percentile'.padEnd(16)}: ${Math.round(r.percentile)}th  ${zone}`);
               lines.push(``);
@@ -1004,7 +1010,7 @@ export default function GrowthAnalysisScreen() {
             lines.push(`Total logs : ${records.length} measurement${records.length !== 1 ? 's' : ''}`);
 
             if (records.length > 1) {
-              lines.push(``, `📈 GROWTH HISTORY (last ${Math.min(records.length, 5)})`);
+              lines.push(``, `GROWTH HISTORY (last ${Math.min(records.length, 5)})`);
               lines.push(sep);
               [...records].reverse().slice(0, 5).forEach((r) => {
                 const d = new Date(r.measuredAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1016,15 +1022,15 @@ export default function GrowthAnalysisScreen() {
               });
             }
 
-            lines.push(``, `📊 PERCENTILE GUIDE`);
+            lines.push(``, `PERCENTILE GUIDE`);
             lines.push(sep);
-            lines.push(`🟢 p15–p85  Healthy range`);
-            lines.push(`🟡 p5–p15 or p85–p97  Monitor`);
-            lines.push(`🔴 <p5 or >p97  Consult Pediatrician`);
+            lines.push(`[OK] p15–p85  Healthy range`);
+            lines.push(`[!] p5–p15 or p85–p97  Monitor`);
+            lines.push(`[!!] <p5 or >p97  Consult Pediatrician`);
             lines.push(``, sep);
-            lines.push(`Generated by BabyBloom PH 🌸`);
+            lines.push(`Generated by BabyBloom PH`);
             lines.push(`WHO Multicentre Growth Reference Study standards`);
-            lines.push(`⚕️  This is general information.`);
+            lines.push(`This is general information.`);
             lines.push(`   Please consult your Pedia for medical concerns.`);
 
             const reportText = lines.join('\n');
@@ -1038,7 +1044,7 @@ export default function GrowthAnalysisScreen() {
               if (nav.clipboard?.writeText) {
                 try {
                   await nav.clipboard.writeText(reportText);
-                  Alert.alert('✅ Copied!', 'Growth report copied to clipboard.\nPaste it into WhatsApp, Messenger, or email to share with your Pedia!');
+                  Alert.alert('Copied!', 'Growth report copied to clipboard.\nPaste it into WhatsApp, Messenger, or email to share with your Pedia!');
                 } catch {
                   // Clipboard blocked (document not focused) — show inline
                   Alert.alert(title, reportText, [{ text: 'OK' }]);
@@ -1055,7 +1061,7 @@ export default function GrowthAnalysisScreen() {
             }
           }}
         >
-          <Text style={ex.txt}>{t('growth.export_pdf')} 📤</Text>
+          <Text style={ex.txt}>{t('growth.export_pdf')} <Share2 size={16} strokeWidth={1.5} color={Colors.primaryPink} /></Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />

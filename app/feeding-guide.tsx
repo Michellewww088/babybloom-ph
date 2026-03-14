@@ -18,6 +18,10 @@ import {
   Superfood, Allergen,
 } from '../constants/feeding-guide';
 import Colors from '../constants/Colors';
+import {
+  Calendar, Leaf, AlertTriangle, Sparkles, Ban, BookOpen, CircleCheck,
+  Lock, Hospital, UtensilsCrossed, Baby, Microscope, Zap, Flag, ChefHat,
+} from 'lucide-react-native';
 
 const { width: W } = Dimensions.get('window');
 
@@ -148,10 +152,10 @@ export default function FeedingGuideScreen() {
   const getName = (item: { nameEN: string; nameFIL: string; nameZH: string }) =>
     lang === 'zh' ? item.nameZH : lang === 'fil' ? item.nameFIL : item.nameEN;
 
-  const tabs: { id: TopTab; emoji: string; labelKey: string }[] = [
-    { id: 'timeline',   emoji: '📅', labelKey: 'feeding_guide.tab_timeline' },
-    { id: 'superfoods', emoji: '🌿', labelKey: 'feeding_guide.tab_superfoods' },
-    { id: 'allergens',  emoji: '⚠️',  labelKey: 'feeding_guide.tab_allergens' },
+  const tabs: { id: TopTab; icon: React.ReactNode; labelKey: string }[] = [
+    { id: 'timeline',   icon: <Calendar size={18} />, labelKey: 'feeding_guide.tab_timeline' },
+    { id: 'superfoods', icon: <Leaf size={18} />, labelKey: 'feeding_guide.tab_superfoods' },
+    { id: 'allergens',  icon: <AlertTriangle size={18} />, labelKey: 'feeding_guide.tab_allergens' },
   ];
 
   // ── ATE AI SUMMARIES ──────────────────────────────────────────────────────
@@ -208,7 +212,7 @@ export default function FeedingGuideScreen() {
                   <Text style={[ss.stageLabel, isCurrentStage && ss.stageLabelActive]}>{stageLabel}</Text>
                   {isCurrentStage && (
                     <View style={ss.currentBadge}>
-                      <Text style={ss.currentBadgeText}>✨ {t('feeding_guide.current_stage')}</Text>
+                      <View style={ss.currentBadgeContent}><Sparkles size={12} color={Colors.gold} /><Text style={ss.currentBadgeText}> {t('feeding_guide.current_stage')}</Text></View>
                     </View>
                   )}
                 </View>
@@ -244,7 +248,7 @@ export default function FeedingGuideScreen() {
                           <View key={fid} style={[ss.stageFoodChip, hasWarning && ss.stageFoodChipWarn]}>
                             <Text style={ss.stageFoodEmoji}>{food.emoji}</Text>
                             <Text style={ss.stageFoodName}>{getName(food)}</Text>
-                            {hasWarning && <Text style={ss.stageFoodWarnIcon}>⚠️</Text>}
+                            {hasWarning && <AlertTriangle size={14} color={Colors.gold} style={ss.stageFoodWarnIcon} />}
                           </View>
                         );
                       })}
@@ -265,7 +269,7 @@ export default function FeedingGuideScreen() {
 
       {/* Foods to Avoid */}
       <View style={ss.section}>
-        <Text style={ss.sectionTitle}>🚫 {t('feeding_guide.avoid_title')}</Text>
+        <View style={ss.sectionTitleRow}><Ban size={16} color={Colors.dark} /><Text style={ss.sectionTitle}> {t('feeding_guide.avoid_title')}</Text></View>
         <Text style={ss.sectionSub}>{t('feeding_guide.avoid_sub')}</Text>
         {FOODS_TO_AVOID.map((f, i) => (
           <View key={i} style={ss.avoidRow}>
@@ -279,7 +283,7 @@ export default function FeedingGuideScreen() {
       </View>
 
       <View style={ss.sourceBox}>
-        <Text style={ss.sourceText}>📚 {t('feeding_guide.source')}</Text>
+        <View style={ss.sourceRow}><BookOpen size={12} color={Colors.midGray} /><Text style={ss.sourceText}> {t('feeding_guide.source')}</Text></View>
       </View>
     </ScrollView>
   );
@@ -291,7 +295,7 @@ export default function FeedingGuideScreen() {
 
       {/* Available Now */}
       <View style={ss.section}>
-        <Text style={ss.sectionTitle}>✅ {t('feeding_guide.available_now', { name: childName })}</Text>
+        <View style={ss.sectionTitleRow}><CircleCheck size={16} color={Colors.mint} /><Text style={ss.sectionTitle}> {t('feeding_guide.available_now', { name: childName })}</Text></View>
         {superfoodsForAge.map(food => {
           const hasWarning = food.allergenKeys.some(k => hasAllergyFor(k));
           const benefits = lang === 'zh' ? food.benefitsZH : lang === 'fil' ? food.benefitsFIL : food.benefitsEN;
@@ -315,7 +319,7 @@ export default function FeedingGuideScreen() {
                   </View>
                   {hasWarning && (
                     <View style={ss.warnBadge}>
-                      <Text style={ss.warnBadgeText}>⚠️ {t('feeding_guide.allergy_warning')}</Text>
+                      <View style={ss.warnBadgeContent}><AlertTriangle size={12} color={Colors.gold} /><Text style={ss.warnBadgeText}> {t('feeding_guide.allergy_warning')}</Text></View>
                     </View>
                   )}
                 </View>
@@ -337,7 +341,7 @@ export default function FeedingGuideScreen() {
       {/* Coming Soon */}
       {superfoodsLocked.length > 0 && (
         <View style={ss.section}>
-          <Text style={ss.sectionTitle}>🔒 {t('feeding_guide.coming_soon')}</Text>
+          <View style={ss.sectionTitleRow}><Lock size={16} color={Colors.midGray} /><Text style={ss.sectionTitle}> {t('feeding_guide.coming_soon')}</Text></View>
           <View style={ss.lockedGrid}>
             {superfoodsLocked.map(food => (
               <View key={food.id} style={ss.lockedChip}>
@@ -351,7 +355,7 @@ export default function FeedingGuideScreen() {
       )}
 
       <View style={ss.sourceBox}>
-        <Text style={ss.sourceText}>📚 {t('feeding_guide.source')}</Text>
+        <View style={ss.sourceRow}><BookOpen size={12} color={Colors.midGray} /><Text style={ss.sourceText}> {t('feeding_guide.source')}</Text></View>
       </View>
     </ScrollView>
   );
@@ -365,7 +369,7 @@ export default function FeedingGuideScreen() {
       {childAllergies.length > 0 && (
         <View style={ss.allergyProfileCard}>
           <Text style={ss.allergyProfileTitle}>
-            🏥 {t('feeding_guide.allergy_profile', { name: childName })}
+            <Hospital size={14} color={Colors.primaryPink} /> {t('feeding_guide.allergy_profile', { name: childName })}
           </Text>
           <View style={ss.allergyChipRow}>
             {childAllergies.map((a, i) => (
@@ -408,7 +412,7 @@ export default function FeedingGuideScreen() {
                     </View>
                     {isKnownAllergy && (
                       <View style={ss.knownAllergyBadge}>
-                        <Text style={ss.knownAllergyText}>⚠️ {t('feeding_guide.known_allergy')}</Text>
+                        <View style={ss.knownAllergyContent}><AlertTriangle size={11} color={Colors.primaryPink} /><Text style={ss.knownAllergyText}> {t('feeding_guide.known_allergy')}</Text></View>
                       </View>
                     )}
                   </View>
@@ -418,7 +422,7 @@ export default function FeedingGuideScreen() {
               {isKnownAllergy && (
                 <View style={ss.allergenWarnBox}>
                   <Text style={ss.allergenWarnText}>
-                    🏥 {t('feeding_guide.consult_pedia_allergy')}
+                    <Hospital size={12} color={Colors.primaryPink} /> {t('feeding_guide.consult_pedia_allergy')}
                   </Text>
                 </View>
               )}
@@ -430,7 +434,7 @@ export default function FeedingGuideScreen() {
 
       {/* Emergency Signs */}
       <View style={ss.emergencyCard}>
-        <Text style={ss.emergencyTitle}>🚨 {t('feeding_guide.emergency_title')}</Text>
+        <View style={ss.sectionTitleRow}><AlertTriangle size={16} color={Colors.primaryPink} /><Text style={ss.emergencyTitle}> {t('feeding_guide.emergency_title')}</Text></View>
         {['feeding_guide.emergency_1', 'feeding_guide.emergency_2', 'feeding_guide.emergency_3', 'feeding_guide.emergency_4'].map(k => (
           <Text key={k} style={ss.emergencyItem}>• {t(k)}</Text>
         ))}
@@ -438,7 +442,7 @@ export default function FeedingGuideScreen() {
       </View>
 
       <View style={ss.sourceBox}>
-        <Text style={ss.sourceText}>📚 {t('feeding_guide.source_allergen')}</Text>
+        <View style={ss.sourceRow}><BookOpen size={12} color={Colors.midGray} /><Text style={ss.sourceText}> {t('feeding_guide.source_allergen')}</Text></View>
       </View>
     </ScrollView>
   );
@@ -467,11 +471,11 @@ export default function FeedingGuideScreen() {
             <ScrollView style={ss.modalBody} showsVerticalScrollIndicator={false}>
               {hasWarn && (
                 <View style={ss.modalWarnBanner}>
-                  <Text style={ss.modalWarnText}>⚠️ {t('feeding_guide.allergy_warning_detail', { name: childName })}</Text>
+                  <View style={ss.modalWarnContent}><AlertTriangle size={14} color={Colors.gold} /><Text style={ss.modalWarnText}> {t('feeding_guide.allergy_warning_detail', { name: childName })}</Text></View>
                 </View>
               )}
 
-              <Text style={ss.modalSectionTitle}>✨ {t('feeding_guide.key_benefits')}</Text>
+              <View style={ss.modalSectionTitleRow}><Sparkles size={14} color={Colors.gold} /><Text style={ss.modalSectionTitle}> {t('feeding_guide.key_benefits')}</Text></View>
               {benefits.map((b, i) => (
                 <View key={i} style={ss.bulletRow}>
                   <View style={[ss.bullet, { backgroundColor: selectedFood.gradient[0] }]} />
@@ -479,7 +483,7 @@ export default function FeedingGuideScreen() {
                 </View>
               ))}
 
-              <Text style={[ss.modalSectionTitle, { marginTop: 20 }]}>👩‍🍳 {t('feeding_guide.prep_tips')}</Text>
+              <View style={[ss.modalSectionTitleRow, { marginTop: 20 }]}><ChefHat size={14} color={Colors.dark} /><Text style={ss.modalSectionTitle}> {t('feeding_guide.prep_tips')}</Text></View>
               {prepTips.map((tip, i) => (
                 <View key={i} style={ss.prepRow}>
                   <View style={[ss.prepNum, { backgroundColor: selectedFood.bgColor }]}>
@@ -497,7 +501,7 @@ export default function FeedingGuideScreen() {
                 ))}
               </View>
 
-              <Text style={ss.ageTag}>👶 {t('feeding_guide.suitable_from', { age: selectedFood.minAgeMonths })}</Text>
+              <View style={ss.ageTagRow}><Baby size={13} color={Colors.midGray} /><Text style={ss.ageTag}> {t('feeding_guide.suitable_from', { age: selectedFood.minAgeMonths })}</Text></View>
               <View style={ss.aiDisclaimerBox}>
                 <Text style={ss.aiDisclaimer}>{t('feeding_guide.disclaimer')}</Text>
               </View>
@@ -534,17 +538,17 @@ export default function FeedingGuideScreen() {
             <ScrollView style={ss.modalBody} showsVerticalScrollIndicator={false}>
               {isKnown && (
                 <View style={ss.modalWarnBanner}>
-                  <Text style={ss.modalWarnText}>⚠️ {t('feeding_guide.known_allergy_warning', { name: childName })}</Text>
+                  <View style={ss.modalWarnContent}><AlertTriangle size={14} color={Colors.gold} /><Text style={ss.modalWarnText}> {t('feeding_guide.known_allergy_warning', { name: childName })}</Text></View>
                 </View>
               )}
 
-              <Text style={ss.modalSectionTitle}>🔬 {t('feeding_guide.evidence')}</Text>
+              <View style={ss.modalSectionTitleRow}><Microscope size={14} color={Colors.dark} /><Text style={ss.modalSectionTitle}> {t('feeding_guide.evidence')}</Text></View>
               <Text style={ss.evidenceText}>{evidence}</Text>
 
-              <Text style={[ss.modalSectionTitle, { marginTop: 16 }]}>⚡ {t('feeding_guide.caution')}</Text>
+              <View style={[ss.modalSectionTitleRow, { marginTop: 16 }]}><Zap size={14} color={Colors.gold} /><Text style={ss.modalSectionTitle}> {t('feeding_guide.caution')}</Text></View>
               <Text style={ss.cautionText}>{caution}</Text>
 
-              <Text style={[ss.modalSectionTitle, { marginTop: 16 }]}>🇵🇭 {t('feeding_guide.common_ph_foods')}</Text>
+              <View style={[ss.modalSectionTitleRow, { marginTop: 16 }]}><Flag size={14} color={Colors.dark} /><Text style={ss.modalSectionTitle}> {t('feeding_guide.common_ph_foods')}</Text></View>
               <View style={ss.phFoodRow}>
                 {selectedAllergen.commonPHFoods.map((f, i) => (
                   <View key={i} style={[ss.phFoodChip, { borderColor: dotColor }]}>
@@ -581,13 +585,13 @@ export default function FeedingGuideScreen() {
           <Text style={ss.backBtnText}>← {t('feeding_guide.back')}</Text>
         </TouchableOpacity>
         <View style={ss.headerCenter}>
-          <Text style={ss.headerEmoji}>🥣</Text>
+          <UtensilsCrossed size={40} color="#fff" />
           <Text style={ss.headerTitle}>{t('feeding_guide.screen_title')}</Text>
           <Text style={ss.headerSub}>{t('feeding_guide.screen_sub')}</Text>
         </View>
         {activeChild && (
           <View style={ss.agePill}>
-            <Text style={ss.agePillText}>👶 {childName} · {ageMonths}M</Text>
+            <View style={ss.agePillContent}><Baby size={13} color="#fff" /><Text style={ss.agePillText}> {childName} · {ageMonths}M</Text></View>
           </View>
         )}
       </LinearGradient>
@@ -601,7 +605,7 @@ export default function FeedingGuideScreen() {
             onPress={() => setActiveTab(tab.id)}
             activeOpacity={0.8}
           >
-            <Text style={ss.tabEmoji}>{tab.emoji}</Text>
+            <View style={ss.tabEmoji}>{tab.icon}</View>
             <Text style={[ss.tabLabel, activeTab === tab.id && ss.tabLabelActive]}>
               {t(tab.labelKey)}
             </Text>
@@ -632,7 +636,7 @@ function AteAICard({
   const { t } = useTranslation();
   return (
     <View style={[ss.ateAiCard, { backgroundColor: color, borderColor }]}>
-      <Text style={[ss.ateAiLabel, { color: borderColor }]}>✨ ATE AI SAYS</Text>
+      <View style={ss.ateAiLabelRow}><Sparkles size={11} color={borderColor} /><Text style={[ss.ateAiLabel, { color: borderColor }]}> ATE AI SAYS</Text></View>
       <Text style={ss.ateAiText}>{text}</Text>
       <Text style={ss.ateAiDisclaimer}>{t('feeding_guide.disclaimer')}</Text>
     </View>
@@ -669,7 +673,7 @@ const ss = StyleSheet.create({
     flex: 1, alignItems: 'center', paddingVertical: 12, position: 'relative',
   },
   tabBtnActive: {},
-  tabEmoji:     { fontSize: 18, marginBottom: 2 },
+  tabEmoji:     { marginBottom: 2, alignItems: 'center' },
   tabLabel:     { fontSize: 11, color: Colors.midGray, fontWeight: '600' },
   tabLabelActive: { color: Colors.primaryPink, fontWeight: '800' },
   tabUnderline: {
@@ -685,7 +689,7 @@ const ss = StyleSheet.create({
     borderRadius: 16, padding: 16, marginBottom: 16,
     borderWidth: 1.5,
   },
-  ateAiLabel:      { fontSize: 11, fontWeight: '900', letterSpacing: 1, marginBottom: 6 },
+  ateAiLabel:      { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   ateAiText:       { fontSize: 14, color: Colors.dark, lineHeight: 21, fontWeight: '500' },
   ateAiDisclaimer: { fontSize: 11, color: '#9E9EB8', marginTop: 8, fontStyle: 'italic' },
 
@@ -741,7 +745,7 @@ const ss = StyleSheet.create({
   stageFoodChipWarn: { backgroundColor: Colors.softPink },
   stageFoodEmoji:    { fontSize: 14 },
   stageFoodName:     { fontSize: 11, color: Colors.midGray, fontWeight: '600' },
-  stageFoodWarnIcon: { fontSize: 10 },
+  stageFoodWarnIcon: { marginLeft: 2 },
   breastfeedBanner: {
     backgroundColor: Colors.softPink, borderRadius: 10, padding: 10, marginTop: 8,
   },
@@ -872,7 +876,7 @@ const ss = StyleSheet.create({
   nutrientFullRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 16 },
   nutrientFullChip: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
   nutrientFullText: { fontSize: 12, fontWeight: '700' },
-  ageTag:           { fontSize: 13, color: Colors.midGray, marginTop: 12, textAlign: 'center' },
+  ageTag:           { fontSize: 13, color: Colors.midGray, textAlign: 'center' },
   modalWarnBanner: {
     backgroundColor: Colors.softPink, borderRadius: 10, padding: 10, marginBottom: 14,
     borderWidth: 1, borderColor: Colors.gold,
@@ -891,4 +895,16 @@ const ss = StyleSheet.create({
     backgroundColor: Colors.primaryPink, margin: 16, borderRadius: 14, padding: 14, alignItems: 'center',
   },
   modalCloseText: { color: Colors.white, fontWeight: '800', fontSize: 15 },
+
+  // Icon + text row helpers
+  sectionTitleRow:      { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  sourceRow:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  currentBadgeContent:  { flexDirection: 'row', alignItems: 'center' },
+  warnBadgeContent:     { flexDirection: 'row', alignItems: 'center' },
+  knownAllergyContent:  { flexDirection: 'row', alignItems: 'center' },
+  modalWarnContent:     { flexDirection: 'row', alignItems: 'center' },
+  modalSectionTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  ateAiLabelRow:        { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  agePillContent:       { flexDirection: 'row', alignItems: 'center' },
+  ageTagRow:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 12 },
 });

@@ -14,6 +14,8 @@ import {
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { Baby } from 'lucide-react-native';
+
 import Colors from '../constants/Colors';
 import { useChildStore, Child, getChildDisplayName, getChildAge } from '../store/childStore';
 
@@ -26,11 +28,8 @@ const DEFAULT_AVATAR_BG = [
   Colors.softMint,
   Colors.softGold,
 ];
-const DEFAULT_AVATAR_EMOJI = ['👶🏻', '👶🏽', '👶🏾', '👶'];
-
 function AvatarCircle({ child, size = 44 }: { child: Child; size?: number }) {
   const bgColor = DEFAULT_AVATAR_BG[(child.avatarIndex ?? 0) % DEFAULT_AVATAR_BG.length];
-  const emoji   = DEFAULT_AVATAR_EMOJI[(child.avatarIndex ?? 0) % DEFAULT_AVATAR_EMOJI.length];
 
   if (child.photoUri) {
     return (
@@ -42,7 +41,7 @@ function AvatarCircle({ child, size = 44 }: { child: Child; size?: number }) {
   }
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bgColor, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: size * 0.44 }}>{emoji}</Text>
+      <Baby size={size * 0.44} strokeWidth={1.5} color={Colors.primaryPink} />
     </View>
   );
 }

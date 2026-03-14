@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import i18n from '../../src/i18n';
 import Colors from '../../constants/Colors';
+import { Mail, Zap, Sprout, Sparkles, Droplets, Moon } from 'lucide-react-native';
 import { setDevSkip } from '../_layout';
 
 export default function LoginScreen() {
@@ -101,7 +102,10 @@ export default function LoginScreen() {
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.otpBtnText}>✉️ {t('auth.send_otp')}</Text>
+              : <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <Mail size={16} strokeWidth={1.5} color={Colors.white} />
+                  <Text style={s.otpBtnText}>{t('auth.send_otp')}</Text>
+                </View>
             }
           </TouchableOpacity>
 
@@ -116,7 +120,7 @@ export default function LoginScreen() {
           <SocialButton
             label={t('auth.continue_facebook')}
             bg="#1877F2" textColor="#fff"
-            icon="🇫" onPress={() => {}} />
+            icon="f" onPress={() => {}} />
 
           {/* 3 — Google */}
           <SocialButton
@@ -129,7 +133,7 @@ export default function LoginScreen() {
             <SocialButton
               label={t('auth.continue_apple')}
               bg="#000" textColor="#fff"
-              icon="🍎" onPress={() => {}} />
+              icon="\uF8FF" onPress={() => {}} />
           )}
 
           {/* Terms */}
@@ -142,31 +146,46 @@ export default function LoginScreen() {
                 style={s.devSkip}
                 onPress={() => { setDevSkip(); router.replace('/(tabs)'); }}
               >
-                <Text style={s.devSkipText}>⚡ Dev: Skip Login → Dashboard</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Zap size={16} strokeWidth={1.5} color={Colors.gold} />
+                  <Text style={s.devSkipText}>Dev: Skip Login → Dashboard</Text>
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[s.devSkip, { borderColor: Colors.mint }]}
                 onPress={() => router.replace('/(auth)/onboarding')}
               >
-                <Text style={[s.devSkipText, { color: Colors.mint }]}>🌱 Dev: Test Onboarding Flow</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Sprout size={16} strokeWidth={1.5} color={Colors.mint} />
+                  <Text style={[s.devSkipText, { color: Colors.mint }]}>Dev: Test Onboarding Flow</Text>
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[s.devSkip, { borderColor: Colors.blue }]}
                 onPress={() => router.replace('/(auth)/intro')}
               >
-                <Text style={[s.devSkipText, { color: Colors.blue }]}>✨ Dev: Preview Intro Slides</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Sparkles size={16} strokeWidth={1.5} color={Colors.blue} />
+                  <Text style={[s.devSkipText, { color: Colors.blue }]}>Dev: Preview Intro Slides</Text>
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[s.devSkip, { borderColor: Colors.gold }]}
                 onPress={() => router.replace('/feeding-log')}
               >
-                <Text style={[s.devSkipText, { color: Colors.gold }]}>🍼 Dev: Preview Feeding Log</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Droplets size={16} strokeWidth={1.5} color={Colors.gold} />
+                  <Text style={[s.devSkipText, { color: Colors.gold }]}>Dev: Preview Feeding Log</Text>
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[s.devSkip, { borderColor: '#7C3AED' }]}
                 onPress={() => router.replace('/sleep-tracker')}
               >
-                <Text style={[s.devSkipText, { color: '#7C3AED' }]}>😴 Dev: Preview Sleep Tracker</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Moon size={16} strokeWidth={1.5} color={'#7C3AED'} />
+                  <Text style={[s.devSkipText, { color: '#7C3AED' }]}>Dev: Preview Sleep Tracker</Text>
+                </View>
               </TouchableOpacity>
             </View>
           )}

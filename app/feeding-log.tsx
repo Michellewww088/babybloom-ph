@@ -31,6 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { AlertTriangle, Bot, CheckCircle2, ClipboardList, Lightbulb, Milk, UtensilsCrossed } from 'lucide-react-native';
 import Colors from '../constants/Colors';
 import {
   useFeedingStore,
@@ -438,7 +439,7 @@ function FeedEntryRow({
           <Text style={er.type}>{t(`feeding.type_${entry.feedType}`)}</Text>
           <Text style={er.sub} numberOfLines={1}>{subtitle()}</Text>
           {entry.reaction === 'allergic' && (
-            <Text style={er.allergyBadge}>⚠️ Allergic reaction noted</Text>
+            <Text style={er.allergyBadge}><AlertTriangle size={14} color={Colors.danger} /> Allergic reaction noted</Text>
           )}
         </View>
         <View style={er.right}>
@@ -616,14 +617,12 @@ function PerFeedInsightCard({ insight, onDismiss }: {
   const colorMap: Record<FeedInsight['type'], string> = {
     good: Colors.mint, tip: Colors.gold, warning: Colors.danger,
   };
-  const emojiMap: Record<FeedInsight['type'], string> = {
-    good: '✅', tip: '💡', warning: '⚠️',
-  };
   const tc = colorMap[insight.type];
+  const InsightIcon = insight.type === 'good' ? CheckCircle2 : insight.type === 'tip' ? Lightbulb : AlertTriangle;
   return (
     <LinearGradient colors={bgMap[insight.type]} style={pf.card} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
       <View style={pf.row}>
-        <Text style={pf.emoji}>{emojiMap[insight.type]}</Text>
+        <View style={pf.emoji}><InsightIcon size={20} color={tc} /></View>
         <View style={pf.body}>
           <Text style={[pf.headline, { color: tc }]}>{insight.headline}</Text>
           <Text style={pf.detail}>{insight.detail}</Text>
@@ -694,7 +693,9 @@ function DailySummaryCard({ todayEntries, childAgeMonths, childName }: {
             const tc = ins.type === 'good' ? Colors.mint : ins.type === 'tip' ? Colors.gold : Colors.danger;
             return (
               <View key={idx} style={ds.insightRow}>
-                <Text style={ds.insightEmoji}>{ins.type === 'good' ? '✅' : ins.type === 'tip' ? '💡' : '⚠️'}</Text>
+                <View style={ds.insightEmoji}>
+                  {ins.type === 'good' ? <CheckCircle2 size={18} color={Colors.mint} /> : ins.type === 'tip' ? <Lightbulb size={18} color={Colors.gold} /> : <AlertTriangle size={18} color={Colors.danger} />}
+                </View>
                 <View style={ds.insightBody}>
                   <Text style={[ds.insightHead, { color: tc }]}>{ins.headline}</Text>
                   <Text style={ds.insightDetail}>{ins.detail}</Text>
@@ -706,7 +707,10 @@ function DailySummaryCard({ todayEntries, childAgeMonths, childName }: {
 
           {claudeText && !loading && (
             <View style={ds.claudeBox}>
-              <Text style={ds.claudeLabel}>🤖 Ate AI</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Bot size={14} color={Colors.primaryPink} />
+                <Text style={ds.claudeLabel}>Ate AI</Text>
+              </View>
               <Text style={ds.claudeText}>{claudeText}</Text>
             </View>
           )}
@@ -979,7 +983,7 @@ function AddFeedModal({
                   activeOpacity={0.7}
                 >
                   <Text style={[m.tabTxt, active && { color: tc }, locked && { opacity: 0.4 }]}>
-                    {ft === 'breastfeed' ? '🤱' : ft === 'bottle' ? '🍼' : '🥄'} {t(`feeding.tab_${ft}`)}
+                    {ft === 'breastfeed' ? '🤱 ' : ft === 'bottle' ? <><Milk size={14} color={active ? tc : Colors.midGray} /> </> : <><UtensilsCrossed size={14} color={active ? tc : Colors.midGray} /> </>}{t(`feeding.tab_${ft}`)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -1089,7 +1093,7 @@ function AddFeedModal({
                       onPress={() => setMilkType(mt)}
                     >
                       <Text style={[m.radioTxt, milkType === mt && m.radioTxtActive]}>
-                        {mt === 'breast_milk' ? '🤱 ' : '🍼 '}{t(`feeding.milk_${mt === 'breast_milk' ? 'breast' : 'formula'}`)}
+                        {mt === 'breast_milk' ? '🤱 ' : <><Milk size={14} color={milkType === mt ? '#fff' : Colors.midGray} /> </>}{t(`feeding.milk_${mt === 'breast_milk' ? 'breast' : 'formula'}`)}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -1099,7 +1103,10 @@ function AddFeedModal({
                 {milkType === 'formula' && (
                   <>
                     <Text style={m.fieldLabel}>{t('feeding.brand_label')}</Text>
-                    <Text style={m.milkCodeNote}>📋 For personal logging only.</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <ClipboardList size={12} color={Colors.midGray} />
+                      <Text style={m.milkCodeNote}>For personal logging only.</Text>
+                    </View>
                     <View style={m.chipRow}>
                       {FORMULA_BRANDS.map((b) => (
                         <TouchableOpacity
@@ -1505,7 +1512,7 @@ export default function FeedingLogScreen() {
           </Svg>
         </TouchableOpacity>
         <View style={scr.headerCenter}>
-          <Text style={scr.headerTitle}>🍼 {t('feeding.title')}</Text>
+          <Text style={scr.headerTitle}><Milk size={20} color="#fff" /> {t('feeding.title')}</Text>
           <Text style={scr.headerSub}>{childName}</Text>
         </View>
         <TouchableOpacity style={scr.addBtn} onPress={openAdd}>
@@ -1576,7 +1583,7 @@ export default function FeedingLogScreen() {
         {/* Entries list */}
         {grouped.length === 0 ? (
           <View style={scr.emptyList}>
-            <Text style={scr.emptyListEmoji}>🍼</Text>
+            <Milk size={48} color={Colors.primary} style={scr.emptyListEmoji} />
             <Text style={scr.emptyListTitle}>{t('feeding.no_entries')}</Text>
             <Text style={scr.emptyListSub}>{t('feeding.no_entries_sub')}</Text>
           </View>
