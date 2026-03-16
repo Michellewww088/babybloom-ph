@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Alert,
+  StyleSheet, Alert,
 } from 'react-native';
+import { ButtonLoader } from '../../components/SkeletonCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -204,7 +205,7 @@ export default function OTPVerifyScreen() {
             disabled={otp.some(d => !d) || loading || isLocked}
           >
             {loading
-              ? <ActivityIndicator color="#fff" />
+              ? <ButtonLoader />
               : <Text style={s.verifyBtnText}>{t('auth.verify_otp')}</Text>
             }
           </TouchableOpacity>

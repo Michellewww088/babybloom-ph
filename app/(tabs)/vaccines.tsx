@@ -9,8 +9,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal, TextInput,
   StyleSheet, Dimensions, Alert, Platform, Switch,
-  KeyboardAvoidingView, ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { SkeletonList } from '../../components/SkeletonCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import {
@@ -1419,8 +1420,23 @@ export default function VaccinesScreen() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#F5F8FF', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={Colors.primaryPink} />
+      <View style={{ flex: 1, backgroundColor: '#F5F8FF' }}>
+        {/* Hero card placeholder */}
+        <View style={{ margin: 16, borderRadius: 20, backgroundColor: Colors.softBlue, padding: 20, height: 120,
+          shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 }}>
+          <View style={{ height: 18, width: '45%', borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: 12 }} />
+          <View style={{ height: 14, width: '65%', borderRadius: 7, backgroundColor: 'rgba(255,255,255,0.4)', marginBottom: 8 }} />
+          <View style={{ height: 14, width: '55%', borderRadius: 7, backgroundColor: 'rgba(255,255,255,0.4)' }} />
+        </View>
+        {/* Filter tabs placeholder */}
+        <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 8 }}>
+          {[70, 60, 80, 65].map((w, i) => (
+            <View key={i} style={{ width: w, height: 32, borderRadius: 16, backgroundColor: Colors.divider }} />
+          ))}
+        </View>
+        {/* Vaccine rows */}
+        <SkeletonList count={5} variant="row" />
       </View>
     );
   }

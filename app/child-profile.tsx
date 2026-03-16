@@ -12,8 +12,9 @@
 
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Alert, Platform, ActivityIndicator, Image,
+  StyleSheet, Alert, Platform, Image,
 } from 'react-native';
+import { ButtonLoader } from '../components/SkeletonCard';
 import { useState, useCallback, useRef } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -439,7 +440,7 @@ export default function ChildProfileScreen() {
         </Text>
         <TouchableOpacity onPress={handleSave} style={s.saveBtn} disabled={saving}>
           {saving
-            ? <ActivityIndicator color="#fff" size="small" />
+            ? <ButtonLoader />
             : <Text style={s.saveBtnText}>{t('common.save')}</Text>
           }
         </TouchableOpacity>
@@ -833,7 +834,7 @@ export default function ChildProfileScreen() {
           disabled={saving}
         >
           {saving
-            ? <ActivityIndicator color="#fff" />
+            ? <ButtonLoader />
             : <Text style={s.bottomSaveBtnText}>{t('profile.save')}</Text>
           }
         </TouchableOpacity>

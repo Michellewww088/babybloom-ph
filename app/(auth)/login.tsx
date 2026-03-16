@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Platform, Alert, ActivityIndicator, Image,
+  StyleSheet, ScrollView, Platform, Alert, Image,
 } from 'react-native';
+import { ButtonLoader } from '../../components/SkeletonCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { sendEmailOTP } from '../../src/lib/supabase';
@@ -101,7 +102,7 @@ export default function LoginScreen() {
             disabled={!isValidEmail(email) || loading}
           >
             {loading
-              ? <ActivityIndicator color="#fff" />
+              ? <ButtonLoader />
               : <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <Mail size={16} strokeWidth={1.5} color={Colors.white} />
                   <Text style={s.otpBtnText}>{t('auth.send_otp')}</Text>

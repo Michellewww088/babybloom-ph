@@ -9,9 +9,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Dimensions, Platform, Share, ActivityIndicator,
+  Dimensions, Platform, Share,
   Alert, TextInput,
 } from 'react-native';
+import { ButtonLoader, SkeletonAIBlock } from '../components/SkeletonCard';
 import Svg, {
   Rect, Line, Polyline, Path, Circle, G,
   Text as SvgText, Defs,
@@ -376,10 +377,7 @@ function AISummaryCard({
       {expanded && (
         <View style={ai.body}>
           {loading ? (
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', padding: 8 }}>
-              <ActivityIndicator size="small" color={PINK} />
-              <Text style={{ color: GRAY, fontSize: 13 }}>{t('insights.ai_loading')}</Text>
-            </View>
+            <SkeletonAIBlock />
           ) : (
             <Text style={ai.text}>{text || t('insights.ai_loading')}</Text>
           )}
@@ -1162,7 +1160,7 @@ export default function InsightsScreen() {
           activeOpacity={0.85}
         >
           {exporting
-            ? <ActivityIndicator size="small" color="#fff" />
+            ? <ButtonLoader />
             : <Text style={s.exportTxt}>{t('insights.export_pdf')}</Text>
           }
         </TouchableOpacity>

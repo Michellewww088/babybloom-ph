@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  ScrollView, ActivityIndicator, TextInput,
+  ScrollView, TextInput,
 } from 'react-native';
+import { ButtonLoader } from '../../components/SkeletonCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -555,7 +556,7 @@ export default function OnboardingScreen() {
             disabled={!canAdvance() || saving}
           >
             {saving
-              ? <ActivityIndicator color="#fff" />
+              ? <ButtonLoader />
               : <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   {isLastStep && <PartyPopper size={16} strokeWidth={1.5} color={Colors.white} style={{ marginRight: 6 }} />}
                   <Text style={s.nextBtnText}>

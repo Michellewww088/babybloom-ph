@@ -9,8 +9,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal, TextInput,
   StyleSheet, Dimensions, Switch, Alert, Platform, KeyboardAvoidingView,
-  ActivityIndicator,
 } from 'react-native';
+import { SkeletonList } from '../../components/SkeletonCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 
@@ -763,8 +763,29 @@ export default function CalendarScreen() {
   // ── Loading guard ────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={PINK} />
+      <View style={{ flex: 1, backgroundColor: BG }}>
+        {/* Calendar placeholder */}
+        <View style={{ margin: 16, borderRadius: 20, backgroundColor: '#fff', padding: 16,
+          shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 }}>
+          <View style={{ height: 24, width: '40%', borderRadius: 8, backgroundColor: Colors.divider, marginBottom: 14 }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <View key={i} style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.divider }} />
+            ))}
+          </View>
+          <View style={{ marginTop: 12, gap: 8 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <View key={i} style={{ flexDirection: 'row', gap: 6 }}>
+                {Array.from({ length: 7 }).map((_, j) => (
+                  <View key={j} style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.divider, opacity: 0.5 + (j % 3) * 0.2 }} />
+                ))}
+              </View>
+            ))}
+          </View>
+        </View>
+        {/* Event rows */}
+        <SkeletonList count={4} variant="row" />
       </View>
     );
   }
