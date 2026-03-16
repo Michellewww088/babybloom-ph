@@ -820,7 +820,8 @@
     "date_required_title": "需要填写日期",
     "date_required_msg": "请填写接种日期。",
     "cert_perm_title": "需要权限",
-    "cert_perm_msg": "请允许访问相册以上传接种证照片。"
+    "cert_perm_msg": "请允许访问相册以上传接种证照片。",
+    "dose_label": "第{{n}}剂"
   },
   "insights": {
     "title": "数据报告 📊",

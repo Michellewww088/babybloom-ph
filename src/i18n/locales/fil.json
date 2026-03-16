@@ -732,7 +732,8 @@
     "date_required_title": "Kailangan ang Petsa",
     "date_required_msg": "Mangyaring ilagay ang petsa ng pagbibigay ng bakuna.",
     "cert_perm_title": "Kailangan ang Pahintulot",
-    "cert_perm_msg": "Mangyaring payagan ang access sa photo library para mag-upload ng sertipiko."
+    "cert_perm_msg": "Mangyaring payagan ang access sa photo library para mag-upload ng sertipiko.",
+    "dose_label": "Dosis {{n}}"
   },
   "vitamins": {
     "title": "Bitamina at Gamot",

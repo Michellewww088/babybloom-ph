@@ -732,7 +732,8 @@
     "date_required_title": "Date Required",
     "date_required_msg": "Please enter the date this vaccine was given.",
     "cert_perm_title": "Permission Needed",
-    "cert_perm_msg": "Please allow photo library access to upload a certificate."
+    "cert_perm_msg": "Please allow photo library access to upload a certificate.",
+    "dose_label": "Dose {{n}}"
   },
   "vitamins": {
     "title": "Vitamins & Medications",
