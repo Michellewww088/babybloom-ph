@@ -9,8 +9,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView, View, Text, TouchableOpacity, Modal, TextInput,
   StyleSheet, Dimensions, Alert, Platform, Switch,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
 import { SkeletonList } from '../../components/SkeletonCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +27,7 @@ import {
 import Colors from '../../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../../store/childStore';
 import { EmptyState } from '../../components/EmptyState';
-import { useVaccineStore, VaccineRecord, VaccineStatus } from '../../store/vaccineStore';
+import { useVaccineStore, VaccineRecord, VaccineStatus, AdministeredRole, VaccineSite } from '../../store/vaccineStore';
 import {
   DOH_EPI_SCHEDULE, AgeGroup as EpiAgeGroup, VaccineEntry,
   getAgeGroupForVaccine,
@@ -377,6 +379,31 @@ const vr = StyleSheet.create({
 
 // ── Edit Modal (My Records) ────────────────────────────────────────────────────
 
+const BRANDS = ['Sanofi', 'GSK', 'Pfizer', 'MSD', 'AstraZeneca', 'Serum Institute', 'Other'];
+
+const ROLE_OPTS: { v: AdministeredRole; l: string }[] = [
+  { v: 'pediatrician', l: 'Pedia' },
+  { v: 'nurse',        l: 'Nurse' },
+  { v: 'midwife',      l: 'Midwife' },
+];
+
+const SITE_OPTS: { v: VaccineSite; l: string }[] = [
+  { v: 'left_thigh',  l: 'L Thigh' },
+  { v: 'right_thigh', l: 'R Thigh' },
+  { v: 'left_arm',    l: 'L Arm' },
+  { v: 'right_arm',   l: 'R Arm' },
+  { v: 'oral',        l: 'Oral' },
+];
+
+function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <View style={mo.secHdr}>
+      {icon}
+      <Text style={mo.secTitle}>{label}</Text>
+    </View>
+  );
+}
+
 function VaccineEditModal({
   visible, record, onClose, onSave, onDelete,
 }: {
@@ -384,41 +411,102 @@ function VaccineEditModal({
   onClose: () => void; onSave: (r: VaccineRecord) => void; onDelete?: (id: string) => void;
 }) {
   const { t } = useTranslation();
+
+  // Section 1 — Vaccine Details
   const [status,   setStatus]   = useState<VaccineStatus>('upcoming');
+  const [brand,    setBrand]    = useState('');
+
+  // Section 2 — Schedule
   const [givenDt,  setGivenDt]  = useState('');
-  const [clinic,   setClinic]   = useState('');
-  const [lotNum,   setLotNum]   = useState('');
+  const [nextDue,  setNextDue]  = useState('');
+
+  // Section 3 — Administration
   const [adminBy,  setAdminBy]  = useState('');
-  const [reaction, setReaction] = useState('');
-  const [notes,    setNotes]    = useState('');
-  const [reminder, setReminder] = useState(true);
+  const [adminRole,setAdminRole]= useState<AdministeredRole | ''>('');
+  const [clinic,   setClinic]   = useState('');
+  const [site,     setSite]     = useState<VaccineSite | ''>('');
+
+  // Section 4 — Batch Info
+  const [lotNum,    setLotNum]   = useState('');
+  const [expiryDt,  setExpiryDt] = useState('');
+  const [doseNum,   setDoseNum]  = useState('');
+
+  // Section 5 — Notes & Attachments
+  const [reaction,  setReaction]  = useState('');
+  const [notes,     setNotes]     = useState('');
+  const [certUri,   setCertUri]   = useState('');
+  const [reminder,  setReminder]  = useState(true);
 
   useEffect(() => {
     if (record) {
       setStatus(record.status);
+      setBrand(record.brand ?? '');
       setGivenDt(record.givenDate ?? '');
-      setClinic(record.clinicName ?? '');
-      setLotNum(record.lotNumber ?? '');
+      setNextDue(record.nextDueDate ?? '');
       setAdminBy(record.administeredBy ?? '');
+      setAdminRole(record.administeredRole ?? '');
+      setClinic(record.clinicName ?? '');
+      setSite(record.site ?? '');
+      setLotNum(record.lotNumber ?? '');
+      setExpiryDt(record.expiryDate ?? '');
+      setDoseNum(record.doseNumber != null ? String(record.doseNumber) : '');
       setReaction(record.reactionNotes ?? '');
       setNotes(record.notes ?? '');
+      setCertUri(record.certificateUrl ?? '');
       setReminder(record.reminderEnabled);
     }
   }, [record]);
 
   if (!record) return null;
 
-  const ageGroup  = getAgeGroupForVaccine(record.code);
-  const vaccInfo  = ageGroup?.vaccines.find(v => v.code === record.code);
-  const wks       = record.recommendedAgeWeeks;
-  const ageLabel  = wks === 0 ? t('vaccine_log.at_birth') : wks < 52 ? `${wks} weeks` : `${Math.round(wks/4.33)} months`;
+  const ageGroup = getAgeGroupForVaccine(record.code);
+  const vaccInfo = ageGroup?.vaccines.find(v => v.code === record.code);
+  const wks      = record.recommendedAgeWeeks;
+  const ageLabel = wks === 0 ? t('vaccine_log.at_birth') : wks < 52 ? `${wks} weeks` : `${Math.round(wks / 4.33)} months`;
+
+  // Expiry warning — yellow if expiry is within 30 days of givenDate (or today)
+  const expiryWarning = (() => {
+    if (!expiryDt) return false;
+    const ref  = givenDt ? new Date(givenDt) : new Date();
+    const exp  = new Date(expiryDt);
+    const diff = Math.round((exp.getTime() - ref.getTime()) / 86400000);
+    return diff >= 0 && diff < 30;
+  })();
+
+  const pickCertPhoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert(t('vaccine_log.cert_perm_title'), t('vaccine_log.cert_perm_msg')); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8, allowsEditing: true });
+    if (!result.canceled && result.assets[0]) {
+      setCertUri(result.assets[0].uri);
+    }
+  };
 
   const save = () => {
-    if (status === 'given' && !givenDt) { Alert.alert('Date Required', 'Please enter the date the vaccine was given.'); return; }
-    onSave({ ...record, status, givenDate: status === 'given' ? givenDt : undefined,
-      clinicName: clinic || undefined, lotNumber: lotNum || undefined,
-      administeredBy: adminBy || undefined, reactionNotes: reaction || undefined,
-      notes: notes || undefined, reminderEnabled: reminder, updatedAt: new Date().toISOString() });
+    if (status === 'given' && !givenDt) {
+      Alert.alert(t('vaccine_log.date_required_title'), t('vaccine_log.date_required_msg'));
+      return;
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    onSave({
+      ...record,
+      status,
+      brand:            brand || undefined,
+      givenDate:        status === 'given' ? givenDt : undefined,
+      nextDueDate:      nextDue || undefined,
+      administeredBy:   adminBy || undefined,
+      administeredRole: (adminRole as AdministeredRole) || undefined,
+      clinicName:       clinic || undefined,
+      site:             (site as VaccineSite) || undefined,
+      lotNumber:        lotNum || undefined,
+      expiryDate:       expiryDt || undefined,
+      doseNumber:       doseNum ? parseInt(doseNum, 10) : undefined,
+      reactionNotes:    reaction || undefined,
+      notes:            notes || undefined,
+      certificateUrl:   certUri || undefined,
+      reminderEnabled:  reminder,
+      updatedAt:        new Date().toISOString(),
+    });
     onClose();
   };
 
@@ -432,7 +520,9 @@ function VaccineEditModal({
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={mo.wrap}>
-          <LinearGradient colors={[Colors.blue,'#4A9DE8']} style={mo.hdr}>
+
+          {/* ── Header ── */}
+          <LinearGradient colors={[Colors.blue, '#4A9DE8']} style={mo.hdr}>
             <TouchableOpacity onPress={onClose} style={mo.closeBtn}>
               <Text style={mo.closeTxt}>✕</Text>
             </TouchableOpacity>
@@ -443,14 +533,19 @@ function VaccineEditModal({
             </View>
             <View style={[mo.epiBadge, { backgroundColor: record.isFreeEPI ? '#C8F7DC' : '#FFF0C8' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                {record.isFreeEPI ? <CheckCircle2 size={12} strokeWidth={1.5} color={'#1A7A4A'} /> : <Coins size={12} strokeWidth={1.5} color={'#A05C00'} />}
+                {record.isFreeEPI
+                  ? <CheckCircle2 size={12} strokeWidth={1.5} color="#1A7A4A" />
+                  : <Coins        size={12} strokeWidth={1.5} color="#A05C00" />}
                 <Text style={[mo.epiBadgeTxt, { color: record.isFreeEPI ? '#1A7A4A' : '#A05C00' }]}>
                   {record.isFreeEPI ? 'FREE' : 'Private'}
                 </Text>
               </View>
             </View>
           </LinearGradient>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={mo.content} showsVerticalScrollIndicator={false}>
+
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={mo.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+
+            {/* ── Vaccine quick-info card ── */}
             {vaccInfo && (
               <View style={mo.infoCard}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Shield size={12} strokeWidth={1.5} color={BLUE} /><Text style={mo.infoLbl}>{t('vaccine_log.protects_against')}</Text></View>
@@ -463,7 +558,11 @@ function VaccineEditModal({
                 <Text style={mo.infoVal}>{vaccInfo.whereToGet.en}</Text>
               </View>
             )}
-            <Text style={mo.secTitle}>{t('vaccine_log.field_status')}</Text>
+
+            {/* ══ SECTION 1: Vaccine Details ══ */}
+            <SectionHeader icon={<Pill size={14} strokeWidth={1.5} color={BLUE} />} label={t('vaccine_log.sec_details')} />
+
+            <Text style={mo.fLbl}>{t('vaccine_log.field_status')}</Text>
             <View style={mo.statusRow}>
               {STATUS_OPTS.map(o => (
                 <TouchableOpacity key={o.v} style={[mo.statusBtn, status === o.v && { borderColor: o.c, backgroundColor: statusBg(o.v) }]} onPress={() => setStatus(o.v)} activeOpacity={0.8}>
@@ -474,59 +573,196 @@ function VaccineEditModal({
                 </TouchableOpacity>
               ))}
             </View>
+
+            <View style={mo.fBlock}>
+              <Text style={mo.fLbl}>{t('vaccine_log.field_brand')}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {BRANDS.map(b => (
+                    <TouchableOpacity key={b} onPress={() => setBrand(brand === b ? '' : b)} activeOpacity={0.8}
+                      style={[mo.chip, brand === b && mo.chipActive]}>
+                      <Text style={[mo.chipTxt, brand === b && mo.chipTxtActive]}>{b}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={mo.fBlock}>
+              <Text style={mo.fLbl}>{t('vaccine_log.field_dose_number')}</Text>
+              <TextInput style={mo.input} value={doseNum} onChangeText={setDoseNum}
+                placeholder="1" placeholderTextColor="#ccc" keyboardType="number-pad" />
+            </View>
+
+            {/* ══ SECTION 2: Schedule ══ */}
+            <SectionHeader icon={<Calendar size={14} strokeWidth={1.5} color={BLUE} />} label={t('vaccine_log.sec_schedule')} />
+
+            <View style={mo.scheduledChip}>
+              <Calendar size={12} strokeWidth={1.5} color={BLUE} />
+              <Text style={mo.scheduledChipTxt}>{t('vaccine_log.scheduled_date')}: <Text style={{ fontWeight: '800' }}>{fmtDate(record.scheduledDate)}</Text></Text>
+            </View>
+
             {status === 'given' && (
               <View style={mo.fBlock}>
                 <Text style={mo.fLbl}>{t('vaccine_log.field_date_given')} *</Text>
-                <TextInput style={mo.input} value={givenDt} onChangeText={setGivenDt} placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+                <TextInput style={mo.input} value={givenDt} onChangeText={setGivenDt}
+                  placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
               </View>
             )}
+
             <View style={mo.fBlock}>
-              <Text style={mo.fLbl}>{t('vaccine_log.field_clinic')}</Text>
-              <TextInput style={mo.input} value={clinic} onChangeText={setClinic} placeholder="e.g. Makati Medical Center, BHS Poblacion" placeholderTextColor="#ccc" />
+              <Text style={mo.fLbl}>{t('vaccine_log.field_next_due')}</Text>
+              <TextInput style={mo.input} value={nextDue} onChangeText={setNextDue}
+                placeholder="YYYY-MM-DD  (auto-filled for multi-dose)" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
             </View>
-            <View style={mo.fBlock}>
-              <Text style={mo.fLbl}>{t('vaccine_log.field_lot')}</Text>
-              <TextInput style={mo.input} value={lotNum} onChangeText={setLotNum} placeholder="Optional — useful for recalls" placeholderTextColor="#ccc" />
-            </View>
+
+            {/* ══ SECTION 3: Administration ══ */}
+            <SectionHeader icon={<Syringe size={14} strokeWidth={1.5} color={BLUE} />} label={t('vaccine_log.sec_admin')} />
+
             <View style={mo.fBlock}>
               <Text style={mo.fLbl}>{t('vaccine_log.field_admin_by')}</Text>
-              <TextInput style={mo.input} value={adminBy} onChangeText={setAdminBy} placeholder="Doctor / Nurse name" placeholderTextColor="#ccc" />
+              <TextInput style={mo.input} value={adminBy} onChangeText={setAdminBy}
+                placeholder="Dr. Santos / Nurse Reyes" placeholderTextColor="#ccc" />
             </View>
+
             <View style={mo.fBlock}>
-              <Text style={mo.fLbl}>{t('vaccine_log.field_reaction')}</Text>
-              <TextInput style={[mo.input, mo.inputMulti]} value={reaction} onChangeText={setReaction} placeholder='"Mild fever for 1 day", "No reaction"' placeholderTextColor="#ccc" multiline numberOfLines={2} />
+              <Text style={mo.fLbl}>{t('vaccine_log.field_admin_role')}</Text>
+              <View style={mo.segRow}>
+                {ROLE_OPTS.map(o => (
+                  <TouchableOpacity key={o.v} onPress={() => setAdminRole(adminRole === o.v ? '' : o.v)} activeOpacity={0.8}
+                    style={[mo.segBtn, adminRole === o.v && mo.segBtnActive]}>
+                    <Text style={[mo.segBtnTxt, adminRole === o.v && mo.segBtnTxtActive]}>{o.l}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
+
+            <View style={mo.fBlock}>
+              <Text style={mo.fLbl}>{t('vaccine_log.field_clinic')}</Text>
+              <TextInput style={mo.input} value={clinic} onChangeText={setClinic}
+                placeholder="e.g. Makati Med, BHS Poblacion, RHU Pasay" placeholderTextColor="#ccc" />
+            </View>
+
+            <View style={mo.fBlock}>
+              <Text style={mo.fLbl}>{t('vaccine_log.field_site')}</Text>
+              <View style={[mo.segRow, { flexWrap: 'wrap' }]}>
+                {SITE_OPTS.map(o => (
+                  <TouchableOpacity key={o.v} onPress={() => setSite(site === o.v ? '' : o.v)} activeOpacity={0.8}
+                    style={[mo.segBtn, site === o.v && mo.segBtnActive]}>
+                    <Text style={[mo.segBtnTxt, site === o.v && mo.segBtnTxtActive]}>{o.l}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* ══ SECTION 4: Batch Info ══ */}
+            <SectionHeader icon={<Hash size={14} strokeWidth={1.5} color={BLUE} />} label={t('vaccine_log.sec_batch')} />
+
+            <View style={mo.fBlock}>
+              <Text style={mo.fLbl}>{t('vaccine_log.field_lot')}</Text>
+              <TextInput style={mo.input} value={lotNum} onChangeText={setLotNum}
+                placeholder="Lot number — useful for recalls" placeholderTextColor="#ccc" />
+            </View>
+
+            <View style={mo.fBlock}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <Text style={mo.fLbl}>{t('vaccine_log.field_expiry')}</Text>
+                {expiryWarning && (
+                  <View style={mo.expiryWarn}>
+                    <AlertTriangle size={11} color={GOLD} />
+                    <Text style={mo.expiryWarnTxt}>{t('vaccine_log.expiry_soon')}</Text>
+                  </View>
+                )}
+              </View>
+              <TextInput style={[mo.input, expiryWarning && { borderColor: GOLD }]} value={expiryDt}
+                onChangeText={setExpiryDt} placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+            </View>
+
+            {/* ══ SECTION 5: Notes & Attachments ══ */}
+            <SectionHeader icon={<ClipboardList size={14} strokeWidth={1.5} color={BLUE} />} label={t('vaccine_log.sec_notes')} />
+
+            <View style={mo.fBlock}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <Text style={mo.fLbl}>{t('vaccine_log.field_reaction')}</Text>
+                <Text style={[mo.charCount, reaction.length > 450 && { color: '#E53E3E' }]}>{reaction.length}/500</Text>
+              </View>
+              <TextInput style={[mo.input, mo.inputMulti]} value={reaction} onChangeText={v => v.length <= 500 && setReaction(v)}
+                placeholder='"Mild fever for 1 day", "No reaction"' placeholderTextColor="#ccc" multiline numberOfLines={3} />
+            </View>
+
             <View style={mo.fBlock}>
               <Text style={mo.fLbl}>{t('vaccine_log.field_notes')}</Text>
-              <TextInput style={[mo.input, mo.inputMulti]} value={notes} onChangeText={setNotes} placeholder="Any additional notes…" placeholderTextColor="#ccc" multiline numberOfLines={2} />
+              <TextInput style={[mo.input, mo.inputMulti]} value={notes} onChangeText={setNotes}
+                placeholder="Any additional notes…" placeholderTextColor="#ccc" multiline numberOfLines={2} />
             </View>
+
+            {/* Certificate photo */}
+            <View style={mo.fBlock}>
+              <Text style={mo.fLbl}>{t('vaccine_log.field_certificate')}</Text>
+              {certUri ? (
+                <View style={mo.certPreview}>
+                  <Image source={{ uri: certUri }} style={mo.certImg} resizeMode="cover" />
+                  <TouchableOpacity style={mo.certRemove} onPress={() => setCertUri('')}>
+                    <Trash2 size={14} color="#E53E3E" />
+                    <Text style={mo.certRemoveTxt}>{t('vaccine_log.remove_photo')}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={mo.certUpload} onPress={pickCertPhoto} activeOpacity={0.8}>
+                  <Microscope size={20} strokeWidth={1.5} color={BLUE} />
+                  <Text style={mo.certUploadTxt}>{t('vaccine_log.upload_certificate')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Reminder toggle */}
             <View style={mo.reminderRow}>
               <View style={{ flex: 1 }}>
                 <Text style={mo.fLbl}>{t('vaccine_log.field_reminder')}</Text>
                 <Text style={mo.reminderSub}>{t('vaccine_log.reminder_7days')} ({fmtDate(record.reminderDate ?? record.scheduledDate)})</Text>
               </View>
-              <Switch value={reminder} onValueChange={setReminder} trackColor={{ false: '#e0e0e0', true: BLUE + '66' }} thumbColor={reminder ? BLUE : '#aaa'} />
+              <Switch value={reminder} onValueChange={setReminder}
+                trackColor={{ false: '#e0e0e0', true: BLUE + '66' }} thumbColor={reminder ? BLUE : '#aaa'} />
             </View>
-            <TouchableOpacity onPress={save} activeOpacity={0.85}>
-              <LinearGradient colors={[BLUE,'#4A9DE8']} style={mo.saveBtn}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Syringe size={18} strokeWidth={1.5} color={Colors.white} /><Text style={mo.saveBtnTxt}>{t('vaccine_log.save')}</Text></View>
-              </LinearGradient>
-            </TouchableOpacity>
-            {onDelete && (
-              <TouchableOpacity style={mo.deleteBtn} onPress={() => Alert.alert(t('vaccine_log.delete'), t('vaccine_log.delete_confirm'), [
-                { text: t('common.cancel'), style: 'cancel' },
-                { text: t('common.delete'), style: 'destructive', onPress: () => { onDelete(record.id); onClose(); } },
-              ])} activeOpacity={0.85}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Trash2 size={16} strokeWidth={1.5} color={'#E53E3E'} /><Text style={mo.deleteBtnTxt}>{t('vaccine_log.delete')}</Text></View>
-              </TouchableOpacity>
-            )}
+
+            {/* Post-care tip */}
             {status === 'given' && vaccInfo && (
               <View style={mo.postCare}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Cross size={12} strokeWidth={1.5} color={GOLD} /><Text style={mo.postCareLbl}>{t('vaccine_log.post_care')}</Text></View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Cross size={12} strokeWidth={1.5} color={GOLD} />
+                  <Text style={mo.postCareLbl}>{t('vaccine_log.post_care')}</Text>
+                </View>
                 <Text style={mo.postCareVal}>{vaccInfo.postVaccineCare}</Text>
               </View>
             )}
-            <View style={{ height: 40 }} />
+
+            {/* Save */}
+            <TouchableOpacity onPress={save} activeOpacity={0.85} style={{ marginTop: 8 }}>
+              <LinearGradient colors={[BLUE, '#4A9DE8']} style={mo.saveBtn}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Syringe size={18} strokeWidth={1.5} color={Colors.white} />
+                  <Text style={mo.saveBtnTxt}>{t('vaccine_log.save')}</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Delete */}
+            {onDelete && (
+              <TouchableOpacity style={mo.deleteBtn} onPress={() => Alert.alert(
+                t('vaccine_log.delete'), t('vaccine_log.delete_confirm'),
+                [
+                  { text: t('common.cancel'), style: 'cancel' },
+                  { text: t('common.delete'), style: 'destructive', onPress: () => { onDelete(record.id); onClose(); } },
+                ]
+              )} activeOpacity={0.85}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Trash2 size={16} strokeWidth={1.5} color="#E53E3E" />
+                  <Text style={mo.deleteBtnTxt}>{t('vaccine_log.delete')}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+
+            <View style={{ height: 48 }} />
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
@@ -535,36 +771,66 @@ function VaccineEditModal({
 }
 
 const mo = StyleSheet.create({
-  wrap:        { flex: 1, backgroundColor: Colors.background },
-  hdr:         { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 16, paddingBottom: 16 },
-  closeBtn:    { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  closeTxt:    { color: Colors.white, fontSize: 14, fontWeight: '700' },
-  hdrTitle:    { fontSize: 16, fontWeight: '800', color: Colors.white },
-  hdrSub:      { fontSize: 12, color: 'rgba(255,255,255,0.9)', marginTop: 2, lineHeight: 16 },
-  hdrAge:      { fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 3 },
-  epiBadge:    { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, alignSelf: 'flex-start' },
-  epiBadgeTxt: { fontSize: 10, fontWeight: '800' },
-  content:     { padding: 16 },
-  infoCard:    { backgroundColor: '#F0F8FF', borderRadius: 14, padding: 14, marginBottom: 16, gap: 2 },
-  infoLbl:     { fontSize: 10, fontWeight: '800', color: BLUE, marginTop: 6 },
-  infoVal:     { fontSize: 12, color: DARK, lineHeight: 17 },
-  secTitle:    { fontSize: 12, fontWeight: '800', color: GRAY, marginBottom: 8, marginTop: 4, letterSpacing: 0.5 },
-  statusRow:   { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  statusBtn:   { flex: 1, borderRadius: 10, borderWidth: 1.5, borderColor: '#e0e0e0', paddingVertical: 10, alignItems: 'center' },
-  statusBtnTxt:{ fontSize: 11, fontWeight: '700', color: GRAY },
-  fBlock:      { marginBottom: 12 },
-  fLbl:        { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 6 },
-  input:       { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 11, fontSize: 13, color: DARK, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
-  inputMulti:  { minHeight: 60, textAlignVertical: 'top', paddingTop: 11 },
-  reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#F0F8FF', borderRadius: 14, padding: 14, marginBottom: 14 },
-  reminderSub: { fontSize: 11, color: BLUE, marginTop: 2 },
-  saveBtn:     { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10, shadowColor: BLUE, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  saveBtnTxt:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
-  deleteBtn:   { borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, borderColor: '#FFBDBD', backgroundColor: '#FFF5F5', marginBottom: 14 },
-  deleteBtnTxt:{ color: '#E53E3E', fontSize: 14, fontWeight: '700' },
-  postCare:    { backgroundColor: Colors.softGold, borderRadius: 14, padding: 14, borderLeftWidth: 3, borderLeftColor: GOLD, gap: 4 },
-  postCareLbl: { fontSize: 11, fontWeight: '800', color: GOLD },
-  postCareVal: { fontSize: 12, color: DARK, lineHeight: 17 },
+  wrap:            { flex: 1, backgroundColor: Colors.background },
+  hdr:             { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 16, paddingBottom: 16 },
+  closeBtn:        { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
+  closeTxt:        { color: Colors.white, fontSize: 14, fontWeight: '700' },
+  hdrTitle:        { fontSize: 16, fontWeight: '800', color: Colors.white },
+  hdrSub:          { fontSize: 12, color: 'rgba(255,255,255,0.9)', marginTop: 2, lineHeight: 16 },
+  hdrAge:          { fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 3 },
+  epiBadge:        { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, alignSelf: 'flex-start' },
+  epiBadgeTxt:     { fontSize: 10, fontWeight: '800' },
+  content:         { padding: 16, paddingBottom: 32 },
+  infoCard:        { backgroundColor: '#F0F8FF', borderRadius: 14, padding: 14, marginBottom: 20, gap: 2 },
+  infoLbl:         { fontSize: 10, fontWeight: '800', color: BLUE, marginTop: 6 },
+  infoVal:         { fontSize: 12, color: DARK, lineHeight: 17 },
+  secHdr:          { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 20, marginBottom: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  secTitle:        { fontSize: 12, fontWeight: '800', color: BLUE, letterSpacing: 0.5, textTransform: 'uppercase' },
+  statusRow:       { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  statusBtn:       { flex: 1, borderRadius: 10, borderWidth: 1.5, borderColor: '#e0e0e0', paddingVertical: 10, alignItems: 'center' },
+  statusBtnTxt:    { fontSize: 11, fontWeight: '700', color: GRAY },
+  fBlock:          { marginBottom: 14 },
+  fLbl:            { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 6 },
+  input:           { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 11, fontSize: 13, color: DARK, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
+  inputMulti:      { minHeight: 72, height: undefined, textAlignVertical: 'top', paddingTop: 12 },
+  // Brand chips
+  chip:            { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  chipActive:      { borderColor: BLUE, backgroundColor: Colors.softBlue },
+  chipTxt:         { fontSize: 12, fontWeight: '600', color: GRAY },
+  chipTxtActive:   { color: BLUE, fontWeight: '800' },
+  // Scheduled date chip
+  scheduledChip:   { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.softBlue, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 14, alignSelf: 'flex-start' },
+  scheduledChipTxt:{ fontSize: 12, color: BLUE },
+  // Segmented controls (role + site)
+  segRow:          { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  segBtn:          { borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  segBtnActive:    { borderColor: BLUE, backgroundColor: Colors.softBlue },
+  segBtnTxt:       { fontSize: 12, fontWeight: '600', color: GRAY },
+  segBtnTxtActive: { color: BLUE, fontWeight: '800' },
+  // Expiry warning
+  expiryWarn:      { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.softGold, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  expiryWarnTxt:   { fontSize: 10, fontWeight: '700', color: GOLD },
+  // Char counter
+  charCount:       { fontSize: 11, color: GRAY },
+  // Certificate
+  certUpload:      { borderRadius: 14, borderWidth: 1.5, borderColor: Colors.border, borderStyle: 'dashed', height: 80, alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#F8FBFF' },
+  certUploadTxt:   { fontSize: 13, fontWeight: '600', color: BLUE },
+  certPreview:     { borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border },
+  certImg:         { width: '100%', height: 160 },
+  certRemove:      { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 10, backgroundColor: '#FFF5F5' },
+  certRemoveTxt:   { fontSize: 12, fontWeight: '600', color: '#E53E3E' },
+  // Reminder
+  reminderRow:     { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#F0F8FF', borderRadius: 14, padding: 14, marginBottom: 14 },
+  reminderSub:     { fontSize: 11, color: BLUE, marginTop: 2 },
+  // Post-care
+  postCare:        { backgroundColor: Colors.softGold, borderRadius: 14, padding: 14, borderLeftWidth: 3, borderLeftColor: GOLD, gap: 4, marginBottom: 14 },
+  postCareLbl:     { fontSize: 11, fontWeight: '800', color: GOLD },
+  postCareVal:     { fontSize: 12, color: DARK, lineHeight: 17 },
+  // Buttons
+  saveBtn:         { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10, shadowColor: BLUE, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  saveBtnTxt:      { color: Colors.white, fontSize: 16, fontWeight: '800' },
+  deleteBtn:       { borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, borderColor: '#FFBDBD', backgroundColor: '#FFF5F5', marginBottom: 14 },
+  deleteBtnTxt:    { color: '#E53E3E', fontSize: 14, fontWeight: '700' },
 });
 
 // ══════════════════════════════════════════════════════════════════════════════

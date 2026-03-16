@@ -13,6 +13,8 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type VaccineStatus = 'given' | 'upcoming' | 'overdue' | 'skipped';
+export type AdministeredRole = 'pediatrician' | 'nurse' | 'midwife';
+export type VaccineSite = 'left_thigh' | 'right_thigh' | 'left_arm' | 'right_arm' | 'oral';
 
 export interface VaccineRecord {
   id: string;
@@ -30,13 +32,26 @@ export interface VaccineRecord {
   status: VaccineStatus;
   scheduledDate: string;  // ISO date YYYY-MM-DD (birthday + recommendedAgeWeeks)
   givenDate?: string;     // ISO date — set when status = 'given'
+  nextDueDate?: string;   // ISO date — for multi-dose vaccines
 
-  // Record details
+  // Vaccine brand
+  brand?: string;
+
+  // Administration details
   clinicName?: string;
-  lotNumber?: string;
   administeredBy?: string;
+  administeredRole?: AdministeredRole;
+  site?: VaccineSite;     // injection site
+
+  // Batch / lot info
+  lotNumber?: string;
+  expiryDate?: string;    // ISO date — warn if <30 days from givenDate
+  doseNumber?: number;    // e.g. 1, 2, 3
+
+  // Notes & attachments
   reactionNotes?: string;
   notes?: string;
+  certificateUrl?: string; // photo of vaccination certificate
 
   // Reminder
   reminderEnabled: boolean;
