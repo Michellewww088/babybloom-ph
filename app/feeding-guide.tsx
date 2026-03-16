@@ -709,9 +709,9 @@ const ss = StyleSheet.create({
 
   // Stage Timeline
   stageCard: {
-    backgroundColor: Colors.white, borderRadius: 16, marginBottom: 10,
-    padding: 16, elevation: 2,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+    backgroundColor: Colors.surface, borderRadius: 20, marginBottom: 10,
+    padding: 16, elevation: 4,
+    shadowColor: Colors.shadowColor, shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
     borderLeftWidth: 4, borderLeftColor: '#E0E0E0',
   },
   stageCardActive:  { borderLeftColor: Colors.primaryPink, backgroundColor: '#FFF5F8' },
@@ -760,9 +760,9 @@ const ss = StyleSheet.create({
 
   // Superfood cards
   superfoodCard: {
-    backgroundColor: Colors.white, borderRadius: 16, marginBottom: 12,
+    backgroundColor: Colors.surface, borderRadius: 20, marginBottom: 12,
     flexDirection: 'row', overflow: 'hidden',
-    elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+    elevation: 4, shadowColor: Colors.shadowColor, shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
   },
   superfoodCardWarn: { borderWidth: 1.5, borderColor: '#FFB74D' },
   superfoodGradient: { width: 80, alignItems: 'center', justifyContent: 'center' },

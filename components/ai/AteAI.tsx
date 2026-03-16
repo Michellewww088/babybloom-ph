@@ -479,7 +479,8 @@ export function AteAISummaryCard({
 
 const asc = StyleSheet.create({
   card:        { borderRadius: 20, overflow: 'hidden', marginTop: 12,
-                 shadowColor: PINK, shadowOpacity: 0.12, shadowRadius: 10, elevation: 3 },
+                 shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+                 shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   gradient:    { borderRadius: 20, borderWidth: 1.5, borderColor: '#FFB6C8' },
   header:      { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
   iconWrap:    { width: 40, height: 40, borderRadius: 20, backgroundColor: SOFT_PK,
@@ -829,10 +830,10 @@ const chat = StyleSheet.create({
   inputRow:       { flexDirection: 'row', alignItems: 'flex-end', gap: 8,
                     padding: 12, borderTopWidth: 1, borderTopColor: '#F0E4EC',
                     backgroundColor: Colors.white },
-  input:          { flex: 1, backgroundColor: '#F8F0F5', borderRadius: 20,
+  input:          { flex: 1, backgroundColor: '#F8F0F5', borderRadius: 12,
                     paddingHorizontal: 16, paddingVertical: 10,
                     fontSize: 14, color: DARK, maxHeight: 100,
-                    borderWidth: 1.5, borderColor: '#FFB6C8' },
+                    borderWidth: 1.5, borderColor: Colors.border },
   sendBtn:        { width: 44, height: 44, borderRadius: 22,
                     backgroundColor: PINK, alignItems: 'center', justifyContent: 'center',
                     shadowColor: PINK, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 },

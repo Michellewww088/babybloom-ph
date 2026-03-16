@@ -726,9 +726,9 @@ const s = StyleSheet.create({
 
   /* Filter labels + chips */
   filterLabel: {
-    fontSize: 11, fontWeight: '800', color: '#9E9EBE',
-    letterSpacing: 1, marginLeft: 16, marginBottom: 6,
-    textTransform: 'uppercase',
+    fontSize: 11, fontWeight: '800', color: Colors.textMid,
+    letterSpacing: 1.5, marginLeft: 16, marginBottom: 6,
+    textTransform: 'uppercase', fontFamily: 'PlusJakartaSans_500Medium',
   },
   chipScroll: { marginBottom: 4 },
   chipRow:    { paddingHorizontal: 16, gap: 8 },
@@ -748,8 +748,9 @@ const s = StyleSheet.create({
 
   /* Recommended card */
   recCard: {
-    width: 190, borderRadius: 18, backgroundColor: Colors.white, overflow: 'hidden',
-    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+    width: 190, borderRadius: 20, backgroundColor: Colors.surface, overflow: 'hidden',
+    shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
   },
   recCardTop: { height: 72, padding: 10, justifyContent: 'flex-end' },
   recChip: {
@@ -764,9 +765,10 @@ const s = StyleSheet.create({
 
   /* Article card */
   card: {
-    backgroundColor: Colors.white, borderRadius: 18, marginBottom: 12, overflow: 'hidden',
+    backgroundColor: Colors.surface, borderRadius: 20, marginBottom: 12, overflow: 'hidden',
     flexDirection: 'row',
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
+    shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
   },
   cardBar:  { width: 4 },
   cardBody: { flex: 1, padding: 14 },

@@ -979,7 +979,7 @@ function EmptyState() {
       <Text style={es.subtitle}>{t('home.welcome_subtitle')}</Text>
       <TouchableOpacity onPress={() => router.push('/child-profile')} activeOpacity={0.85}>
         <LinearGradient
-          colors={[Colors.primaryPink, '#F472B6']}
+          colors={[Colors.primary, Colors.primaryLight]}
           style={es.btn}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
         >
@@ -1079,9 +1079,10 @@ const s = StyleSheet.create({
   scroll:       { flex: 1 },
   content:      { paddingBottom: 40 },
   sectionTitle: {
-    fontSize: 11, fontWeight: '800', color: Colors.midGray,
+    fontSize: 11, fontWeight: '800', color: Colors.textMid,
     marginBottom: 10, marginTop: 18, marginHorizontal: PAD,
-    textTransform: 'uppercase', letterSpacing: 1,
+    textTransform: 'uppercase', letterSpacing: 1.5,
+    fontFamily: 'PlusJakartaSans_500Medium',
   },
 });
 
@@ -1156,9 +1157,10 @@ const qs = StyleSheet.create({
 // Growth snapshot
 const gc = StyleSheet.create({
   card: {
-    backgroundColor: Colors.white, borderRadius: 22, padding: 16,
+    backgroundColor: Colors.surface, borderRadius: 20, padding: 16,
     marginHorizontal: PAD, marginBottom: 4,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
+    shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
     borderWidth: 1, borderColor: Colors.border,
   },
   row:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
@@ -1194,9 +1196,10 @@ const mm = StyleSheet.create({
   body:       { padding: 16, paddingBottom: 60 },
   label:      { fontSize: 13, fontWeight: '700', color: Colors.dark, marginTop: 16, marginBottom: 6 },
   input:      {
-    backgroundColor: Colors.white, borderRadius: 14, borderWidth: 1.5,
-    borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, color: Colors.dark,
+    backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1,
+    borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 12,
+    fontSize: 15, color: Colors.dark, height: 52,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   inputRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
   inputFlex:  { flex: 1 },
@@ -1232,9 +1235,10 @@ const fg = StyleSheet.create({
 // Insights card
 const ic = StyleSheet.create({
   card: {
-    backgroundColor: Colors.white, borderRadius: 22, padding: 16,
+    backgroundColor: Colors.surface, borderRadius: 20, padding: 16,
     marginHorizontal: PAD, marginBottom: 4,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
+    shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
     borderWidth: 1, borderColor: Colors.border,
   },
   titleRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
@@ -1256,7 +1260,7 @@ const es = StyleSheet.create({
   },
   title:    { fontSize: 22, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginTop: 20, marginBottom: 10 },
   subtitle: { fontSize: 14, color: Colors.midGray, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
-  btn:      { borderRadius: 18, paddingVertical: 15, paddingHorizontal: 32, shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
+  btn:      { borderRadius: 14, height: 52, paddingHorizontal: 32, justifyContent: 'center', alignItems: 'center', shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
   btnText:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
   note:     { marginTop: 20, fontSize: 13, color: Colors.lightGray, fontWeight: '600' },
 });

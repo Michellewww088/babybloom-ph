@@ -365,7 +365,7 @@ function MeasurementModal({
           </ScrollView>
 
           <TouchableOpacity onPress={save} activeOpacity={0.85} style={mm.saveWrap}>
-            <LinearGradient colors={[Colors.primaryPink, '#F472B6']} style={mm.saveBtn}
+            <LinearGradient colors={[Colors.primary, Colors.primaryLight]} style={mm.saveBtn}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
               <Text style={mm.saveTxt}>{t('growth.modal_save')}</Text>
             </LinearGradient>
@@ -1088,7 +1088,7 @@ const s = StyleSheet.create({
   childAge:   { fontSize: 13, color: Colors.midGray, fontWeight: '600' },
   pretrmBadge:{ backgroundColor: Colors.softGold, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   pretrmTxt:  { fontSize: 10, color: Colors.gold, fontWeight: '700' },
-  card:       { backgroundColor: Colors.white, borderRadius: 20, padding: PAD, marginHorizontal: PAD, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: Colors.border },
+  card:       { backgroundColor: Colors.surface, borderRadius: 20, padding: PAD, marginHorizontal: PAD, marginBottom: 12, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4, borderWidth: 1, borderColor: Colors.border },
   cardTitle:  { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 4 },
   cardSub:    { fontSize: 10, color: Colors.lightGray, marginBottom: 12 },
 });
@@ -1226,12 +1226,12 @@ const mm = StyleSheet.create({
   title:    { fontSize: 16, fontWeight: '800', color: Colors.dark },
   body:     { padding: 20 },
   label:    { fontSize: 13, fontWeight: '700', color: Colors.midGray, marginBottom: 6, marginTop: 14 },
-  input:    { backgroundColor: Colors.background, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: Colors.dark },
+  input:    { backgroundColor: Colors.background, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, color: Colors.dark, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   row:      { flexDirection: 'row', alignItems: 'center', gap: 8 },
   unit:     { fontSize: 14, fontWeight: '700', color: Colors.midGray, width: 26 },
   tip:      { backgroundColor: Colors.softBlue, borderRadius: 12, padding: 12, marginTop: 16 },
   tipTxt:   { fontSize: 12, color: Colors.blue, lineHeight: 18 },
   saveWrap: { marginHorizontal: 20, marginBottom: 32, marginTop: 12 },
-  saveBtn:  { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
+  saveBtn:  { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center' },
   saveTxt:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
 });

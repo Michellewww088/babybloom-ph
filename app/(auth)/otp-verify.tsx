@@ -240,7 +240,7 @@ const s = StyleSheet.create({
   title:         { fontSize: 28, fontWeight: '900', color: Colors.white, marginBottom: 6 },
   subtitle:      { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginBottom: 28 },
 
-  card:          { backgroundColor: Colors.white, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  card:          { backgroundColor: Colors.surface, borderRadius: 20, padding: 24, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
 
   lockoutBox:    { alignItems: 'center', paddingVertical: 16, marginBottom: 16, backgroundColor: Colors.softPink, borderRadius: 14 },
   lockoutEmoji:  { fontSize: 32, marginBottom: 6 },
@@ -254,7 +254,7 @@ const s = StyleSheet.create({
 
   attemptText:   { fontSize: 12, color: Colors.danger, textAlign: 'center', marginBottom: 8 },
 
-  verifyBtn:     { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 12, marginBottom: 12 },
+  verifyBtn:     { backgroundColor: Colors.primaryPink, borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 12, marginBottom: 12 },
   btnDisabled:   { opacity: 0.45 },
   verifyBtnText: { color: Colors.white, fontSize: 16, fontWeight: '700' },
 

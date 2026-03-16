@@ -952,7 +952,7 @@ const s = StyleSheet.create({
   gpBtnTxt:    { color: Colors.white, fontWeight: '700', fontSize: 13 },
 
   // Section titles
-  sectionTitle:   { fontSize: 13, fontWeight: '800', color: Colors.dark, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4, marginTop: 8 },
+  sectionTitle:   { fontSize: 11, fontWeight: '800', color: Colors.textMid, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4, marginTop: 8, fontFamily: 'PlusJakartaSans_500Medium' },
   sectionSub:     { fontSize: 12, color: Colors.midGray, marginBottom: 8 },
 
   // Tabs
@@ -963,7 +963,7 @@ const s = StyleSheet.create({
   tabTxtActive: { color: Colors.dark, fontWeight: '800' },
 
   // Recommendation card
-  recCard:       { backgroundColor: Colors.white, borderRadius: 16, padding: 14, marginBottom: 0, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: '#F0F0F5' },
+  recCard:       { backgroundColor: Colors.surface, borderRadius: 20, padding: 14, marginBottom: 0, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4, borderWidth: 1, borderColor: Colors.border },
   recCardDone:   { borderColor: Colors.mint + '55', borderWidth: 1.5 },
   recHeader:     { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6, gap: 8 },
   recNameRow:    { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
@@ -980,7 +980,7 @@ const s = StyleSheet.create({
   freeBadgeTxt:  { fontSize: 10, fontWeight: '800', color: Colors.mint },
 
   // Entry card
-  entryCard:       { backgroundColor: Colors.white, borderRadius: 16, padding: 14, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  entryCard:       { backgroundColor: Colors.surface, borderRadius: 20, padding: 14, marginBottom: 10, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   entryRow:        { flexDirection: 'row', alignItems: 'flex-start' },
   entryName:       { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 4 },
   entryChips:      { flexDirection: 'row', gap: 6, marginBottom: 4 },
@@ -1022,7 +1022,7 @@ const s = StyleSheet.create({
 
   // Shared form styles
   label:       { fontSize: 13, fontWeight: '700', color: Colors.dark, marginBottom: 6, marginTop: 14 },
-  input:       { backgroundColor: Colors.white, borderWidth: 1.5, borderColor: '#EEE', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark },
+  input:       { backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 11, fontSize: 14, color: Colors.dark, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   modalFooter: { flexDirection: 'row', gap: 12, marginTop: 24 },
   cancelBtn:   { flex: 1, borderWidth: 1.5, borderColor: '#DDD', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   cancelTxt:   { fontSize: 14, fontWeight: '700', color: Colors.midGray },
@@ -1060,7 +1060,7 @@ const gp = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white, flex: 1 },
   closeBtn:    { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
   closeTxt:    { color: Colors.white, fontSize: 16, fontWeight: '700' },
-  infoCard:    { backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginBottom: 14, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  infoCard:    { backgroundColor: Colors.surface, borderRadius: 20, padding: 16, marginBottom: 14, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   infoTitle:   { fontSize: 15, fontWeight: '800', color: Colors.dark, marginBottom: 6 },
   infoDesc:    { fontSize: 13, color: Colors.midGray, lineHeight: 19, marginBottom: 10 },
   infoRow:     { flexDirection: 'row', gap: 12, marginBottom: 8 },

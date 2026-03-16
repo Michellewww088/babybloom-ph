@@ -233,13 +233,13 @@ const s = StyleSheet.create({
   appName:        { fontSize: 30, fontWeight: '900', color: Colors.white, letterSpacing: 0.5, marginBottom: 10 },
   tagline:        { fontSize: 14, color: 'rgba(255,255,255,0.95)', fontWeight: '600' },
 
-  card:           { backgroundColor: Colors.white, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  card:           { backgroundColor: Colors.surface, borderRadius: 20, padding: 24, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
 
   inputLabel:     { fontSize: 14, fontWeight: '700', color: Colors.dark, marginBottom: 8 },
-  emailInput:     { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: Colors.dark, marginBottom: 6 },
+  emailInput:     { borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, color: Colors.dark, marginBottom: 6, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   validationHint: { fontSize: 12, color: Colors.danger, marginBottom: 6 },
 
-  otpBtn:         { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 8, marginBottom: 16 },
+  otpBtn:         { backgroundColor: Colors.primaryPink, borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 8, marginBottom: 16 },
   btnDisabled:    { opacity: 0.45 },
   otpBtnText:     { color: Colors.white, fontSize: 16, fontWeight: '700' },
 

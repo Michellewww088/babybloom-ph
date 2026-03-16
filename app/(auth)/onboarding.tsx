@@ -706,7 +706,7 @@ const s = StyleSheet.create({
   dotActive:     { backgroundColor: '#E8637C' },
   dotInactive:   { backgroundColor: 'rgba(232,99,124,0.25)' },
 
-  card:          { backgroundColor: Colors.white, borderRadius: 24, padding: 24, shadowColor: '#E8637C', shadowOpacity: 0.12, shadowRadius: 20, elevation: 8 },
+  card:          { backgroundColor: Colors.surface, borderRadius: 20, padding: 24, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
 
   stepLabel:     { fontSize: 11, fontWeight: '700', color: Colors.lightGray, marginBottom: 6, letterSpacing: 0.8 },
   question:      { fontSize: 20, fontWeight: '800', color: Colors.dark, marginBottom: 20, lineHeight: 28 },
@@ -728,7 +728,7 @@ const s = StyleSheet.create({
   infoBanner:    { backgroundColor: Colors.softGold, borderRadius: 12, padding: 10, marginBottom: 16 },
   infoBannerText:{ fontSize: 12, color: Colors.dark, fontWeight: '500', textAlign: 'center' },
   fieldLabel:    { fontSize: 13, fontWeight: '700', color: Colors.midGray, marginBottom: 8, marginTop: 4 },
-  nameInput:     { borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, color: Colors.dark, backgroundColor: Colors.background, marginBottom: 16 },
+  nameInput:     { borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, color: Colors.dark, backgroundColor: Colors.background, marginBottom: 16, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   genderRow:     { flexDirection: 'row', gap: 10, marginBottom: 16 },
   genderCard:    { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.background, position: 'relative' },
   genderCardSelected: { borderColor: Colors.primaryPink, backgroundColor: '#FFF0F4' },
@@ -746,7 +746,7 @@ const s = StyleSheet.create({
   checkmark:     { },
 
   // Button
-  nextBtn:        { backgroundColor: Colors.primaryPink, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
+  nextBtn:        { backgroundColor: Colors.primaryPink, borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   nextBtnDisabled:{ opacity: 0.4 },
   nextBtnText:    { color: Colors.white, fontSize: 16, fontWeight: '700' },
 });

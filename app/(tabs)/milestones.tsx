@@ -405,7 +405,7 @@ export default function MilestonesScreen() {
 
           {/* Add Memory FAB row */}
           <TouchableOpacity activeOpacity={0.85} onPress={() => setShowAddMemoryModal(true)}>
-            <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.addBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+            <LinearGradient colors={[Colors.primary, Colors.primaryLight]} style={s.addBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
               <View style={s.addBtnContent}><Camera size={18} color={Colors.white} /><Text style={s.addBtnText}>{t('milestones.add_memory')}</Text></View>
             </LinearGradient>
           </TouchableOpacity>
@@ -664,7 +664,7 @@ export default function MilestonesScreen() {
                   <Text style={s.modalCancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveFirstTime} style={{ flex: 1 }}>
-                  <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.modalSave}>
+                  <LinearGradient colors={[Colors.primary, Colors.primaryLight]} style={s.modalSave}>
                     <View style={s.modalSaveContent}><Star size={14} color={Colors.white} /><Text style={s.modalSaveText}>{t('milestones.save_first_time')}</Text></View>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -744,7 +744,7 @@ export default function MilestonesScreen() {
                   <Text style={s.modalCancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={saveMemory} style={{ flex: 1 }}>
-                  <LinearGradient colors={[Colors.primaryPink, '#F06292']} style={s.modalSave}>
+                  <LinearGradient colors={[Colors.primary, Colors.primaryLight]} style={s.modalSave}>
                     <View style={s.modalSaveContent}><Save size={14} color={Colors.white} /><Text style={s.modalSaveText}>{t('milestones.save_memory')}</Text></View>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -842,7 +842,7 @@ const s = StyleSheet.create({
 
   // ── Add button ───────────────────────────────────────────────────────────────
   addBtn: {
-    borderRadius: 18, paddingVertical: 16, alignItems: 'center', marginBottom: 10,
+    borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10,
     shadowColor: Colors.primaryPink, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
   },
   addBtnContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
@@ -868,8 +868,9 @@ const s = StyleSheet.create({
 
   // ── Domain cards ─────────────────────────────────────────────────────────────
   domainCard: {
-    backgroundColor: Colors.white, borderRadius: 20, marginBottom: 12, overflow: 'hidden',
-    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2,
+    backgroundColor: Colors.surface, borderRadius: 20, marginBottom: 12, overflow: 'hidden',
+    shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
     borderLeftWidth: 4,
   },
   domainHeader:   { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 },
@@ -914,8 +915,9 @@ const s = StyleSheet.create({
 
   // ── Checklist ─────────────────────────────────────────────────────────────────
   checklistCard: {
-    backgroundColor: Colors.white, borderRadius: 20, overflow: 'hidden',
-    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 8, elevation: 2, marginBottom: 14,
+    backgroundColor: Colors.surface, borderRadius: 20, overflow: 'hidden',
+    shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 16, elevation: 4, marginBottom: 14,
   },
   checklistRow: {
     flexDirection: 'row', alignItems: 'center', padding: 14, gap: 10,
@@ -956,9 +958,10 @@ const s = StyleSheet.create({
 
   fieldLabel: { fontSize: 13, fontWeight: '700', color: '#555', marginBottom: 6, marginTop: 12 },
   input: {
-    borderWidth: 1.5, borderColor: '#FCE4EC', borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 10, fontSize: 14,
-    backgroundColor: '#FFF9FB', color: '#333',
+    borderWidth: 1, borderColor: Colors.border, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 10, fontSize: 14,
+    backgroundColor: '#FFF9FB', color: '#333', height: 52,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
 
   photoPlaceholderRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 4 },
@@ -981,7 +984,7 @@ const s = StyleSheet.create({
     backgroundColor: '#F0F0F0',
   },
   modalCancelText: { fontSize: 14, fontWeight: '700', color: '#888' },
-  modalSave: { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  modalSave: { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center' },
   modalSaveContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   modalSaveText: { fontSize: 14, fontWeight: '800', color: Colors.white },
 

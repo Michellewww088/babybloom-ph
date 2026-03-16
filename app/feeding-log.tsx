@@ -1277,7 +1277,7 @@ function AddFeedModal({
             <View style={m.saveWrap}>
               <TouchableOpacity style={m.saveBtn} onPress={handleSave} activeOpacity={0.85}>
                 <LinearGradient
-                  colors={[Colors.primaryPink, '#F472B6']}
+                  colors={[Colors.primary, Colors.primaryLight]}
                   style={m.saveBtnGrad}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 >
@@ -1329,7 +1329,7 @@ const m = StyleSheet.create({
   resumeBtnTxt:   { color: '#065F46' },
   pausedBadge:    { fontSize: 10, fontWeight: '700', color: Colors.midGray, backgroundColor: Colors.softGold, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
   durInput:       { width: 80, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, alignItems: 'center' },
-  input:          { borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: Colors.dark, backgroundColor: Colors.background },
+  input:          { borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 11, fontSize: 14, color: Colors.dark, backgroundColor: Colors.background, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   notesInput:     { minHeight: 72, textAlignVertical: 'top' },
   radioRow:       { flexDirection: 'row', gap: 8 },
   radioBtn:       { flex: 1, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, paddingVertical: 10, alignItems: 'center', backgroundColor: Colors.background },
@@ -1361,8 +1361,8 @@ const m = StyleSheet.create({
   timeQuickBtn:   { borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: Colors.background },
   timeQuickTxt:   { fontSize: 11, fontWeight: '700', color: Colors.midGray },
   saveWrap:       { paddingVertical: 16 },
-  saveBtn:        { borderRadius: 18, overflow: 'hidden', shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
-  saveBtnGrad:    { paddingVertical: 16, alignItems: 'center' },
+  saveBtn:        { borderRadius: 14, overflow: 'hidden', shadowColor: Colors.primaryPink, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
+  saveBtnGrad:    { height: 52, alignItems: 'center', justifyContent: 'center' },
   saveTxt:        { fontSize: 16, fontWeight: '800', color: Colors.white },
 });
 
@@ -1384,7 +1384,7 @@ function TipCard({ ageMonths }: { ageMonths: number }) {
 }
 
 const tp = StyleSheet.create({
-  card:  { marginHorizontal: PAD, borderRadius: 18, padding: 14, marginBottom: 4 },
+  card:  { marginHorizontal: PAD, borderRadius: 20, padding: 14, marginBottom: 4 },
   label: { fontSize: 10, fontWeight: '800', color: Colors.mint, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.8 },
   text:  { fontSize: 13, color: '#065F46', fontWeight: '600', lineHeight: 19 },
 });
@@ -1412,7 +1412,7 @@ function FoodsTriedCard({ entries, childId }: { entries: FeedingEntry[]; childId
 }
 
 const ft = StyleSheet.create({
-  card:    { marginHorizontal: PAD, backgroundColor: Colors.white, borderRadius: 18, padding: 14, marginBottom: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  card:    { marginHorizontal: PAD, backgroundColor: Colors.surface, borderRadius: 20, padding: 14, marginBottom: 4, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   title:   { fontSize: 13, fontWeight: '800', color: Colors.dark, marginBottom: 2 },
   count:   { fontSize: 11, color: Colors.midGray, marginBottom: 8, fontWeight: '600' },
   chips:   { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

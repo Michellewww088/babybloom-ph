@@ -1268,7 +1268,7 @@ const s = StyleSheet.create({
 });
 
 const ai = StyleSheet.create({
-  card:    { backgroundColor: Colors.primaryBg, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#FFD6E5' },
+  card:    { backgroundColor: Colors.primaryBg, borderRadius: 20, padding: 14, borderWidth: 1, borderColor: '#FFD6E5' },
   row:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconWrap:{ width: 38, height: 38, borderRadius: 19, backgroundColor: PINK + '22', alignItems: 'center', justifyContent: 'center' },
   title:   { fontSize: 14, fontWeight: '700', color: DARK },
@@ -1279,14 +1279,14 @@ const ai = StyleSheet.create({
 });
 
 const st = StyleSheet.create({
-  chip:   { backgroundColor: Colors.white, borderRadius: 12, padding: 12, borderLeftWidth: 3, minWidth: 110, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+  chip:   { backgroundColor: Colors.surface, borderRadius: 20, padding: 12, borderLeftWidth: 3, minWidth: 110, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   label:  { fontSize: 11, color: GRAY, marginBottom: 2 },
   value:  { fontSize: 17, fontWeight: '800' },
   sub:    { fontSize: 11, marginTop: 1 },
 });
 
 const cc = StyleSheet.create({
-  card:  { backgroundColor: Colors.white, borderRadius: 16, padding: PAD, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
+  card:  { backgroundColor: Colors.surface, borderRadius: 20, padding: PAD, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   title: { fontSize: 13, fontWeight: '700', color: DARK, marginBottom: 12 },
 });
 

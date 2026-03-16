@@ -880,13 +880,14 @@ const s = StyleSheet.create({
 
   // Progress bar
   progressCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
     padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: Colors.shadowColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   progressLabelRow: {
     flexDirection: 'row',
@@ -932,13 +933,14 @@ const s = StyleSheet.create({
 
   // Cards
   card: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
     padding: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: Colors.shadowColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 15,
@@ -1007,15 +1009,17 @@ const s = StyleSheet.create({
   fieldLabel:  { fontSize: 13, fontWeight: '600', color: Colors.midGray, marginBottom: 6 },
   requiredStar:{ color: Colors.primaryPink, fontWeight: '800' },
   input: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 11,
     fontSize: 15,
     color: Colors.dark,
     backgroundColor: Colors.background,
     marginBottom: 0,
+    height: 52,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   inputError: {
     borderColor: Colors.primaryPink,
@@ -1092,9 +1096,10 @@ const s = StyleSheet.create({
   // Bottom save
   bottomSaveBtn: {
     backgroundColor: Colors.primaryPink,
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 4,
   },
   bottomSaveBtnDisabled: { opacity: 0.6 },

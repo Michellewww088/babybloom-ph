@@ -471,7 +471,7 @@ const rm = StyleSheet.create({
   closeBtn:    { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white },
   label:       { fontSize: 13, fontWeight: '700', color: DARK, marginBottom: 6, marginTop: 14, paddingHorizontal: 16 },
-  input:       { marginHorizontal: 16, borderRadius: 12, borderWidth: 1.5, borderColor: '#F0E0E8', backgroundColor: Colors.white, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: DARK, marginBottom: 4 },
+  input:       { marginHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.white, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, color: DARK, marginBottom: 4, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   toggleRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 8, marginBottom: 4 },
   toggleLabel: { fontSize: 13, fontWeight: '700', color: DARK },
   chipRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, marginBottom: 4 },
@@ -480,7 +480,7 @@ const rm = StyleSheet.create({
   optChip:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: '#F5F5F5', borderWidth: 1.5, borderColor: '#E0E0E0' },
   optChipSel:  { backgroundColor: PINK, borderColor: PINK },
   optLabel:    { fontSize: 12, fontWeight: '600', color: GRAY },
-  saveBtn:     { borderRadius: 16, paddingVertical: 16, alignItems: 'center', shadowColor: PINK, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  saveBtn:     { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', shadowColor: PINK, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   saveTxt:     { color: Colors.white, fontSize: 16, fontWeight: '800' },
   deleteBtn:   { borderRadius: 16, paddingVertical: 14, alignItems: 'center', marginHorizontal: 16, marginTop: 12, borderWidth: 1.5, borderColor: '#E53E3E' },
   deleteTxt:   { color: '#E53E3E', fontSize: 14, fontWeight: '700' },
@@ -544,7 +544,7 @@ function NotifSettingsPanel({ t }: { t: (k: string) => string }) {
 }
 
 const ns = StyleSheet.create({
-  card:      { backgroundColor: Colors.white, borderRadius: 18, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
+  card:      { backgroundColor: Colors.surface, borderRadius: 20, marginBottom: 16, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   header:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   title:     { fontSize: 14, fontWeight: '800', color: DARK },
   body:      { paddingHorizontal: 16, paddingBottom: 16 },
@@ -588,7 +588,7 @@ function DayEventsSheet({
             )}
           </ScrollView>
           <TouchableOpacity onPress={onAdd} activeOpacity={0.85} style={{ padding: 16 }}>
-            <LinearGradient colors={['#F06292', '#F48FB1']} style={ds.addBtn}>
+            <LinearGradient colors={[Colors.primary, Colors.primaryLight]} style={ds.addBtn}>
               <Text style={ds.addTxt}>{t('calendar.add_event_for_day')}</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -606,7 +606,7 @@ const ds = StyleSheet.create({
   sheetTitle:  { fontSize: 15, fontWeight: '800', color: DARK, flex: 1 },
   empty:       { alignItems: 'center', paddingVertical: 28 },
   emptyTxt:    { fontSize: 14, color: GRAY, fontWeight: '600' },
-  addBtn:      { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  addBtn:      { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center' },
   addTxt:      { color: Colors.white, fontSize: 15, fontWeight: '800' },
 });
 

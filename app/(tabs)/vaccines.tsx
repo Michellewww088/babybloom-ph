@@ -232,7 +232,7 @@ function VaccineAISection({
 }
 
 const ai = StyleSheet.create({
-  card:      { backgroundColor: Colors.white, borderRadius: 20, marginBottom: 14, shadowColor: PURPLE, shadowOpacity: 0.12, shadowRadius: 10, elevation: 4 },
+  card:      { backgroundColor: Colors.surface, borderRadius: 20, marginBottom: 14, shadowColor: Colors.shadowColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   hdrRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   hdrLeft:   { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   iconBox:   { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
@@ -552,11 +552,11 @@ const mo = StyleSheet.create({
   statusBtnTxt:{ fontSize: 11, fontWeight: '700', color: GRAY },
   fBlock:      { marginBottom: 12 },
   fLbl:        { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 6 },
-  input:       { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: '#e8e8e8', paddingHorizontal: 14, paddingVertical: 11, fontSize: 13, color: DARK },
+  input:       { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 11, fontSize: 13, color: DARK, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
   inputMulti:  { minHeight: 60, textAlignVertical: 'top', paddingTop: 11 },
   reminderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#F0F8FF', borderRadius: 14, padding: 14, marginBottom: 14 },
   reminderSub: { fontSize: 11, color: BLUE, marginTop: 2 },
-  saveBtn:     { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 10, shadowColor: BLUE, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  saveBtn:     { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10, shadowColor: BLUE, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   saveBtnTxt:  { color: Colors.white, fontSize: 16, fontWeight: '800' },
   deleteBtn:   { borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, borderColor: '#FFBDBD', backgroundColor: '#FFF5F5', marginBottom: 14 },
   deleteBtnTxt:{ color: '#E53E3E', fontSize: 14, fontWeight: '700' },
