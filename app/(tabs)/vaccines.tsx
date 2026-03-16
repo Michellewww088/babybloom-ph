@@ -22,6 +22,7 @@ import {
   Sparkles, Bot, Shield, Lightbulb, Calendar, Syringe, ClipboardList,
   Building2, Trash2, Globe, Search, MapPin, BookOpen, Zap, Hash, Pill,
   Microscope, Thermometer, Ban, CircleDot, Coins, Cross,
+  Camera, ChevronRight, Plus, User,
 } from 'lucide-react-native';
 
 import Colors from '../../constants/Colors';
@@ -318,63 +319,152 @@ const h = StyleSheet.create({
   autoNote: { fontSize: 10, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
 });
 
-// ── Vaccine Row (My Records) ───────────────────────────────────────────────────
+// ── Vaccine Timeline Card (My Records) ────────────────────────────────────────
 
-function VaccineRow({ record, onPress }: { record: VaccineRecord; onPress: () => void }) {
+function VaccineTimelineCard({
+  record, onPress, isLast,
+}: { record: VaccineRecord; onPress: () => void; isLast: boolean }) {
   const { t } = useTranslation();
-  const days  = record.status === 'upcoming' ? daysUntil(record.scheduledDate) : null;
-  const wks   = record.recommendedAgeWeeks;
-  const ageLabel = wks === 0 ? t('vaccine_log.at_birth') : wks < 52 ? `${wks}w` : `${Math.round(wks/4.33)}M`;
+
+  const dotColor = record.status === 'given'    ? Colors.mint
+    : record.status === 'upcoming' ? Colors.warning
+    : record.status === 'overdue'  ? Colors.danger
+    : Colors.textLight;
+
+  const badgeBg = record.status === 'given'    ? Colors.softMint
+    : record.status === 'upcoming' ? Colors.warningBg
+    : record.status === 'overdue'  ? Colors.dangerBg
+    : Colors.divider;
+
+  const badgeColor = record.status === 'given'    ? Colors.mint
+    : record.status === 'upcoming' ? Colors.warning
+    : record.status === 'overdue'  ? Colors.danger
+    : Colors.textMid;
+
+  const badgeLabel = record.status === 'given'    ? t('vaccine_log.status_given')
+    : record.status === 'upcoming' ? t('vaccine_log.status_upcoming')
+    : record.status === 'overdue'  ? t('vaccine_log.status_overdue')
+    : t('vaccine_log.status_skipped');
+
+  const roleIcon = record.administeredRole === 'pediatrician'
+    ? <Syringe size={11} strokeWidth={1.5} color={Colors.textMid} />
+    : record.administeredRole === 'nurse'
+    ? <Cross size={11} strokeWidth={1.5} color={Colors.textMid} />
+    : record.administeredRole === 'midwife'
+    ? <Heart size={11} strokeWidth={1.5} color={Colors.textMid} />
+    : <User size={11} strokeWidth={1.5} color={Colors.textMid} />;
 
   return (
-    <TouchableOpacity style={[vr.card, { borderLeftColor: statusColor(record.status) }]} onPress={onPress} activeOpacity={0.85}>
-      <View style={[vr.iconCol, { backgroundColor: statusBg(record.status) }]}>
-        {statusIcon(record.status)}
+    <View style={tl.row}>
+      {/* ── Left timeline column ── */}
+      <View style={tl.lineCol}>
+        <View style={[tl.dot, { backgroundColor: dotColor }]} />
+        {!isLast && <View style={tl.line} />}
       </View>
-      <View style={vr.center}>
-        <Text style={vr.name} numberOfLines={2}>{record.nameEN}</Text>
-        <View style={vr.meta}>
-          <Text style={vr.metaTxt}>{ageLabel}</Text>
-          <Text style={vr.dot}>·</Text>
-          {record.status === 'given' && record.givenDate ? (
-            <Text style={[vr.metaTxt, { color: MINT }]}>{t('vaccine_log.given_label')} {fmtDate(record.givenDate)}</Text>
-          ) : record.status === 'overdue' ? (
-            <Text style={[vr.metaTxt, { color: '#E53E3E' }]}>{t('vaccine_log.overdue_label')} {fmtDate(record.scheduledDate)}</Text>
-          ) : (
-            <Text style={[vr.metaTxt, { color: BLUE }]}>
-              {t('vaccine_log.due_label')}: {fmtDate(record.scheduledDate)}
-              {days !== null && days <= 14 && days >= 0 ? <Text style={{ color: days <= 3 ? '#E53E3E' : GOLD }}> ({days}d)</Text> : null}
-            </Text>
+
+      {/* ── Card ── */}
+      <TouchableOpacity style={tl.card} onPress={onPress} activeOpacity={0.85}>
+        {/* Name + status badge */}
+        <View style={tl.topRow}>
+          <Text style={tl.name} numberOfLines={2}>{record.nameEN}</Text>
+          <View style={[tl.badge, { backgroundColor: badgeBg }]}>
+            <Text style={[tl.badgeTxt, { color: badgeColor }]}>{badgeLabel}</Text>
+          </View>
+        </View>
+
+        {/* Brand + dose number */}
+        {(record.brand || record.doseNumber != null) && (
+          <View style={tl.subRow}>
+            {record.brand && <Text style={tl.brand}>{record.brand}</Text>}
+            {record.brand && record.doseNumber != null && <Text style={tl.sep}>·</Text>}
+            {record.doseNumber != null && (
+              <Text style={tl.dose}>{t('vaccine_log.dose_label', { n: record.doseNumber })}</Text>
+            )}
+          </View>
+        )}
+
+        {/* Dates */}
+        <View style={tl.datesBlock}>
+          <View style={tl.dateRow}>
+            <Calendar size={11} strokeWidth={1.5} color={Colors.textLight} />
+            <Text style={tl.dateLbl}>{t('vaccine_log.scheduled_date')}:</Text>
+            <Text style={tl.dateVal}>{fmtDate(record.scheduledDate)}</Text>
+          </View>
+          {record.status === 'given' && record.givenDate && (
+            <View style={tl.dateRow}>
+              <CheckCircle2 size={11} strokeWidth={1.5} color={Colors.mint} />
+              <Text style={tl.dateLbl}>{t('vaccine_log.given_label')}:</Text>
+              <Text style={[tl.dateVal, { color: Colors.mint }]}>{fmtDate(record.givenDate)}</Text>
+            </View>
           )}
         </View>
-        {record.clinicName ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Building2 size={10} strokeWidth={1.5} color={GRAY} /><Text style={vr.clinic} numberOfLines={1}>{record.clinicName}</Text></View> : null}
-      </View>
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
-        <View style={[vr.badge, record.isFreeEPI ? vr.badgeFree : vr.badgePriv]}>
-          <Text style={[vr.badgeTxt, { color: record.isFreeEPI ? MINT : GOLD }]}>
-            {record.isFreeEPI ? t('vaccine_log.badge_free') : t('vaccine_log.badge_private')}
-          </Text>
+
+        {/* Administered by + role */}
+        {record.administeredBy && (
+          <View style={tl.adminRow}>
+            {roleIcon}
+            <Text style={tl.adminTxt} numberOfLines={1}>{record.administeredBy}</Text>
+            {record.administeredRole && (
+              <View style={tl.roleChip}>
+                <Text style={tl.roleChipTxt}>{record.administeredRole}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Certificate photo indicator */}
+        {record.certificateUrl ? (
+          <View style={tl.certRow}>
+            <Camera size={12} strokeWidth={1.5} color={BLUE} />
+            <Text style={tl.certTxt}>{t('vaccine_log.field_certificate')}</Text>
+          </View>
+        ) : null}
+
+        {/* Footer: EPI badge + chevron */}
+        <View style={tl.footer}>
+          <View style={[tl.epiBadge, record.isFreeEPI ? tl.epiFree : tl.epiPriv]}>
+            <Text style={[tl.epiTxt, { color: record.isFreeEPI ? Colors.mint : Colors.gold }]}>
+              {record.isFreeEPI ? t('vaccine_log.badge_free') : t('vaccine_log.badge_private')}
+            </Text>
+          </View>
+          <ChevronRight size={14} strokeWidth={1.5} color={Colors.textLight} />
         </View>
-        <Text style={vr.chevron}>›</Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
 
-const vr = StyleSheet.create({
-  card:      { backgroundColor: Colors.white, borderRadius: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 12, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2, overflow: 'hidden' },
-  iconCol:   { width: 48, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', paddingVertical: 14 },
-  center:    { flex: 1, paddingVertical: 12, gap: 3 },
-  name:      { fontSize: 13, fontWeight: '700', color: DARK, lineHeight: 18 },
-  meta:      { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
-  metaTxt:   { fontSize: 11, color: GRAY, fontWeight: '500' },
-  dot:       { fontSize: 11, color: '#ccc' },
-  clinic:    { fontSize: 10, color: GRAY, opacity: 0.7 },
-  badge:     { borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3 },
-  badgeFree: { backgroundColor: Colors.softMint },
-  badgePriv: { backgroundColor: Colors.softGold },
-  badgeTxt:  { fontSize: 9, fontWeight: '800' },
-  chevron:   { fontSize: 18, color: '#ccc' },
+const tl = StyleSheet.create({
+  row:        { flexDirection: 'row', marginBottom: 4 },
+  lineCol:    { width: 24, alignItems: 'center', paddingTop: 18 },
+  dot:        { width: 12, height: 12, borderRadius: 6, zIndex: 1 },
+  line:       { width: 2, flex: 1, backgroundColor: Colors.primarySoft, marginTop: 4, marginBottom: 0 },
+  card:       { flex: 1, backgroundColor: Colors.surface, borderRadius: 20, padding: 14, marginBottom: 12,
+                marginLeft: 8, shadowColor: Colors.shadowColor, shadowOpacity: 0.08,
+                shadowRadius: 10, elevation: 3, gap: 8 },
+  topRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' },
+  name:       { flex: 1, fontSize: 14, fontFamily: 'Nunito_700Bold', color: Colors.textDark, lineHeight: 19 },
+  badge:      { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
+  badgeTxt:   { fontSize: 11, fontFamily: 'PlusJakartaSans_700Bold', fontWeight: '700' },
+  subRow:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  brand:      { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: Colors.textMid },
+  sep:        { fontSize: 11, color: Colors.textLight },
+  dose:       { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: Colors.textMid },
+  datesBlock: { gap: 4 },
+  dateRow:    { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  dateLbl:    { fontSize: 11, fontFamily: 'PlusJakartaSans_400Regular', color: Colors.textLight },
+  dateVal:    { fontSize: 11, fontFamily: 'JetBrainsMono_400Regular', color: Colors.textMid },
+  adminRow:   { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  adminTxt:   { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: Colors.textMid, flex: 1 },
+  roleChip:   { borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2, backgroundColor: Colors.softBlue },
+  roleChipTxt:{ fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', color: BLUE, fontWeight: '700' },
+  certRow:    { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  certTxt:    { fontSize: 11, fontFamily: 'PlusJakartaSans_400Regular', color: BLUE },
+  footer:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
+  epiBadge:   { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  epiFree:    { backgroundColor: Colors.softMint },
+  epiPriv:    { backgroundColor: Colors.softGold },
+  epiTxt:     { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', fontWeight: '800' },
 });
 
 // ── Edit Modal (My Records) ────────────────────────────────────────────────────
@@ -1599,12 +1689,12 @@ function RecordsTab({
       <LinearGradient colors={[Colors.gold,'#FFC642']} style={rt.gpBanner}>
         <Text style={rt.gpTxt}>{t('vaccine_log.garantisadong')}</Text>
       </LinearGradient>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rt.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rt.filterRow} contentContainerStyle={rt.filterContent}>
         {RECORD_TABS.map(tab => {
           const active = activeFilter === tab.key;
           const count  = tab.key === 'all' ? totalCount : tab.key === 'given' ? givenCount : tab.key === 'upcoming' ? upcomingCount : overdueCount;
           return (
-            <TouchableOpacity key={tab.key} style={[rt.tab, active && rt.tabActive]} onPress={() => setActiveFilter(tab.key)} activeOpacity={0.8}>
+            <TouchableOpacity key={tab.key} style={[rt.tab, active && rt.tabActive]} onPress={() => { setActiveFilter(tab.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} activeOpacity={0.8}>
               <Text style={[rt.tabTxt, active && rt.tabTxtActive]}>
                 {t(tab.i18n)}{count > 0 ? ` (${count})` : ''}
               </Text>
@@ -1620,23 +1710,33 @@ function RecordsTab({
           message={`${childName}'s vaccination records will appear here once logged.`}
         />
       ) : (
-        <View>{filteredRecs.map(rec => <VaccineRow key={rec.id} record={rec} onPress={() => onEditRecord(rec)} />)}</View>
+        <View style={rt.timeline}>
+          {filteredRecs.map((rec, idx) => (
+            <VaccineTimelineCard
+              key={rec.id}
+              record={rec}
+              isLast={idx === filteredRecs.length - 1}
+              onPress={() => onEditRecord(rec)}
+            />
+          ))}
+        </View>
       )}
-      <View style={{ height: 20 }} />
+      <View style={{ height: 80 }} />
     </View>
   );
 }
 
 const rt = StyleSheet.create({
-  gpBanner:  { borderRadius: 14, padding: 14, marginBottom: 12 },
-  gpTxt:     { fontSize: 12, color: Colors.white, fontWeight: '700', lineHeight: 17 },
-  filterRow: { marginBottom: 12 },
-  tab:       { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8, backgroundColor: Colors.white, borderWidth: 1.5, borderColor: '#e8e8e8' },
-  tabActive: { backgroundColor: BLUE, borderColor: BLUE },
-  tabTxt:    { fontSize: 12, fontWeight: '700', color: GRAY },
+  gpBanner:     { borderRadius: 14, padding: 14, marginBottom: 12 },
+  gpTxt:        { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.white, lineHeight: 17 },
+  filterRow:    { marginBottom: 14 },
+  filterContent:{ paddingHorizontal: 0, gap: 8 },
+  tab:          { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5,
+                  borderColor: Colors.border, backgroundColor: 'transparent' },
+  tabActive:    { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  tabTxt:       { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.textMid },
   tabTxtActive: { color: Colors.white },
-  emptyList: { alignItems: 'center', paddingVertical: 36, gap: 8 },
-  emptyTxt:  { fontSize: 14, color: GRAY },
+  timeline:     { paddingTop: 4 },
 });
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
@@ -1779,6 +1879,22 @@ export default function VaccinesScreen() {
         )}
       </ScrollView>
 
+      {/* Floating "+" FAB — only visible on My Records tab */}
+      {mainTab === 'records' && (
+        <TouchableOpacity
+          style={sc.fab}
+          activeOpacity={0.9}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            const first = allForChild.find(r => r.status === 'overdue')
+              ?? allForChild.find(r => r.status === 'upcoming');
+            if (first) { setEditRecord(first); setEditVisible(true); }
+          }}
+        >
+          <Plus size={28} strokeWidth={2.5} color={Colors.white} />
+        </TouchableOpacity>
+      )}
+
       {/* Vaccine Detail Modal (Knowledge Base) */}
       <VaccineDetailModal
         visible={detailVisible}
@@ -1802,8 +1918,13 @@ export default function VaccinesScreen() {
 }
 
 const sc = StyleSheet.create({
-  container:       { flex: 1, backgroundColor: '#F5F8FF' },
+  container:       { flex: 1, backgroundColor: Colors.background },
   content:         { padding: 16, paddingBottom: 40 },
+  fab:             { position: 'absolute', bottom: 24, right: 16, width: 56, height: 56,
+                     borderRadius: 28, backgroundColor: Colors.primary, alignItems: 'center',
+                     justifyContent: 'center', shadowColor: Colors.shadowColor,
+                     shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+                     elevation: 8, zIndex: 99 },
   mainTabBar:      { flexDirection: 'row', backgroundColor: Colors.white, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, gap: 8, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 4, zIndex: 10 },
   mainTab:         { flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: '#F5F5FA', alignItems: 'center', justifyContent: 'center' },
   mainTabActive:   { backgroundColor: BLUE },
