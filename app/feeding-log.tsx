@@ -42,6 +42,7 @@ import {
   getActiveElapsedSeconds, formatTimerMark,
 } from '../store/feedingStore';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
+import { EmptyState } from '../components/EmptyState';
 import {
   analyzeOneFeed, analyzeDailyFeeding, getClaudeDailySummary,
   FeedInsight,
@@ -1582,11 +1583,14 @@ export default function FeedingLogScreen() {
 
         {/* Entries list */}
         {grouped.length === 0 ? (
-          <View style={scr.emptyList}>
-            <Milk size={48} color={Colors.primary} style={scr.emptyListEmoji} />
-            <Text style={scr.emptyListTitle}>{t('feeding.no_entries')}</Text>
-            <Text style={scr.emptyListSub}>{t('feeding.no_entries_sub')}</Text>
-          </View>
+          <EmptyState
+            illustration={null}
+            illustrationColor={Colors.softPink}
+            title={t('feeding.no_entries')}
+            message={`${childName}'s feeding logs will appear here. Tap + to record a feed.`}
+            ctaLabel={t('feeding.add_feed')}
+            onCta={() => { setEditing(null); setModal(true); }}
+          />
         ) : (
           grouped.map(({ header, data }) => (
             <View key={header} style={scr.group}>

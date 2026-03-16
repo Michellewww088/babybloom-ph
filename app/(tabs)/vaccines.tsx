@@ -24,6 +24,7 @@ import {
 
 import Colors from '../../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../../store/childStore';
+import { EmptyState } from '../../components/EmptyState';
 import { useVaccineStore, VaccineRecord, VaccineStatus } from '../../store/vaccineStore';
 import {
   DOH_EPI_SCHEDULE, AgeGroup as EpiAgeGroup, VaccineEntry,
@@ -1346,7 +1347,12 @@ function RecordsTab({
         })}
       </ScrollView>
       {filteredRecs.length === 0 ? (
-        <View style={rt.emptyList}><Syringe size={32} strokeWidth={1.5} color={GRAY} /><Text style={rt.emptyTxt}>{t('vaccine_log.no_records')}</Text></View>
+        <EmptyState
+          illustration={null}
+          illustrationColor={Colors.softBlue}
+          title={t('vaccine_log.no_records')}
+          message={`${childName}'s vaccination records will appear here once logged.`}
+        />
       ) : (
         <View>{filteredRecs.map(rec => <VaccineRow key={rec.id} record={rec} onPress={() => onEditRecord(rec)} />)}</View>
       )}

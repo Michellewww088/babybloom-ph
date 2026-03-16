@@ -17,6 +17,7 @@ import Svg, { Circle, Defs, Line, LinearGradient as SvgGrad, Path, Rect, Stop, T
 
 import { AlertTriangle, BarChart2, CheckCircle2, Clock, Lightbulb, Moon, Pencil, Sun } from 'lucide-react-native';
 import Colors                              from '../constants/Colors';
+import { EmptyState }                      from '../components/EmptyState';
 import { analyzeOneSleep, analyzeDailySleep, DailySleepSummary, getClaudeSleepSummary, SleepInsight } from '../lib/sleepInsights';
 import { useChildStore }                   from '../store/childStore';
 import {
@@ -1379,11 +1380,12 @@ export default function SleepTrackerScreen() {
 
         {/* Entry list */}
         {groupedEntries.length === 0 ? (
-          <View style={s.empty}>
-            <Moon size={48} color={NIGHT_COLOR} />
-            <Text style={s.emptyTitle}>{t('sleep.no_entries')}</Text>
-            <Text style={s.emptySub}>{t('sleep.empty_sub')}</Text>
-          </View>
+          <EmptyState
+            illustration={null}
+            illustrationColor={Colors.sleepBg}
+            title={t('sleep.no_entries')}
+            message={`${childName}'s sleep sessions will appear here. Start the timer above to track a nap or night sleep.`}
+          />
         ) : (
           groupedEntries.map(({ header, data }) => (
             <View key={header} style={{ marginHorizontal: PAD }}>

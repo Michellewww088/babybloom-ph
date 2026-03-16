@@ -35,6 +35,7 @@ import {
 
 import Colors from '../constants/Colors';
 import { useChildStore, getChildDisplayName } from '../store/childStore';
+import { EmptyState } from '../components/EmptyState';
 import { useGrowthStore, GrowthRecord } from '../store/growthStore';
 import {
   getWHOPercentile, getWHOCurveData, getCorrectedAgeMonths,
@@ -920,15 +921,14 @@ export default function GrowthAnalysisScreen() {
             </View>
           </LinearGradient>
         ) : (
-          <TouchableOpacity style={sv.empty} onPress={() => { setEditRec(undefined); setModal(true); }} activeOpacity={0.8}>
-            <View style={{ marginBottom: 10 }}><Ruler size={38} strokeWidth={1.5} color={Colors.textMid} /></View>
-            <Text style={sv.emptyTitle}>{t('growth.no_data')}</Text>
-            <Text style={sv.emptySub}>{t('growth.no_data_sub')}</Text>
-            <LinearGradient colors={[Colors.primaryPink, '#F472B6']} style={sv.emptyCta}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={sv.emptyCtaTxt}>{t('growth.add_first_cta')}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <EmptyState
+            illustration={null}
+            illustrationColor={Colors.healthBg}
+            title={t('growth.no_data')}
+            message={`${name}'s height, weight, and head circumference measurements will be charted here.`}
+            ctaLabel={t('growth.add_first_cta')}
+            onCta={() => { setEditRec(undefined); setModal(true); }}
+          />
         )}
 
         {/* WHO Growth Chart card */}

@@ -18,6 +18,7 @@ import {
   DOMAIN_META, MilestoneDomain, AgeGroup,
 } from '../../constants/milestones';
 import Colors from '../../constants/Colors';
+import { EmptyState } from '../../components/EmptyState';
 import {
   BookOpen, Trophy, CircleCheck, Sparkles, Star, Camera, CalendarDays,
   MapPin, Clock, Flag, Save, Hospital, ClipboardList, Salad, Puzzle, Lock,
@@ -384,11 +385,12 @@ export default function MilestonesScreen() {
           </View>
 
           {memories.length === 0 ? (
-            <View style={s.emptyPhotos}>
-              <Camera size={48} color="#999" />
-              <Text style={s.emptyPhotoTitle}>{t('milestones.no_memories_title')}</Text>
-              <Text style={s.emptyPhotoSub}>{t('milestones.no_memories_sub')}</Text>
-            </View>
+            <EmptyState
+              illustration={null}
+              illustrationColor={Colors.accentBg}
+              title={t('milestones.no_memories_title')}
+              message={`${childName}'s memory photos and special moments will appear here.`}
+            />
           ) : (
             <View style={s.memoriesGrid}>
               {memories.map((mem) => (
