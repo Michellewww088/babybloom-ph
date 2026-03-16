@@ -101,17 +101,45 @@ export interface GrowthLog {
 }
 
 // ── VACCINATION ────────────────────────────────────────────────────────
+
+export type AdministeredRole = 'pediatrician' | 'nurse' | 'midwife';
+export type VaccineSite      = 'left_thigh' | 'right_thigh' | 'left_arm' | 'right_arm' | 'oral';
+
 export interface VaccinationRecord {
   id: string;
   child_id: string;
   user_id: string;
-  vaccine_code: string;        // e.g. 'BCG', 'DPTHEPBHIB_1'
+  vaccine_code: string;           // e.g. 'BCG', 'DPTHEPBHIB_1'
   vaccine_name: string;
   dose_number: number;
-  scheduled_date: string;      // ISO date
-  given_date?: string;         // null = not yet given
-  given_at_facility?: string;  // BHS / RHU / private clinic name
+  scheduled_date: string;         // ISO date
+  given_date?: string;            // null = not yet given
+  given_at_facility?: string;     // BHS / RHU / private clinic name
   is_epi_free: boolean;
+  notes?: string;
+  created_at: string;
+
+  // ── New fields added in migration 20260316214019 ───────────────────
+  brand?: string;                 // e.g. 'Engerix-B', 'Infanrix'
+  administered_by?: string;       // name of administering clinician
+  administered_role?: AdministeredRole;
+  clinic?: string;                // clinic or BHS/RHU name
+  lot_number?: string;
+  expiry_date?: string;           // ISO date
+  site?: VaccineSite;             // injection site
+  reactions?: string;             // post-vaccine reaction notes
+  next_due_date?: string;         // ISO date — next dose due
+  certificate_url?: string;       // Supabase Storage URL for cert photo
+}
+
+// ── VACCINES SCHEDULE (reference table) ────────────────────────────────
+export interface VaccineScheduleEntry {
+  id: string;
+  vaccine_name: string;
+  age_weeks_min?: number;
+  age_weeks_max?: number;
+  dose_number?: number;
+  is_required: boolean;
   notes?: string;
   created_at: string;
 }
