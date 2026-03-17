@@ -821,7 +821,19 @@
     "date_required_msg": "请填写接种日期。",
     "cert_perm_title": "需要权限",
     "cert_perm_msg": "请允许访问相册以上传接种证照片。",
-    "dose_label": "第{{n}}剂"
+    "dose_label": "第{{n}}剂",
+    "status_not_applicable": "不适用",
+    "tab_not_applicable": "不适用",
+    "not_applicable_info": "根据您孩子目前的年龄，这些疫苗已不再适用。补种窗口期已过。如需了解是否仍建议晚期接种，请咨询您的儿科医生。",
+    "custom_modal_title": "添加自定义疫苗",
+    "custom_modal_subtitle": "记录EPI计划外的疫苗",
+    "custom_badge": "自定义",
+    "custom_name_label": "疫苗名称",
+    "custom_name_placeholder": "例如 Gardasil 9、HPV、Dengvaxia",
+    "custom_notes_placeholder": "关于此疫苗的可选备注",
+    "custom_name_required_title": "需要填写名称",
+    "custom_name_required_msg": "请输入疫苗名称。",
+    "custom_save": "添加疫苗记录"
   },
   "insights": {
     "title": "数据报告 📊",

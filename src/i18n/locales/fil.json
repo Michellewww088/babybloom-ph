@@ -733,7 +733,19 @@
     "date_required_msg": "Mangyaring ilagay ang petsa ng pagbibigay ng bakuna.",
     "cert_perm_title": "Kailangan ang Pahintulot",
     "cert_perm_msg": "Mangyaring payagan ang access sa photo library para mag-upload ng sertipiko.",
-    "dose_label": "Dosis {{n}}"
+    "dose_label": "Dosis {{n}}",
+    "status_not_applicable": "Hindi Applicable",
+    "tab_not_applicable": "Hindi Applicable",
+    "not_applicable_info": "Ang mga bakunang ito ay hindi na applicable batay sa kasalukuyang edad ng iyong anak. Lumipas na ang catch-up window. Maaaring kumonsulta sa iyong Pedia kung inirerekomenda pa rin ang late vaccination.",
+    "custom_modal_title": "Magdagdag ng Custom na Bakuna",
+    "custom_modal_subtitle": "I-record ang bakunang wala sa EPI schedule",
+    "custom_badge": "Custom",
+    "custom_name_label": "Pangalan ng Bakuna",
+    "custom_name_placeholder": "hal. Gardasil 9, HPV, Dengvaxia",
+    "custom_notes_placeholder": "Opsyonal na tala tungkol sa bakunang ito",
+    "custom_name_required_title": "Kailangan ang Pangalan",
+    "custom_name_required_msg": "Mangyaring ilagay ang pangalan ng bakuna.",
+    "custom_save": "Idagdag ang Rekord ng Bakuna"
   },
   "vitamins": {
     "title": "Bitamina at Gamot",

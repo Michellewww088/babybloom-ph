@@ -733,7 +733,19 @@
     "date_required_msg": "Please enter the date this vaccine was given.",
     "cert_perm_title": "Permission Needed",
     "cert_perm_msg": "Please allow photo library access to upload a certificate.",
-    "dose_label": "Dose {{n}}"
+    "dose_label": "Dose {{n}}",
+    "status_not_applicable": "N/A",
+    "tab_not_applicable": "N/A",
+    "not_applicable_info": "These vaccines are no longer applicable based on your child's current age. The catch-up window has passed. Your pediatrician can advise if late vaccination is still recommended.",
+    "custom_modal_title": "Add Custom Vaccine",
+    "custom_modal_subtitle": "Record a vaccine not in the EPI schedule",
+    "custom_badge": "Custom",
+    "custom_name_label": "Vaccine Name",
+    "custom_name_placeholder": "e.g. Gardasil 9, HPV, Dengvaxia",
+    "custom_notes_placeholder": "Optional notes about this vaccine",
+    "custom_name_required_title": "Name Required",
+    "custom_name_required_msg": "Please enter the vaccine name.",
+    "custom_save": "Add Vaccine Record"
   },
   "vitamins": {
     "title": "Vitamins & Medications",
