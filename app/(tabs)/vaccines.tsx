@@ -1879,20 +1879,22 @@ export default function VaccinesScreen() {
         )}
       </ScrollView>
 
-      {/* Floating "+" FAB — only visible on My Records tab */}
+      {/* Floating "+" FAB — pointer-transparent overlay so it sits above ScrollView */}
       {mainTab === 'records' && (
-        <TouchableOpacity
-          style={sc.fab}
-          activeOpacity={0.9}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            const first = allForChild.find(r => r.status === 'overdue')
-              ?? allForChild.find(r => r.status === 'upcoming');
-            if (first) { setEditRecord(first); setEditVisible(true); }
-          }}
-        >
-          <Plus size={28} strokeWidth={2.5} color={Colors.white} />
-        </TouchableOpacity>
+        <View pointerEvents="box-none" style={StyleSheet.absoluteFillObject}>
+          <TouchableOpacity
+            style={sc.fab}
+            activeOpacity={0.9}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              const first = allForChild.find(r => r.status === 'overdue')
+                ?? allForChild.find(r => r.status === 'upcoming');
+              if (first) { setEditRecord(first); setEditVisible(true); }
+            }}
+          >
+            <Plus size={28} strokeWidth={2.5} color={Colors.white} />
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Vaccine Detail Modal (Knowledge Base) */}
