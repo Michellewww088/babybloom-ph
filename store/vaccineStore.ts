@@ -173,7 +173,16 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
   getRecords: (childId, status) => {
     const records = get().records.filter((r) => r.childId === childId);
     const filtered = status ? records.filter((r) => r.status === status) : records;
-    return filtered.sort((a, b) => a.recommendedAgeWeeks - b.recommendedAgeWeeks);
+    return filtered.sort((a, b) => {
+      const statusOrder = (s: VaccineStatus) =>
+        s === 'overdue' ? 0 : s === 'upcoming' ? 1 : 2;
+      const so = statusOrder(a.status) - statusOrder(b.status);
+      if (so !== 0) return so;
+      if (a.status === 'overdue' || a.status === 'upcoming') {
+        return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+      }
+      return a.recommendedAgeWeeks - b.recommendedAgeWeeks;
+    });
   },
 
   getNextUpcoming: (childId) => {
