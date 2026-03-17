@@ -74,21 +74,24 @@ function daysUntil(iso: string): number {
 }
 
 function statusColor(s: VaccineStatus) {
-  if (s === 'given')    return MINT;
-  if (s === 'upcoming') return BLUE;
-  if (s === 'overdue')  return '#E53E3E';
+  if (s === 'given')           return MINT;
+  if (s === 'upcoming')        return BLUE;
+  if (s === 'overdue')         return '#E53E3E';
+  if (s === 'not_applicable')  return '#9E9E9E';
   return GRAY;
 }
 function statusBg(s: VaccineStatus) {
-  if (s === 'given')    return Colors.softMint;
-  if (s === 'upcoming') return Colors.softBlue;
-  if (s === 'overdue')  return '#FFF5F5';
+  if (s === 'given')           return Colors.softMint;
+  if (s === 'upcoming')        return Colors.softBlue;
+  if (s === 'overdue')         return '#FFF5F5';
+  if (s === 'not_applicable')  return '#F5F5F5';
   return '#F5F5F5';
 }
 function statusIcon(s: VaccineStatus): React.ReactNode {
-  if (s === 'given')    return <CheckCircle2 size={16} color={MINT} />;
-  if (s === 'upcoming') return <Clock size={16} color={BLUE} />;
-  if (s === 'overdue')  return <AlertTriangle size={16} color={'#E53E3E'} />;
+  if (s === 'given')           return <CheckCircle2 size={16} color={MINT} />;
+  if (s === 'upcoming')        return <Clock size={16} color={BLUE} />;
+  if (s === 'overdue')         return <AlertTriangle size={16} color={'#E53E3E'} />;
+  if (s === 'not_applicable')  return <Ban size={16} color={'#9E9E9E'} />;
   return <XCircle size={16} color={GRAY} />;
 }
 
@@ -326,24 +329,28 @@ function VaccineTimelineCard({
 }: { record: VaccineRecord; onPress: () => void; isLast: boolean }) {
   const { t } = useTranslation();
 
-  const dotColor = record.status === 'given'    ? Colors.mint
-    : record.status === 'upcoming' ? Colors.warning
-    : record.status === 'overdue'  ? Colors.danger
+  const dotColor = record.status === 'given'           ? Colors.mint
+    : record.status === 'upcoming'        ? Colors.warning
+    : record.status === 'overdue'         ? Colors.danger
+    : record.status === 'not_applicable'  ? '#9E9E9E'
     : Colors.textLight;
 
-  const badgeBg = record.status === 'given'    ? Colors.softMint
-    : record.status === 'upcoming' ? Colors.warningBg
-    : record.status === 'overdue'  ? Colors.dangerBg
+  const badgeBg = record.status === 'given'           ? Colors.softMint
+    : record.status === 'upcoming'        ? Colors.warningBg
+    : record.status === 'overdue'         ? Colors.dangerBg
+    : record.status === 'not_applicable'  ? '#F5F5F5'
     : Colors.divider;
 
-  const badgeColor = record.status === 'given'    ? Colors.mint
-    : record.status === 'upcoming' ? Colors.warning
-    : record.status === 'overdue'  ? Colors.danger
+  const badgeColor = record.status === 'given'           ? Colors.mint
+    : record.status === 'upcoming'        ? Colors.warning
+    : record.status === 'overdue'         ? Colors.danger
+    : record.status === 'not_applicable'  ? '#9E9E9E'
     : Colors.textMid;
 
-  const badgeLabel = record.status === 'given'    ? t('vaccine_log.status_given')
-    : record.status === 'upcoming' ? t('vaccine_log.status_upcoming')
-    : record.status === 'overdue'  ? t('vaccine_log.status_overdue')
+  const badgeLabel = record.status === 'given'           ? t('vaccine_log.status_given')
+    : record.status === 'upcoming'        ? t('vaccine_log.status_upcoming')
+    : record.status === 'overdue'         ? t('vaccine_log.status_overdue')
+    : record.status === 'not_applicable'  ? t('vaccine_log.status_not_applicable')
     : t('vaccine_log.status_skipped');
 
   const roleIcon = record.administeredRole === 'pediatrician'
@@ -601,9 +608,10 @@ function VaccineEditModal({
   };
 
   const STATUS_OPTS: { v: VaccineStatus; icon: React.ReactNode; l: string; c: string }[] = [
-    { v: 'given',    icon: <CheckCircle2 size={14} color={MINT} />, l: t('vaccine_log.status_given'),    c: MINT },
-    { v: 'upcoming', icon: <Clock size={14} color={BLUE} />,        l: t('vaccine_log.status_upcoming'), c: BLUE },
-    { v: 'skipped',  icon: <XCircle size={14} color={GRAY} />,      l: t('vaccine_log.status_skipped'),  c: GRAY },
+    { v: 'given',           icon: <CheckCircle2 size={14} color={MINT} />,     l: t('vaccine_log.status_given'),          c: MINT     },
+    { v: 'upcoming',        icon: <Clock size={14} color={BLUE} />,            l: t('vaccine_log.status_upcoming'),       c: BLUE     },
+    { v: 'skipped',         icon: <XCircle size={14} color={GRAY} />,          l: t('vaccine_log.status_skipped'),        c: GRAY     },
+    { v: 'not_applicable',  icon: <Ban size={14} color={'#9E9E9E'} />,         l: t('vaccine_log.status_not_applicable'), c: '#9E9E9E'},
   ];
 
   return (
@@ -1646,22 +1654,25 @@ const kb = StyleSheet.create({
 // ── Records Tab (existing log wrapped) ────────────────────────────────────────
 
 const RECORD_TABS: { key: VaccineStatus | 'all'; i18n: string }[] = [
-  { key: 'all',      i18n: 'vaccine_log.tab_all' },
-  { key: 'given',    i18n: 'vaccine_log.tab_given' },
-  { key: 'upcoming', i18n: 'vaccine_log.tab_upcoming' },
-  { key: 'overdue',  i18n: 'vaccine_log.tab_overdue' },
+  { key: 'all',            i18n: 'vaccine_log.tab_all' },
+  { key: 'given',          i18n: 'vaccine_log.tab_given' },
+  { key: 'upcoming',       i18n: 'vaccine_log.tab_upcoming' },
+  { key: 'overdue',        i18n: 'vaccine_log.tab_overdue' },
+  { key: 'not_applicable', i18n: 'vaccine_log.tab_not_applicable' },
 ];
 
 function RecordsTab({
   childName, ageMonths, allForChild,
-  givenCount, upcomingCount, overdueCount, totalCount,
-  overdueNames, nextUpcoming, onEditRecord,
+  givenCount, upcomingCount, overdueCount, notApplicableCount, totalCount,
+  overdueNames, nextUpcoming, onEditRecord, onAddCustom,
 }: {
   childName: string; ageMonths: number;
   allForChild: VaccineRecord[];
-  givenCount: number; upcomingCount: number; overdueCount: number; totalCount: number;
+  givenCount: number; upcomingCount: number; overdueCount: number;
+  notApplicableCount: number; totalCount: number;
   overdueNames: string[]; nextUpcoming: VaccineRecord | null;
   onEditRecord: (r: VaccineRecord) => void;
+  onAddCustom: () => void;
 }) {
   const { t }                       = useTranslation();
   const [activeFilter, setActiveFilter] = useState<VaccineStatus | 'all'>('all');
@@ -1672,16 +1683,31 @@ function RecordsTab({
     ? vaccineStore.getRecords(activeChild.id, activeFilter === 'all' ? undefined : activeFilter)
     : [];
 
+  // For the "all" tab, hide not_applicable by default to keep the list clean
+  const displayRecs = activeFilter === 'all'
+    ? filteredRecs.filter(r => r.status !== 'not_applicable')
+    : filteredRecs;
+
+  const countForTab = (key: VaccineStatus | 'all') => {
+    if (key === 'all')            return totalCount - notApplicableCount;
+    if (key === 'given')          return givenCount;
+    if (key === 'upcoming')       return upcomingCount;
+    if (key === 'overdue')        return overdueCount;
+    if (key === 'not_applicable') return notApplicableCount;
+    return 0;
+  };
+
   return (
     <View>
       <CoverageHero
         name={childName} ageMonths={ageMonths}
         givenCount={givenCount} upcomingCount={upcomingCount}
-        overdueCount={overdueCount} totalCount={totalCount}
+        overdueCount={overdueCount}
+        totalCount={totalCount - notApplicableCount}
       />
       <VaccineAISection
         childName={childName} ageMonths={ageMonths}
-        givenCount={givenCount} totalCount={totalCount}
+        givenCount={givenCount} totalCount={totalCount - notApplicableCount}
         overdueList={overdueNames}
         nextVaccineName={nextUpcoming?.nameEN ?? ''}
         nextVaccineDate={nextUpcoming?.scheduledDate ?? ''}
@@ -1692,7 +1718,7 @@ function RecordsTab({
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rt.filterRow} contentContainerStyle={rt.filterContent}>
         {RECORD_TABS.map(tab => {
           const active = activeFilter === tab.key;
-          const count  = tab.key === 'all' ? totalCount : tab.key === 'given' ? givenCount : tab.key === 'upcoming' ? upcomingCount : overdueCount;
+          const count  = countForTab(tab.key);
           return (
             <TouchableOpacity key={tab.key} style={[rt.tab, active && rt.tabActive]} onPress={() => { setActiveFilter(tab.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} activeOpacity={0.8}>
               <Text style={[rt.tabTxt, active && rt.tabTxtActive]}>
@@ -1702,7 +1728,16 @@ function RecordsTab({
           );
         })}
       </ScrollView>
-      {filteredRecs.length === 0 ? (
+
+      {/* not_applicable info banner — shown when that filter is active */}
+      {activeFilter === 'not_applicable' && notApplicableCount > 0 && (
+        <View style={rt.naBanner}>
+          <Ban size={14} strokeWidth={1.5} color={'#9E9E9E'} />
+          <Text style={rt.naBannerTxt}>{t('vaccine_log.not_applicable_info')}</Text>
+        </View>
+      )}
+
+      {displayRecs.length === 0 ? (
         <EmptyState
           illustration={null}
           illustrationColor={Colors.softBlue}
@@ -1711,11 +1746,11 @@ function RecordsTab({
         />
       ) : (
         <View style={rt.timeline}>
-          {filteredRecs.map((rec, idx) => (
+          {displayRecs.map((rec, idx) => (
             <VaccineTimelineCard
               key={rec.id}
               record={rec}
-              isLast={idx === filteredRecs.length - 1}
+              isLast={idx === displayRecs.length - 1}
               onPress={() => onEditRecord(rec)}
             />
           ))}
@@ -1737,6 +1772,152 @@ const rt = StyleSheet.create({
   tabTxt:       { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.textMid },
   tabTxtActive: { color: Colors.white },
   timeline:     { paddingTop: 4 },
+  naBanner:     { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#F5F5F5',
+                  borderRadius: 12, padding: 12, marginBottom: 12, borderLeftWidth: 3, borderLeftColor: '#9E9E9E' },
+  naBannerTxt:  { flex: 1, fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: Colors.textMid, lineHeight: 17 },
+});
+
+// ── Custom Record Modal ────────────────────────────────────────────────────────
+
+function CustomVaccineModal({
+  visible, childId, onClose, onSave,
+}: {
+  visible: boolean; childId: string;
+  onClose: () => void; onSave: () => void;
+}) {
+  const { t } = useTranslation();
+  const vaccineStore = useVaccineStore();
+
+  const [nameEN,      setNameEN]      = useState('');
+  const [scheduledDt, setScheduledDt] = useState('');
+  const [brand,       setBrand]       = useState('');
+  const [doseNum,     setDoseNum]     = useState('');
+  const [notes,       setNotes]       = useState('');
+
+  const reset = () => { setNameEN(''); setScheduledDt(''); setBrand(''); setDoseNum(''); setNotes(''); };
+
+  const save = () => {
+    if (!nameEN.trim()) {
+      Alert.alert(t('vaccine_log.custom_name_required_title'), t('vaccine_log.custom_name_required_msg'));
+      return;
+    }
+    if (!scheduledDt.trim()) {
+      Alert.alert(t('vaccine_log.date_required_title'), t('vaccine_log.date_required_msg'));
+      return;
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    vaccineStore.addCustomRecord({
+      childId,
+      nameEN: nameEN.trim(),
+      scheduledDate: scheduledDt.trim(),
+      brand: brand.trim() || undefined,
+      doseNumber: doseNum ? parseInt(doseNum, 10) : undefined,
+      notes: notes.trim() || undefined,
+    });
+    reset();
+    onSave();
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={cm.wrap}>
+          <LinearGradient colors={[Colors.primary, '#F07090']} style={cm.hdr}>
+            <TouchableOpacity onPress={() => { reset(); onClose(); }} style={cm.closeBtn}>
+              <Text style={cm.closeTxt}>✕</Text>
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={cm.hdrTitle}>{t('vaccine_log.custom_modal_title')}</Text>
+              <Text style={cm.hdrSub}>{t('vaccine_log.custom_modal_subtitle')}</Text>
+            </View>
+            <View style={cm.customBadge}>
+              <Text style={cm.customBadgeTxt}>{t('vaccine_log.custom_badge')}</Text>
+            </View>
+          </LinearGradient>
+
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={cm.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <SectionHeader icon={<Pill size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_details')} />
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.custom_name_label')} *</Text>
+              <TextInput style={cm.input} value={nameEN} onChangeText={setNameEN}
+                placeholder={t('vaccine_log.custom_name_placeholder')} placeholderTextColor="#ccc" autoFocus />
+            </View>
+
+            <SectionHeader icon={<Calendar size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_schedule')} />
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_date_given')} *</Text>
+              <TextInput style={cm.input} value={scheduledDt} onChangeText={setScheduledDt}
+                placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+            </View>
+
+            <SectionHeader icon={<Syringe size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_admin')} />
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_brand')}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {BRANDS.map(b => (
+                    <TouchableOpacity key={b} onPress={() => setBrand(brand === b ? '' : b)} activeOpacity={0.8}
+                      style={[cm.chip, brand === b && cm.chipActive]}>
+                      <Text style={[cm.chipTxt, brand === b && cm.chipTxtActive]}>{b}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_dose_number')}</Text>
+              <TextInput style={cm.input} value={doseNum} onChangeText={setDoseNum}
+                placeholder="1" placeholderTextColor="#ccc" keyboardType="number-pad" />
+            </View>
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_notes')}</Text>
+              <TextInput style={[cm.input, cm.inputMulti]} value={notes} onChangeText={setNotes}
+                placeholder={t('vaccine_log.custom_notes_placeholder')} placeholderTextColor="#ccc" multiline numberOfLines={3} />
+            </View>
+
+            <TouchableOpacity onPress={save} activeOpacity={0.85} style={{ marginTop: 8 }}>
+              <LinearGradient colors={[Colors.primary, '#F07090']} style={cm.saveBtn}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Plus size={18} strokeWidth={2} color={Colors.white} />
+                  <Text style={cm.saveBtnTxt}>{t('vaccine_log.custom_save')}</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <View style={{ height: 48 }} />
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+const cm = StyleSheet.create({
+  wrap:         { flex: 1, backgroundColor: Colors.background },
+  hdr:          { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 16, paddingBottom: 16 },
+  closeBtn:     { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
+  closeTxt:     { color: Colors.white, fontSize: 14, fontWeight: '700' },
+  hdrTitle:     { fontSize: 16, fontWeight: '800', color: Colors.white },
+  hdrSub:       { fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
+  customBadge:  { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  customBadgeTxt:{ fontSize: 11, fontWeight: '800', color: Colors.white },
+  content:      { padding: 16, paddingBottom: 32 },
+  fBlock:       { marginBottom: 14 },
+  fLbl:         { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 6 },
+  input:        { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 11, fontSize: 13, color: DARK, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
+  inputMulti:   { minHeight: 72, height: undefined, textAlignVertical: 'top', paddingTop: 12 },
+  chip:         { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  chipActive:   { borderColor: Colors.primary, backgroundColor: Colors.primarySoft },
+  chipTxt:      { fontSize: 12, fontWeight: '600', color: GRAY },
+  chipTxtActive:{ color: Colors.primary, fontWeight: '800' },
+  saveBtn:      { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10, shadowColor: Colors.primary, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  saveBtnTxt:   { color: Colors.white, fontSize: 16, fontWeight: '800' },
 });
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
@@ -1746,13 +1927,14 @@ export default function VaccinesScreen() {
   const { activeChild } = useChildStore();
   const vaccineStore    = useVaccineStore();
 
-  const [isLoading,     setIsLoading]     = useState(true);
-  const [mainTab,       setMainTab]       = useState<MainTab>('knowledge');
-  const [detailVaccine, setDetailVaccine] = useState<VaccineEntry | null>(null);
-  const [detailRecord,  setDetailRecord]  = useState<VaccineRecord | undefined>(undefined);
-  const [detailVisible, setDetailVisible] = useState(false);
-  const [editRecord,    setEditRecord]    = useState<VaccineRecord | null>(null);
-  const [editVisible,   setEditVisible]   = useState(false);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [mainTab,        setMainTab]        = useState<MainTab>('knowledge');
+  const [detailVaccine,  setDetailVaccine]  = useState<VaccineEntry | null>(null);
+  const [detailRecord,   setDetailRecord]   = useState<VaccineRecord | undefined>(undefined);
+  const [detailVisible,  setDetailVisible]  = useState(false);
+  const [editRecord,     setEditRecord]     = useState<VaccineRecord | null>(null);
+  const [editVisible,    setEditVisible]    = useState(false);
+  const [customVisible,  setCustomVisible]  = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
@@ -1762,17 +1944,18 @@ export default function VaccinesScreen() {
   useEffect(() => {
     if (activeChild?.id && activeChild.birthday) {
       vaccineStore.autoPopulate(activeChild.id, activeChild.birthday);
-      vaccineStore.refreshStatuses(activeChild.id);
+      vaccineStore.refreshStatuses(activeChild.id, activeChild.birthday);
     }
   }, [activeChild?.id]);
 
-  const allForChild   = activeChild ? vaccineStore.getRecords(activeChild.id) : [];
-  const givenCount    = allForChild.filter(r => r.status === 'given').length;
-  const upcomingCount = allForChild.filter(r => r.status === 'upcoming').length;
-  const overdueCount  = allForChild.filter(r => r.status === 'overdue').length;
-  const totalCount    = allForChild.length;
-  const overdueNames  = allForChild.filter(r => r.status === 'overdue').map(r => r.code);
-  const nextUpcoming  = activeChild ? vaccineStore.getNextUpcoming(activeChild.id) : null;
+  const allForChild        = activeChild ? vaccineStore.getRecords(activeChild.id) : [];
+  const givenCount         = allForChild.filter(r => r.status === 'given').length;
+  const upcomingCount      = allForChild.filter(r => r.status === 'upcoming').length;
+  const overdueCount       = allForChild.filter(r => r.status === 'overdue').length;
+  const notApplicableCount = allForChild.filter(r => r.status === 'not_applicable').length;
+  const totalCount         = allForChild.length;
+  const overdueNames       = allForChild.filter(r => r.status === 'overdue').map(r => r.code);
+  const nextUpcoming       = activeChild ? vaccineStore.getNextUpcoming(activeChild.id) : null;
 
   const ageMonths = activeChild?.birthday
     ? Math.floor((Date.now() - new Date(activeChild.birthday).getTime()) / (1000*60*60*24*30.44))
@@ -1871,10 +2054,12 @@ export default function VaccinesScreen() {
             givenCount={givenCount}
             upcomingCount={upcomingCount}
             overdueCount={overdueCount}
+            notApplicableCount={notApplicableCount}
             totalCount={totalCount}
             overdueNames={overdueNames}
             nextUpcoming={nextUpcoming}
             onEditRecord={r => { setEditRecord(r); setEditVisible(true); }}
+            onAddCustom={() => setCustomVisible(true)}
           />
         )}
       </ScrollView>
@@ -1887,9 +2072,7 @@ export default function VaccinesScreen() {
             activeOpacity={0.9}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              const first = allForChild.find(r => r.status === 'overdue')
-                ?? allForChild.find(r => r.status === 'upcoming');
-              if (first) { setEditRecord(first); setEditVisible(true); }
+              setCustomVisible(true);
             }}
           >
             <Plus size={28} strokeWidth={2.5} color={Colors.white} />
@@ -1915,6 +2098,16 @@ export default function VaccinesScreen() {
         onSave={r => vaccineStore.updateRecord(r.id, r)}
         onDelete={id => { vaccineStore.deleteRecord(id); setEditVisible(false); }}
       />
+
+      {/* Custom Vaccine Modal (FAB in My Records tab) */}
+      {activeChild && (
+        <CustomVaccineModal
+          visible={customVisible}
+          childId={activeChild.id}
+          onClose={() => setCustomVisible(false)}
+          onSave={() => setCustomVisible(false)}
+        />
+      )}
     </View>
   );
 }

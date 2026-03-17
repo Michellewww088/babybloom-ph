@@ -487,6 +487,42 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
   },
 ];
 
+/**
+ * Maximum child age (in weeks) at which catch-up vaccination is still appropriate.
+ * After this age, autoPopulate sets status to 'not_applicable' instead of 'overdue'.
+ *
+ * Sources: DOH EPI Philippines, WHO catch-up schedule, Philippine Pediatric Society (PPS).
+ * - Rotavirus: hard medical cutoff due to intussusception risk (1st dose ≤14 wks, last ≤32 wks)
+ * - BCG/EPI series: meaningful catch-up up to 1 year
+ * - MMR/Varicella/HepA: catch-up valid into school age
+ * - Annual vaccines (Flu): always applicable
+ */
+export const VACCINE_MAX_CATCHUP_WEEKS: Record<string, number> = {
+  BCG:          52,   // catch-up valid up to 1 year
+  HepB1:        52,
+  Penta1:       52,
+  Penta2:       52,
+  Penta3:       52,
+  OPV1:         52,
+  OPV2:         52,
+  OPV3:         52,
+  PCV1:         52,
+  PCV2:         52,
+  PCV3:         52,
+  IPV1:         52,
+  Rota1:        20,   // MEDICAL CUTOFF: 1st dose must be given before 20 weeks (intussusception risk)
+  Rota2:        32,   // MEDICAL CUTOFF: last dose must be given before 32 weeks / 8 months
+  Flu1:         520,  // annual vaccine — always applicable, no catch-up limit
+  MMR1:         156,  // catch-up valid to 3 years
+  MMR2:         260,  // catch-up valid to 5 years
+  HepA1:        260,  // catch-up valid to 5 years
+  HepA2:        520,  // booster — no practical limit
+  Varicella1:   520,  // catch-up valid through childhood
+  DPTBooster:   156,  // booster catch-up valid to 3 years
+  OPVBooster:   156,
+  Typhoid:      520,  // recommended every 3 years — always applicable
+};
+
 /** Flat list of all vaccines (useful for lookup by code) */
 export const ALL_VACCINES: VaccineEntry[] = DOH_EPI_SCHEDULE.flatMap((g) => g.vaccines);
 

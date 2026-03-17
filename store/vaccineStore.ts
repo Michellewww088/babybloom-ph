@@ -6,13 +6,14 @@
 import { create } from 'zustand';
 import {
   DOH_EPI_SCHEDULE,
+  VACCINE_MAX_CATCHUP_WEEKS,
   calcScheduledDate,
   calcReminderDate,
 } from '../constants/vaccines-doh-epi';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type VaccineStatus = 'given' | 'upcoming' | 'overdue' | 'skipped';
+export type VaccineStatus = 'given' | 'upcoming' | 'overdue' | 'skipped' | 'not_applicable';
 export type AdministeredRole = 'pediatrician' | 'nurse' | 'midwife';
 export type VaccineSite = 'left_thigh' | 'right_thigh' | 'left_arm' | 'right_arm' | 'oral';
 
@@ -27,6 +28,7 @@ export interface VaccineRecord {
   nameZH: string;
   isFreeEPI: boolean;
   recommendedAgeWeeks: number;
+  isCustom?: boolean;     // true for vaccines added manually (not in DOH EPI schedule)
 
   // Status
   status: VaccineStatus;
@@ -69,6 +71,21 @@ interface VaccineStore {
   /** Auto-populate all vaccines for a child from DOH EPI schedule */
   autoPopulate: (childId: string, birthday: string) => void;
 
+  /**
+   * Add a custom vaccine record (not in DOH EPI schedule).
+   * Caller provides at minimum: childId, nameEN, scheduledDate.
+   */
+  addCustomRecord: (partial: {
+    childId: string;
+    nameEN: string;
+    nameFIL?: string;
+    nameZH?: string;
+    scheduledDate: string;
+    brand?: string;
+    doseNumber?: number;
+    notes?: string;
+  }) => void;
+
   /** Add or upsert a record */
   addRecord: (record: VaccineRecord) => void;
 
@@ -84,17 +101,45 @@ interface VaccineStore {
   /** Get next upcoming vaccine for a child */
   getNextUpcoming: (childId: string) => VaccineRecord | null;
 
-  /** Recalculate overdue status for a child based on today's date */
-  refreshStatuses: (childId: string) => void;
+  /** Recalculate overdue/not_applicable status for a child based on today's date + birthday */
+  refreshStatuses: (childId: string, birthday: string) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function computeStatus(scheduledDate: string, given: boolean, skipped: boolean): VaccineStatus {
-  if (given) return 'given';
+/**
+ * Compute the vaccine status given its scheduled date, the child's birthday,
+ * and whether it was already given or skipped.
+ *
+ * not_applicable: vaccine's catch-up window has closed (child is older than
+ *   VACCINE_MAX_CATCHUP_WEEKS for that vaccine code). Shows "N/A" instead of
+ *   "overdue" for vaccines the child can no longer safely receive.
+ */
+function computeStatus(
+  scheduledDate: string,
+  birthday: string,
+  code: string,
+  given: boolean,
+  skipped: boolean,
+): VaccineStatus {
+  if (given)   return 'given';
   if (skipped) return 'skipped';
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  // Age of child in weeks today
+  const bd = new Date(birthday);
+  bd.setHours(0, 0, 0, 0);
+  const ageWeeks = Math.floor((today.getTime() - bd.getTime()) / (7 * 24 * 60 * 60 * 1000));
+
+  // Check catch-up window — if the child is older than the max catch-up age,
+  // the vaccine window has passed and it's no longer applicable
+  const maxCatchup = VACCINE_MAX_CATCHUP_WEEKS[code];
+  if (maxCatchup !== undefined && ageWeeks > maxCatchup) {
+    return 'not_applicable';
+  }
+
   const sd = new Date(scheduledDate);
   sd.setHours(0, 0, 0, 0);
   return sd <= today ? 'overdue' : 'upcoming';
@@ -118,11 +163,11 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
         if (existing) continue;
 
         const scheduledDate = calcScheduledDate(birthday, group.recommendedAgeWeeks);
-        const reminderDate = calcReminderDate(scheduledDate);
-        const status = computeStatus(scheduledDate, false, false);
+        const reminderDate  = calcReminderDate(scheduledDate);
+        const status        = computeStatus(scheduledDate, birthday, vaccine.code, false, false);
 
         newRecords.push({
-          id: `${childId}-${vaccine.code}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+          id: `${childId}-${vaccine.code}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           childId,
           code: vaccine.code,
           nameEN: vaccine.nameEN,
@@ -130,6 +175,7 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
           nameZH: vaccine.nameZH,
           isFreeEPI: vaccine.isFreeEPI,
           recommendedAgeWeeks: group.recommendedAgeWeeks,
+          isCustom: false,
           status,
           scheduledDate,
           reminderEnabled: true,
@@ -143,6 +189,32 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     if (newRecords.length > 0) {
       set((state) => ({ records: [...state.records, ...newRecords] }));
     }
+  },
+
+  addCustomRecord: (partial) => {
+    const now = new Date().toISOString();
+    const reminderDate = calcReminderDate(partial.scheduledDate);
+    const record: VaccineRecord = {
+      id:                 `${partial.childId}-custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      childId:            partial.childId,
+      code:               `custom-${Date.now()}`,
+      nameEN:             partial.nameEN,
+      nameFIL:            partial.nameFIL ?? partial.nameEN,
+      nameZH:             partial.nameZH ?? partial.nameEN,
+      isFreeEPI:          false,
+      recommendedAgeWeeks: 0,
+      isCustom:           true,
+      status:             'upcoming',
+      scheduledDate:      partial.scheduledDate,
+      brand:              partial.brand,
+      doseNumber:         partial.doseNumber,
+      notes:              partial.notes,
+      reminderEnabled:    true,
+      reminderDate,
+      createdAt:          now,
+      updatedAt:          now,
+    };
+    set((state) => ({ records: [...state.records, record] }));
   },
 
   addRecord: (record) =>
@@ -183,12 +255,13 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     return upcoming[0] ?? null;
   },
 
-  refreshStatuses: (childId) =>
+  refreshStatuses: (childId, birthday) =>
     set((state) => ({
       records: state.records.map((r) => {
         if (r.childId !== childId) return r;
         if (r.status === 'given' || r.status === 'skipped') return r;
-        const newStatus = computeStatus(r.scheduledDate, false, false);
+        if (r.isCustom) return r; // custom records don't auto-expire
+        const newStatus = computeStatus(r.scheduledDate, birthday, r.code, false, false);
         if (newStatus === r.status) return r;
         return { ...r, status: newStatus, updatedAt: new Date().toISOString() };
       }),
