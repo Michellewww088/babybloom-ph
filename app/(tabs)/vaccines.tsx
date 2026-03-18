@@ -1790,11 +1790,12 @@ function CustomVaccineModal({
 
   const [nameEN,      setNameEN]      = useState('');
   const [scheduledDt, setScheduledDt] = useState('');
+  const [nextDue,     setNextDue]     = useState('');
   const [brand,       setBrand]       = useState('');
   const [doseNum,     setDoseNum]     = useState('');
   const [notes,       setNotes]       = useState('');
 
-  const reset = () => { setNameEN(''); setScheduledDt(''); setBrand(''); setDoseNum(''); setNotes(''); };
+  const reset = () => { setNameEN(''); setScheduledDt(''); setNextDue(''); setBrand(''); setDoseNum(''); setNotes(''); };
 
   const save = () => {
     if (!nameEN.trim()) {
@@ -1810,6 +1811,7 @@ function CustomVaccineModal({
       childId,
       nameEN: nameEN.trim(),
       scheduledDate: scheduledDt.trim(),
+      nextDueDate:  nextDue.trim() || undefined,
       brand: brand.trim() || undefined,
       doseNumber: doseNum ? parseInt(doseNum, 10) : undefined,
       notes: notes.trim() || undefined,
@@ -1873,6 +1875,12 @@ function CustomVaccineModal({
               <Text style={cm.fLbl}>{t('vaccine_log.field_dose_number')}</Text>
               <TextInput style={cm.input} value={doseNum} onChangeText={setDoseNum}
                 placeholder="1" placeholderTextColor="#ccc" keyboardType="number-pad" />
+            </View>
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_next_due')}</Text>
+              <TextInput style={cm.input} value={nextDue} onChangeText={setNextDue}
+                placeholder={t('vaccine_log.field_next_due_placeholder')} placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
             </View>
 
             <View style={cm.fBlock}>

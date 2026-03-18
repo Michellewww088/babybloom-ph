@@ -809,6 +809,7 @@
     "field_brand": "疫苗品牌",
     "field_dose_number": "剂次",
     "field_next_due": "下次接种日期",
+    "field_next_due_placeholder": "例：2026-09-01（伤寒疫苗每3年加强一次）",
     "field_admin_role": "角色",
     "field_site": "接种部位",
     "field_expiry": "批次有效期",

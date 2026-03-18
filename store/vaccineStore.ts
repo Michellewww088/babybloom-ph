@@ -81,6 +81,7 @@ interface VaccineStore {
     nameFIL?: string;
     nameZH?: string;
     scheduledDate: string;
+    nextDueDate?: string;
     brand?: string;
     doseNumber?: number;
     notes?: string;
@@ -208,6 +209,7 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
       scheduledDate:      partial.scheduledDate,
       brand:              partial.brand,
       doseNumber:         partial.doseNumber,
+      nextDueDate:        partial.nextDueDate,
       notes:              partial.notes,
       reminderEnabled:    true,
       reminderDate,

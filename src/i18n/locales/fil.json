@@ -721,6 +721,7 @@
     "field_brand": "Brand ng Bakuna",
     "field_dose_number": "Bilang ng Dosis",
     "field_next_due": "Susunod na Petsa",
+    "field_next_due_placeholder": "hal. 2026-09-01 (Typhoid booster tuwing 3 taon)",
     "field_admin_role": "Tungkulin",
     "field_site": "Lugar ng Iniksyon",
     "field_expiry": "Petsa ng Expiry ng Lot",
