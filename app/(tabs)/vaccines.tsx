@@ -22,7 +22,7 @@ import {
   Sparkles, Bot, Shield, Lightbulb, Calendar, Syringe, ClipboardList,
   Building2, Trash2, Globe, Search, MapPin, BookOpen, Zap, Hash, Pill,
   Microscope, Thermometer, Ban, CircleDot, Coins, Cross,
-  Camera, ChevronRight, Plus, User,
+  Camera, ChevronRight, Plus, User, RefreshCw,
 } from 'lucide-react-native';
 
 import Colors from '../../constants/Colors';
@@ -342,13 +342,13 @@ function VaccineTimelineCard({
 
   const badgeBg = record.status === 'given'           ? Colors.softMint
     : record.status === 'upcoming'        ? Colors.warningBg
-    : record.status === 'overdue'         ? Colors.dangerBg
+    : record.status === 'overdue'         ? (isRecurring ? Colors.softGold : Colors.dangerBg)
     : record.status === 'not_applicable'  ? '#F5F5F5'
     : Colors.divider;
 
   const badgeColor = record.status === 'given'           ? Colors.mint
     : record.status === 'upcoming'        ? Colors.warning
-    : record.status === 'overdue'         ? Colors.danger
+    : record.status === 'overdue'         ? (isRecurring ? Colors.gold : Colors.danger)
     : record.status === 'not_applicable'  ? '#9E9E9E'
     : Colors.textMid;
 
@@ -1238,6 +1238,36 @@ function VaccineDetailModal({
             </View>
           )}
 
+          {/* Recurrence Info Box */}
+          {vaccine.recurrence && vaccine.recurrence.type !== 'once-series' && (
+            <View style={[det.collapsibleBody, { backgroundColor: Colors.softGold, borderLeftColor: Colors.gold, marginBottom: 8 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <RefreshCw size={14} strokeWidth={2} color={Colors.gold} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: Colors.gold, letterSpacing: 0.5 }}>
+                  {vaccine.recurrence.type === 'annual'
+                    ? t('vaccine_kb.annual_label')
+                    : t('vaccine_kb.every_n_years_label', { n: vaccine.recurrence.intervalYears })}
+                  {' · '}{t('vaccine_kb.recurring_info')}
+                </Text>
+              </View>
+              <Text style={det.collapsibleTxt}>
+                {lang === 'en' ? vaccine.recurrence.noteEN
+                  : lang === 'fil' ? vaccine.recurrence.noteFIL
+                  : vaccine.recurrence.noteZH}
+              </Text>
+              {childRecord?.givenDate && (
+                <Text style={{ fontSize: 11, color: Colors.midGray, marginTop: 6 }}>
+                  {t('vaccine_kb.last_given')}: {fmtDate(childRecord.givenDate)}
+                </Text>
+              )}
+              {childRecord?.scheduledDate && (
+                <Text style={{ fontSize: 11, color: Colors.midGray, marginTop: 2 }}>
+                  {t('vaccine_kb.next_due')}: {fmtDate(childRecord.scheduledDate)}
+                </Text>
+              )}
+            </View>
+          )}
+
           {/* AI Expert Analysis */}
           <VaccineDetailAI vaccine={vaccine} childName={childName} />
 
@@ -1486,6 +1516,17 @@ function AgeGroupAccordion({
                       </Text>
                     </View>
                   </View>
+                  {/* Recurrence badge */}
+                  {vaccine.recurrence && vaccine.recurrence.type !== 'once-series' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2, marginBottom: 2 }}>
+                      <RefreshCw size={10} color={Colors.gold} strokeWidth={2.5} />
+                      <Text style={{ fontSize: 10, color: Colors.gold, fontWeight: '700' }}>
+                        {vaccine.recurrence.type === 'annual'
+                          ? t('vaccine_kb.annual_label')
+                          : t('vaccine_kb.every_n_years_label', { n: vaccine.recurrence.intervalYears })}
+                      </Text>
+                    </View>
+                  )}
                   {/* Recurrence schedule note */}
                   {vaccine.recurrence && (
                     <Text style={acc.vaccRecurrenceNote} numberOfLines={2}>

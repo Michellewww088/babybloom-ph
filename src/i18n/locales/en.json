@@ -928,7 +928,12 @@
     "res_4_title": "Vaccine Myths Debunked 🚫",
     "res_4_body": "Myth: Vaccines cause autism. FACT: Completely disproven. The original 1998 study was fraudulent and retracted. Hundreds of large studies confirm NO link. WHO, AAP, and PPS all confirm vaccines are safe.\n\nMyth: Natural immunity is better. FACT: Natural immunity risks serious complications. Polio can cause permanent paralysis; measles can cause brain damage. Vaccines give immunity safely.\n\nMyth: Too many vaccines overwhelm the immune system. FACT: Your baby immune system handles thousands of antigens daily. Vaccines are no challenge.\n\nMyth: My baby doesn't need vaccines if neighbors vaccinate. FACT: Herd immunity only works at 95%+ vaccination. Your child still needs their own protection.",
     "res_5_title": "Catch-Up Vaccination: Not Too Late 📅",
-    "res_5_body": "Missed a vaccine? Do not worry - it is never too late to catch up! The DOH has a flexible catch-up immunization schedule.\n\n📋 What to do: Visit nearest BHS/RHU or pediatrician. Bring MCH Booklet. A health worker will create a catch-up plan.\n\n✅ No need to restart: If your child received 1st and 2nd doses of Pentavalent but missed 3rd, you only need the 3rd dose.\n\n🟢 Free catch-up: Missed EPI vaccines are still free at BHS/RHU.\n\n🇵🇭 Garantisadong Pambata: Each January and July, DOH runs free immunization drives at all BHS!"
+    "res_5_body": "Missed a vaccine? Do not worry - it is never too late to catch up! The DOH has a flexible catch-up immunization schedule.\n\n📋 What to do: Visit nearest BHS/RHU or pediatrician. Bring MCH Booklet. A health worker will create a catch-up plan.\n\n✅ No need to restart: If your child received 1st and 2nd doses of Pentavalent but missed 3rd, you only need the 3rd dose.\n\n🟢 Free catch-up: Missed EPI vaccines are still free at BHS/RHU.\n\n🇵🇭 Garantisadong Pambata: Each January and July, DOH runs free immunization drives at all BHS!",
+    "annual_label": "Annual",
+    "every_n_years_label": "Every {{n}} Years",
+    "recurring_info": "🔄 Recurring vaccine — schedule repeats",
+    "last_given": "Last given",
+    "next_due": "Next due"
   },
   "feeding_guide": {
     "screen_title": "Feeding Guide",

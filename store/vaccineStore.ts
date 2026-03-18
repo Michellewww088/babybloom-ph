@@ -110,6 +110,28 @@ interface VaccineStore {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
+ * For recurring vaccines (e.g. annual Flu, Typhoid every 3 years),
+ * roll the initial scheduledDate forward to the most recent past due date.
+ * E.g. a 5-year-old child: Flu first due 2021-09 → rolls to 2025-09.
+ */
+function rollForwardScheduledDate(
+  initialScheduledDate: string,
+  intervalYears: number,
+  today: Date,
+): string {
+  const initial = new Date(initialScheduledDate);
+  if (initial >= today) return initialScheduledDate; // not yet first due
+  let current = new Date(initial);
+  for (;;) {
+    const next = new Date(current);
+    next.setFullYear(next.getFullYear() + intervalYears);
+    if (next > today) break;
+    current = next;
+  }
+  return current.toISOString().split('T')[0];
+}
+
+/**
  * Compute the vaccine status given its scheduled date, the child's birthday,
  * and whether it was already given or skipped.
  *
@@ -214,7 +236,8 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
   records: [],
 
   autoPopulate: (childId, birthday) => {
-    const now = new Date().toISOString();
+    const now   = new Date().toISOString();
+    const today = new Date();
     const newRecords: VaccineRecord[] = [];
 
     for (const group of DOH_EPI_SCHEDULE) {
@@ -225,7 +248,14 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
         );
         if (existing) continue;
 
-        const scheduledDate = calcScheduledDate(birthday, group.recommendedAgeWeeks);
+        let scheduledDate = calcScheduledDate(birthday, group.recommendedAgeWeeks);
+        // For recurring vaccines, roll forward to the most recent past due date
+        if (vaccine.recurrence && vaccine.recurrence.type !== 'once-series') {
+          const intervalYears = vaccine.recurrence.type === 'annual'
+            ? 1
+            : (vaccine.recurrence.intervalYears ?? 1);
+          scheduledDate = rollForwardScheduledDate(scheduledDate, intervalYears, today);
+        }
         const reminderDate  = calcReminderDate(scheduledDate);
         const status        = computeStatus(scheduledDate, birthday, vaccine.code, false, false);
 
@@ -342,16 +372,35 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
   },
 
   refreshStatuses: (childId, birthday) =>
-    set((state) => ({
-      records: state.records.map((r) => {
-        if (r.childId !== childId) return r;
-        if (r.status === 'given' || r.status === 'skipped') return r;
-        if (r.isCustom) return r; // custom records don't auto-expire
-        const newStatus = computeStatus(r.scheduledDate, birthday, r.code, false, false);
-        if (newStatus === r.status) return r;
-        return { ...r, status: newStatus, updatedAt: new Date().toISOString() };
-      }),
-    })),
+    set((state) => {
+      const today = new Date();
+      return {
+        records: state.records.map((r) => {
+          if (r.childId !== childId) return r;
+          if (r.status === 'given' || r.status === 'skipped') return r;
+          if (r.isCustom) return r; // custom records don't auto-expire
+
+          // For recurring vaccines, roll the scheduledDate forward before computing status
+          let scheduledDate = r.scheduledDate;
+          const vaccineData = getVaccineByCode(r.code);
+          if (vaccineData?.recurrence && vaccineData.recurrence.type !== 'once-series') {
+            const intervalYears = vaccineData.recurrence.type === 'annual'
+              ? 1
+              : (vaccineData.recurrence.intervalYears ?? 1);
+            scheduledDate = rollForwardScheduledDate(r.scheduledDate, intervalYears, today);
+          }
+
+          const newStatus = computeStatus(scheduledDate, birthday, r.code, false, false);
+          if (newStatus === r.status && scheduledDate === r.scheduledDate) return r;
+          return {
+            ...r,
+            scheduledDate,
+            status: newStatus,
+            updatedAt: new Date().toISOString(),
+          };
+        }),
+      };
+    }),
 }));
 
 // ── Dev helper ────────────────────────────────────────────────────────────────
