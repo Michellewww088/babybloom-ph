@@ -4,6 +4,14 @@
  * Always reference this file — never hardcode vaccine data inline.
  */
 
+export interface VaccineRecurrence {
+  type: 'annual' | 'every-n-years';
+  intervalYears: number;
+  noteEN: string;
+  noteFIL: string;
+  noteZH: string;
+}
+
 export interface VaccineEntry {
   code: string;
   nameEN: string;
@@ -16,6 +24,7 @@ export interface VaccineEntry {
   sideEffects: string;
   postVaccineCare: string;
   whereToGet: { en: string; fil: string; zh: string };
+  recurrence?: VaccineRecurrence;
 }
 
 export interface AgeGroup {
@@ -299,6 +308,13 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           fil: 'Sa pribadong klinika (mga ₱800–₱1,500 bawat dosis)',
           zh: '私立诊所（约₱800–₱1,500/剂）',
         },
+        recurrence: {
+          type: 'annual',
+          intervalYears: 1,
+          noteEN: 'Give every year, ideally before flu season (June–October in the Philippines). Flu strains change annually, so yearly vaccination keeps your child protected.',
+          noteFIL: 'Ibigay taon-taon, mas mabuti bago ang flu season (Hunyo–Oktubre sa Pilipinas). Nagbabago ang flu strains bawat taon, kaya kailangan ng taunang bakuna.',
+          noteZH: '每年接种，最好在流感季节前（菲律宾6月至10月）。流感病毒株每年变化，因此需要每年接种以保持保护。',
+        },
       },
     ],
   },
@@ -481,6 +497,13 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           en: 'Private clinics (approx. ₱800–₱1,200)',
           fil: 'Pribadong klinika (mga ₱800–₱1,200)',
           zh: '私立诊所（约₱800–₱1,200）',
+        },
+        recurrence: {
+          type: 'every-n-years',
+          intervalYears: 3,
+          noteEN: 'Booster required every 3 years per Philippine Pediatric Society (PPS) recommendation. Typhoid is endemic in the Philippines, so protection must be maintained especially before school entry.',
+          noteFIL: 'Kailangan ng booster bawat 3 taon ayon sa rekomendasyon ng Philippine Pediatric Society (PPS). Laganap ang typhoid sa Pilipinas, kaya importante ang patuloy na proteksyon lalo na bago pumasok sa paaralan.',
+          noteZH: '根据菲律宾儿科学会（PPS）建议，每3年需要加强接种。伤寒在菲律宾流行，因此需要持续保持保护，特别是在入学前。',
         },
       },
     ],

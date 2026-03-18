@@ -22,7 +22,7 @@ import {
   Sparkles, Bot, Shield, Lightbulb, Calendar, Syringe, ClipboardList,
   Building2, Trash2, Globe, Search, MapPin, BookOpen, Zap, Hash, Pill,
   Microscope, Thermometer, Ban, CircleDot, Coins, Cross,
-  Camera, ChevronRight, Plus, User,
+  Camera, ChevronRight, Plus, User, RefreshCw,
 } from 'lucide-react-native';
 
 import Colors from '../../constants/Colors';
@@ -31,7 +31,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { useVaccineStore, VaccineRecord, VaccineStatus, AdministeredRole, VaccineSite } from '../../store/vaccineStore';
 import {
   DOH_EPI_SCHEDULE, AgeGroup as EpiAgeGroup, VaccineEntry,
-  getAgeGroupForVaccine,
+  getAgeGroupForVaccine, getVaccineByCode,
 } from '../../constants/vaccines-doh-epi';
 
 const { width: W } = Dimensions.get('window');
@@ -326,23 +326,37 @@ function VaccineTimelineCard({
 }: { record: VaccineRecord; onPress: () => void; isLast: boolean }) {
   const { t } = useTranslation();
 
+  // Check if this is a recurring vaccine
+  const vaccineEntry = getVaccineByCode(record.code);
+  const isRecurring = record.status === 'overdue' && !!vaccineEntry?.recurrence;
+
   const dotColor = record.status === 'given'    ? Colors.mint
     : record.status === 'upcoming' ? Colors.warning
+    : isRecurring                  ? GOLD
     : record.status === 'overdue'  ? Colors.danger
     : Colors.textLight;
 
   const badgeBg = record.status === 'given'    ? Colors.softMint
     : record.status === 'upcoming' ? Colors.warningBg
+    : isRecurring                  ? Colors.softGold
     : record.status === 'overdue'  ? Colors.dangerBg
     : Colors.divider;
 
   const badgeColor = record.status === 'given'    ? Colors.mint
     : record.status === 'upcoming' ? Colors.warning
+    : isRecurring                  ? GOLD
     : record.status === 'overdue'  ? Colors.danger
     : Colors.textMid;
 
+  const recurringLabel = vaccineEntry?.recurrence
+    ? vaccineEntry.recurrence.type === 'annual'
+      ? t('vaccine_kb.annual_label')
+      : t('vaccine_kb.every_n_years_label', { n: vaccineEntry.recurrence.intervalYears })
+    : '';
+
   const badgeLabel = record.status === 'given'    ? t('vaccine_log.status_given')
     : record.status === 'upcoming' ? t('vaccine_log.status_upcoming')
+    : isRecurring                  ? `${t('vaccine_log.status_due_now')} 🔄`
     : record.status === 'overdue'  ? t('vaccine_log.status_overdue')
     : t('vaccine_log.status_skipped');
 
@@ -371,6 +385,15 @@ function VaccineTimelineCard({
             <Text style={[tl.badgeTxt, { color: badgeColor }]}>{badgeLabel}</Text>
           </View>
         </View>
+
+        {/* Recurring label subtitle */}
+        {isRecurring && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <RefreshCw size={11} strokeWidth={2} color={GOLD} />
+            <Text style={{ fontSize: 11, color: GOLD, fontWeight: '700' }}>{recurringLabel}</Text>
+            <Text style={{ fontSize: 11, color: Colors.textLight }}>· {t('vaccine_kb.next_due')}: {record.scheduledDate}</Text>
+          </View>
+        )}
 
         {/* Brand + dose number */}
         {(record.brand || record.doseNumber != null) && (
@@ -1209,6 +1232,37 @@ function VaccineDetailModal({
             </View>
           )}
 
+          {/* Recurrence Info */}
+          {vaccine.recurrence && (
+            <View style={det.recurringBox}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <RefreshCw size={14} strokeWidth={2} color={GOLD} />
+                <Text style={det.recurringTitle}>
+                  {vaccine.recurrence.type === 'annual'
+                    ? t('vaccine_kb.annual_label')
+                    : t('vaccine_kb.every_n_years_label', { n: vaccine.recurrence.intervalYears })}
+                </Text>
+              </View>
+              <Text style={det.recurringNote}>{vaccine.recurrence.noteEN}</Text>
+              {childRecord && (
+                <View style={{ marginTop: 10, gap: 6 }}>
+                  {childRecord.givenDate && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <CheckCircle2 size={12} strokeWidth={1.5} color={MINT} />
+                      <Text style={det.recurringDateLbl}>{t('vaccine_kb.last_given')}:</Text>
+                      <Text style={[det.recurringDateVal, { color: MINT }]}>{fmtDate(childRecord.givenDate)}</Text>
+                    </View>
+                  )}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Calendar size={12} strokeWidth={1.5} color={GOLD} />
+                    <Text style={det.recurringDateLbl}>{t('vaccine_kb.next_due')}:</Text>
+                    <Text style={[det.recurringDateVal, { color: GOLD }]}>{fmtDate(childRecord.scheduledDate)}</Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
           {/* AI Expert Analysis */}
           <VaccineDetailAI vaccine={vaccine} childName={childName} />
 
@@ -1283,6 +1337,11 @@ const det = StyleSheet.create({
   collapsibleChevron:{ fontSize: 11, color: GRAY },
   collapsibleBody:  { backgroundColor: '#F0F8FF', borderRadius: 12, padding: 14, marginBottom: 8, borderLeftWidth: 3, borderLeftColor: BLUE },
   collapsibleTxt:   { fontSize: 13, color: DARK, lineHeight: 20 },
+  recurringBox:     { backgroundColor: Colors.softGold, borderRadius: 14, padding: 14, marginBottom: 8, borderLeftWidth: 3, borderLeftColor: GOLD },
+  recurringTitle:   { fontSize: 13, fontWeight: '800', color: GOLD },
+  recurringNote:    { fontSize: 12, color: DARK, lineHeight: 18 },
+  recurringDateLbl: { fontSize: 11, color: Colors.textMid ?? GRAY, fontWeight: '600' },
+  recurringDateVal: { fontSize: 11, fontWeight: '700' },
   childStatusBox:   { backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginTop: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
   childStatusLbl:   { fontSize: 11, color: GRAY, fontWeight: '700', marginBottom: 8 },
   childStatusChip:  { alignSelf: 'flex-start', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginBottom: 12 },
@@ -1450,6 +1509,16 @@ function AgeGroupAccordion({
                       </Text>
                     </View>
                   </View>
+                  {vaccine.recurrence && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2, marginBottom: 2 }}>
+                      <RefreshCw size={10} color={GOLD} strokeWidth={2} />
+                      <Text style={{ fontSize: 10, color: GOLD, fontWeight: '700' }}>
+                        {vaccine.recurrence.type === 'annual'
+                          ? t('vaccine_kb.annual_label')
+                          : t('vaccine_kb.every_n_years_label', { n: vaccine.recurrence.intervalYears })}
+                      </Text>
+                    </View>
+                  )}
                   <View style={acc.vaccMeta}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                       {vaccine.route.toLowerCase().includes('oral') ? <Pill size={11} strokeWidth={1.5} color={GRAY} /> : <Syringe size={11} strokeWidth={1.5} color={GRAY} />}
@@ -1689,6 +1758,10 @@ function RecordsTab({
       <LinearGradient colors={[Colors.gold,'#FFC642']} style={rt.gpBanner}>
         <Text style={rt.gpTxt}>{t('vaccine_log.garantisadong')}</Text>
       </LinearGradient>
+      <View style={rt.recurringNote}>
+        <RefreshCw size={12} strokeWidth={2} color={GOLD} />
+        <Text style={rt.recurringNoteTxt}>{t('vaccine_kb.recurring_info')}</Text>
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rt.filterRow} contentContainerStyle={rt.filterContent}>
         {RECORD_TABS.map(tab => {
           const active = activeFilter === tab.key;
@@ -1727,8 +1800,10 @@ function RecordsTab({
 }
 
 const rt = StyleSheet.create({
-  gpBanner:     { borderRadius: 14, padding: 14, marginBottom: 12 },
-  gpTxt:        { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.white, lineHeight: 17 },
+  gpBanner:        { borderRadius: 14, padding: 14, marginBottom: 8 },
+  gpTxt:           { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.white, lineHeight: 17 },
+  recurringNote:   { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.softGold, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
+  recurringNoteTxt:{ fontSize: 11, color: GOLD, fontWeight: '700', flex: 1 },
   filterRow:    { marginBottom: 14 },
   filterContent:{ paddingHorizontal: 0, gap: 8 },
   tab:          { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5,

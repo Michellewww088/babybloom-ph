@@ -733,7 +733,8 @@
     "date_required_msg": "Mangyaring ilagay ang petsa ng pagbibigay ng bakuna.",
     "cert_perm_title": "Kailangan ang Pahintulot",
     "cert_perm_msg": "Mangyaring payagan ang access sa photo library para mag-upload ng sertipiko.",
-    "dose_label": "Dosis {{n}}"
+    "dose_label": "Dosis {{n}}",
+    "status_due_now": "Dapat Na"
   },
   "vitamins": {
     "title": "Bitamina at Gamot",
@@ -911,7 +912,12 @@
     "res_4_title": "Mga Mito Tungkol sa Bakuna 🚫",
     "res_4_body": "Mito: Ang bakuna ay nagdudulot ng autism. KATOTOHANAN: Ganap na napatunayan na ito ay hindi totoo. Daan-daang malalaking pag-aaral ang nagkumpirma na WALANG koneksyon ang bakuna at autism. Kinukumpirma ito ng WHO, AAP, at PPS.\n\nMito: Mas mabuti ang natural na immunity. KATOTOHANAN: Ang natural na immunity ay may panganib ng malubhang komplikasyon. Ang polio ay maaaring magdulot ng permanenteng paralisis.\n\nMito: Sobrang dami ng bakuna ay nagpapahina ng immune system. KATOTOHANAN: Ang immune system ng inyong sanggol ay kaya itong hawakan.",
     "res_5_title": "Catch-Up na Bakuna: Hindi Pa Huli 📅",
-    "res_5_body": "Nalaktawan ang isang bakuna? Huwag mag-alala - hindi pa huli para makahabol! Ang DOH ay may flexible na catch-up immunization schedule.\n\n📋 Ano ang gagawin: Bisitahin ang pinakamalapit na BHS/RHU o pediatrician. Magdala ng MCH Booklet. Ang health worker ay gagawa ng catch-up plan.\n\n✅ Hindi kailangang magsimula muli: Kung natanggap na ng inyong anak ang 1st at 2nd dose ng Pentavalent ngunit nalaktawan ang 3rd, ang 3rd dose lamang ang kailangan.\n\n🇵🇭 Garantisadong Pambata: Bawat Enero at Hulyo, naglulunsad ang DOH ng libreng immunization drives sa lahat ng BHS!"
+    "res_5_body": "Nalaktawan ang isang bakuna? Huwag mag-alala - hindi pa huli para makahabol! Ang DOH ay may flexible na catch-up immunization schedule.\n\n📋 Ano ang gagawin: Bisitahin ang pinakamalapit na BHS/RHU o pediatrician. Magdala ng MCH Booklet. Ang health worker ay gagawa ng catch-up plan.\n\n✅ Hindi kailangang magsimula muli: Kung natanggap na ng inyong anak ang 1st at 2nd dose ng Pentavalent ngunit nalaktawan ang 3rd, ang 3rd dose lamang ang kailangan.\n\n🇵🇭 Garantisadong Pambata: Bawat Enero at Hulyo, naglulunsad ang DOH ng libreng immunization drives sa lahat ng BHS!",
+    "annual_label": "Taon-taon",
+    "every_n_years_label": "Bawat {{n}} Taon",
+    "recurring_info": "🔄 = Paulit-ulit na bakuna — kailangan ibigay muli",
+    "last_given": "Huling nabigay",
+    "next_due": "Susunod na petsa"
   },
   "feeding_guide": {
     "screen_title": "Gabay sa Pagpapakain",
