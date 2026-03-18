@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "babybloom",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8085"],
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/pete/babybloom-ph && npx expo start --web --port 8085 --clear"],
       "port": 8085
     },
     {
@@ -12,6 +12,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["expo", "start", "--web", "--port", "8087"],
       "port": 8087
+    },
+    {
+      "name": "babybloom-hungry-hodgkin",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["expo", "start", "--web", "--port", "8089"],
+      "port": 8089
     },
     {
       "name": "babybloom-static",
