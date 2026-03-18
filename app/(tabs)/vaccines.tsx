@@ -1398,38 +1398,45 @@ function AgeGroupAccordion({
   const groupRecords = childRecords.filter(r =>
     group.vaccines.some(v => v.code === r.code)
   );
-  const givenInGroup = groupRecords.filter(r => r.status === 'given').length;
-  const totalInGroup = group.vaccines.length;
-  const hasOverdue   = groupRecords.some(r => r.status === 'overdue');
-  const hasUpcoming  = groupRecords.some(r => r.status === 'upcoming');
+  const givenInGroup      = groupRecords.filter(r => r.status === 'given').length;
+  const naInGroup         = groupRecords.filter(r => r.status === 'not_applicable').length;
+  const totalInGroup      = group.vaccines.length;
+  const hasOverdue        = groupRecords.some(r => r.status === 'overdue');
+  const hasUpcoming       = groupRecords.some(r => r.status === 'upcoming');
+  // All vaccines in this group have exceeded their catch-up window (no longer actionable)
+  const allNotApplicable  = groupRecords.length > 0 && naInGroup === groupRecords.length && givenInGroup === 0;
 
   return (
-    <View style={acc.card}>
+    <View style={[acc.card, allNotApplicable && { opacity: 0.55 }]}>
       <TouchableOpacity style={acc.hdr} onPress={() => setOpen(!open)} activeOpacity={0.85}>
         <View style={acc.ageBox}>
-          {renderAgeIcon ? renderAgeIcon(24, DARK) : <Baby size={24} color={DARK} />}
+          {renderAgeIcon ? renderAgeIcon(24, allNotApplicable ? '#9E9E9E' : DARK) : <Baby size={24} color={allNotApplicable ? '#9E9E9E' : DARK} />}
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={acc.ageLabel}>{ageLabel}</Text>
+          <Text style={[acc.ageLabel, allNotApplicable && { color: '#9E9E9E' }]}>{ageLabel}</Text>
           <Text style={acc.vaccineCount}>{totalInGroup} {t('vaccine_kb.vaccines_in_group', { count: totalInGroup })}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {childRecords.length > 0 && (
             <View style={[acc.progressBadge, {
-              backgroundColor: givenInGroup === totalInGroup ? Colors.softMint :
-                hasOverdue ? '#FFF5F5' : Colors.softBlue,
+              backgroundColor: allNotApplicable    ? '#F5F5F5' :
+                givenInGroup === totalInGroup       ? Colors.softMint :
+                hasOverdue                          ? '#FFF5F5' : Colors.softBlue,
             }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                {givenInGroup === totalInGroup
+                {allNotApplicable
+                  ? <Ban size={12} color={'#9E9E9E'} />
+                  : givenInGroup === totalInGroup
                   ? <CheckCircle2 size={12} color={MINT} />
                   : hasOverdue
                   ? <AlertTriangle size={12} color={'#E53E3E'} />
                   : <Clock size={12} color={BLUE} />}
                 <Text style={[acc.progressTxt, {
-                  color: givenInGroup === totalInGroup ? MINT :
-                    hasOverdue ? '#E53E3E' : BLUE,
+                  color: allNotApplicable           ? '#9E9E9E' :
+                    givenInGroup === totalInGroup   ? MINT :
+                    hasOverdue                      ? '#E53E3E' : BLUE,
                 }]}>
-                  {givenInGroup}/{totalInGroup}
+                  {allNotApplicable ? t('vaccine_log.status_not_applicable') : `${givenInGroup}/${totalInGroup}`}
                 </Text>
               </View>
             </View>
