@@ -9,6 +9,7 @@ import {
   VACCINE_MAX_CATCHUP_WEEKS,
   calcScheduledDate,
   calcReminderDate,
+  getVaccineByCode,
 } from '../constants/vaccines-doh-epi';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -146,6 +147,67 @@ function computeStatus(
   return sd <= today ? 'overdue' : 'upcoming';
 }
 
+/**
+ * Auto-generate the next occurrence record for a recurring vaccine after it is marked given.
+ * Returns a new VaccineRecord for the next cycle, or null if:
+ * - The vaccine has no recurrence field
+ * - The recurrence type is 'once-series'
+ * - A record for the same code with the same scheduled year already exists in existingRecords
+ */
+export function autoGenerateNextOccurrence(
+  record: VaccineRecord,
+  givenDate: string,
+  existingRecords: VaccineRecord[],
+): VaccineRecord | null {
+  const vaccineEntry = getVaccineByCode(record.code);
+  if (!vaccineEntry?.recurrence) return null;
+  const { recurrence } = vaccineEntry;
+  if (recurrence.type === 'once-series') return null;
+
+  const intervalYears = recurrence.type === 'annual' ? 1 : (recurrence.intervalYears ?? 1);
+
+  const given = new Date(givenDate);
+  const nextDate = new Date(given);
+  nextDate.setFullYear(nextDate.getFullYear() + intervalYears);
+  const nextScheduledDate = nextDate.toISOString().split('T')[0];
+  const nextYear = nextDate.getFullYear();
+
+  // Dedup: don't create if a record for this code+year already exists
+  const alreadyExists = existingRecords.some((r) => {
+    if (r.childId !== record.childId || r.code !== record.code) return false;
+    if (r.status === 'given') return false; // already given records are historical, not future
+    const rYear = new Date(r.scheduledDate).getFullYear();
+    return rYear === nextYear;
+  });
+  if (alreadyExists) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  nextDate.setHours(0, 0, 0, 0);
+  const status: VaccineStatus = nextDate <= today ? 'overdue' : 'upcoming';
+
+  const reminderDate = calcReminderDate(nextScheduledDate);
+  const now = new Date().toISOString();
+
+  return {
+    id: `${record.childId}-${record.code}-${nextYear}-${Math.random().toString(36).slice(2, 7)}`,
+    childId: record.childId,
+    code: record.code,
+    nameEN: record.nameEN,
+    nameFIL: record.nameFIL,
+    nameZH: record.nameZH,
+    isFreeEPI: record.isFreeEPI,
+    recommendedAgeWeeks: record.recommendedAgeWeeks,
+    isCustom: record.isCustom,
+    status,
+    scheduledDate: nextScheduledDate,
+    reminderEnabled: true,
+    reminderDate,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 // ── Store Implementation ───────────────────────────────────────────────────────
 
 export const useVaccineStore = create<VaccineStore>((set, get) => ({
@@ -231,13 +293,26 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     }),
 
   updateRecord: (id, updates) =>
-    set((state) => ({
-      records: state.records.map((r) =>
+    set((state) => {
+      const updatedRecords = state.records.map((r) =>
         r.id === id
           ? { ...r, ...updates, updatedAt: new Date().toISOString() }
           : r
-      ),
-    })),
+      );
+
+      // Auto-generate next occurrence for recurring vaccines when marked as given
+      if (updates.status === 'given' && updates.givenDate) {
+        const updatedRecord = updatedRecords.find((r) => r.id === id);
+        if (updatedRecord) {
+          const nextRecord = autoGenerateNextOccurrence(updatedRecord, updates.givenDate, updatedRecords);
+          if (nextRecord) {
+            return { records: [...updatedRecords, nextRecord] };
+          }
+        }
+      }
+
+      return { records: updatedRecords };
+    }),
 
   deleteRecord: (id) =>
     set((state) => ({

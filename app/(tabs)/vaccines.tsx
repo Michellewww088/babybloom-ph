@@ -31,7 +31,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { useVaccineStore, VaccineRecord, VaccineStatus, AdministeredRole, VaccineSite } from '../../store/vaccineStore';
 import {
   DOH_EPI_SCHEDULE, AgeGroup as EpiAgeGroup, VaccineEntry,
-  getAgeGroupForVaccine,
+  getAgeGroupForVaccine, getVaccineByCode,
 } from '../../constants/vaccines-doh-epi';
 
 const { width: W } = Dimensions.get('window');
@@ -329,6 +329,11 @@ function VaccineTimelineCard({
 }: { record: VaccineRecord; onPress: () => void; isLast: boolean }) {
   const { t } = useTranslation();
 
+  // Look up recurrence info from the EPI schedule
+  const vaccineEntry = getVaccineByCode(record.code);
+  const recurrence = vaccineEntry?.recurrence;
+  const isRecurring = recurrence?.type === 'annual' || recurrence?.type === 'every-n-years';
+
   const dotColor = record.status === 'given'           ? Colors.mint
     : record.status === 'upcoming'        ? Colors.warning
     : record.status === 'overdue'         ? Colors.danger
@@ -347,9 +352,10 @@ function VaccineTimelineCard({
     : record.status === 'not_applicable'  ? '#9E9E9E'
     : Colors.textMid;
 
+  // For recurring vaccines that are overdue, use "Due Now" instead of "Overdue"
   const badgeLabel = record.status === 'given'           ? t('vaccine_log.status_given')
     : record.status === 'upcoming'        ? t('vaccine_log.status_upcoming')
-    : record.status === 'overdue'         ? t('vaccine_log.status_overdue')
+    : record.status === 'overdue'         ? (isRecurring ? t('vaccine_log.status_due_now') : t('vaccine_log.status_overdue'))
     : record.status === 'not_applicable'  ? t('vaccine_log.status_not_applicable')
     : t('vaccine_log.status_skipped');
 
@@ -378,6 +384,18 @@ function VaccineTimelineCard({
             <Text style={[tl.badgeTxt, { color: badgeColor }]}>{badgeLabel}</Text>
           </View>
         </View>
+
+        {/* Recurrence pill — shown for annual and every-n-years vaccines */}
+        {isRecurring && (
+          <View style={tl.recurrencePill}>
+            <Text style={tl.recurrencePillTxt}>
+              {'🔄 '}
+              {recurrence!.type === 'annual'
+                ? t('vaccine_log.recurrence_annual')
+                : t('vaccine_log.recurrence_every_n_years', { n: recurrence!.intervalYears })}
+            </Text>
+          </View>
+        )}
 
         {/* Brand + dose number */}
         {(record.brand || record.doseNumber != null) && (
@@ -472,6 +490,9 @@ const tl = StyleSheet.create({
   epiFree:    { backgroundColor: Colors.softMint },
   epiPriv:    { backgroundColor: Colors.softGold },
   epiTxt:     { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', fontWeight: '800' },
+  recurrencePill:    { alignSelf: 'flex-start', backgroundColor: Colors.softBlue, borderRadius: 20,
+                       paddingHorizontal: 10, paddingVertical: 3 },
+  recurrencePillTxt: { fontSize: 11, fontFamily: 'PlusJakartaSans_700Bold', color: BLUE, fontWeight: '700' },
 });
 
 // ── Edit Modal (My Records) ────────────────────────────────────────────────────
@@ -1465,6 +1486,16 @@ function AgeGroupAccordion({
                       </Text>
                     </View>
                   </View>
+                  {/* Recurrence schedule note */}
+                  {vaccine.recurrence && (
+                    <Text style={acc.vaccRecurrenceNote} numberOfLines={2}>
+                      {vaccine.recurrence.type === 'annual'
+                        ? `${t('vaccine_log.recurrence_annual')} · ${vaccine.recurrence.noteEN}`
+                        : vaccine.recurrence.type === 'every-n-years'
+                        ? `${t('vaccine_log.recurrence_every_n_years', { n: vaccine.recurrence.intervalYears })} · ${vaccine.recurrence.noteEN}`
+                        : vaccine.recurrence.noteEN}
+                    </Text>
+                  )}
                   <View style={acc.vaccMeta}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                       {vaccine.route.toLowerCase().includes('oral') ? <Pill size={11} strokeWidth={1.5} color={GRAY} /> : <Syringe size={11} strokeWidth={1.5} color={GRAY} />}
@@ -1513,7 +1544,8 @@ const acc = StyleSheet.create({
   vaccDot:      { fontSize: 11, color: '#ccc' },
   vaccProtects: { fontSize: 11, color: GRAY, flex: 1 },
   statusDot:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  vaccChevron:  { fontSize: 18, color: '#ccc' },
+  vaccChevron:      { fontSize: 18, color: '#ccc' },
+  vaccRecurrenceNote: { fontSize: 11, color: GRAY, fontStyle: 'italic', marginBottom: 4, lineHeight: 16 },
 });
 
 // ── Knowledge Base Tab ─────────────────────────────────────────────────────────

@@ -4,6 +4,14 @@
  * Always reference this file — never hardcode vaccine data inline.
  */
 
+export interface VaccineRecurrence {
+  type: 'annual' | 'every-n-years' | 'once-series';
+  intervalYears?: number;   // for every-n-years
+  noteEN: string;
+  noteFIL: string;
+  noteZH: string;
+}
+
 export interface VaccineEntry {
   code: string;
   nameEN: string;
@@ -16,6 +24,7 @@ export interface VaccineEntry {
   sideEffects: string;
   postVaccineCare: string;
   whereToGet: { en: string; fil: string; zh: string };
+  recurrence?: VaccineRecurrence;
 }
 
 export interface AgeGroup {
@@ -299,6 +308,13 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           fil: 'Sa pribadong klinika (mga ₱800–₱1,500 bawat dosis)',
           zh: '私立诊所（约₱800–₱1,500/剂）',
         },
+        recurrence: {
+          type: 'annual',
+          intervalYears: 1,
+          noteEN: 'Give annually every year. First-timers under 9 need 2 doses, 4 weeks apart.',
+          noteFIL: 'Ibigay taon-taon. Ang mga bata na wala pang 9 na taong gulang na unang beses ay nangangailangan ng 2 dosis, 4 linggo ang pagitan.',
+          noteZH: '每年接种。9岁以下首次接种需打2剂，间隔4周。',
+        },
       },
     ],
   },
@@ -348,6 +364,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           fil: 'Sa pribadong klinika (mga ₱1,500–₱2,500)',
           zh: '私立诊所（约₱1,500–₱2,500/剂）',
         },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'First of 2 doses. Give HepA2 booster 6–12 months later for lifetime protection.',
+          noteFIL: 'Una sa 2 dosis. Ibigay ang HepA2 booster pagkatapos ng 6-12 buwan para sa panghabambuhay na proteksyon.',
+          noteZH: '2剂系列第1针。6-12个月后接种HepA2加强针，可获终身保护。',
+        },
       },
     ],
   },
@@ -375,6 +397,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           fil: 'Sa pribadong klinika (mga ₱1,500–₱2,000)',
           zh: '私立诊所（约₱1,500–₱2,000）',
         },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'One dose at 12–15 months. Optional 2nd dose 3+ months later for better protection.',
+          noteFIL: 'Isang dosis sa 12-15 buwan. Optional na ika-2 dosis pagkatapos ng 3+ buwan para sa mas mahusay na proteksyon.',
+          noteZH: '12-15月龄接种1剂。3个月后可选接种第2剂以增强保护。',
+        },
       },
       {
         code: 'HepA2',
@@ -391,6 +419,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           en: 'Private clinics',
           fil: 'Pribadong klinika',
           zh: '私立诊所',
+        },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'Final booster dose of the Hepatitis A series. Gives lifetime protection.',
+          noteFIL: 'Panghuling booster dose ng Hepatitis A series. Nagbibigay ng panghabambuhay na proteksyon.',
+          noteZH: '甲肝系列最终加强针，提供终身保护。',
         },
       },
     ],
@@ -418,6 +452,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           en: 'Free at BHS or RHU',
           fil: 'Libre sa BHS o RHU',
           zh: '在社区卫生站免费接种',
+        },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'One-time booster dose. Gives lifetime protection when combined with MMR1.',
+          noteFIL: 'Isang beses na booster dose. Nagbibigay ng panghabambuhay na proteksyon kasama ang MMR1.',
+          noteZH: '一次性加强针。与MMR1合用提供终身保护。',
         },
       },
     ],
@@ -481,6 +521,13 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           en: 'Private clinics (approx. ₱800–₱1,200)',
           fil: 'Pribadong klinika (mga ₱800–₱1,200)',
           zh: '私立诊所（约₱800–₱1,200）',
+        },
+        recurrence: {
+          type: 'every-n-years',
+          intervalYears: 3,
+          noteEN: 'Repeat every 3 years. Recommended from age 2+.',
+          noteFIL: 'Ulitin tuwing 3 taon. Inirerekomenda mula 2 taong gulang pataas.',
+          noteZH: '每3年重复接种。建议从2岁起接种。',
         },
       },
     ],
