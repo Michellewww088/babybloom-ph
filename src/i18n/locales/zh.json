@@ -309,7 +309,18 @@
     "cat_nutrition": "营养",
     "cat_development": "发育",
     "cat_safety": "安全",
-    "ph_tip": "免费疫苗和婴儿体检可在当地社区卫生站（BHS）或农村卫生所（RHU）获取。请携带MCH手册！"
+    "ph_tip": "免费疫苗和婴儿体检可在当地社区卫生站（BHS）或农村卫生所（RHU）获取。请携带MCH手册！",
+    "subtitle": "追踪{{name}}的成长历程",
+    "progress": "已完成 {{achieved}}/{{total}}",
+    "achieved_on": "达成于 {{date}}",
+    "who_badge": "WHO",
+    "unmark_confirm_title": "取消里程碑？",
+    "unmark_confirm_msg": "确定要取消这个里程碑吗？",
+    "unmark_confirm_yes": "取消",
+    "unmark_confirm_no": "不",
+    "empty_stage": "该阶段暂无里程碑",
+    "filter_all": "全部",
+    "current_stage": "当前阶段"
   },
   "welcome": {
     "title": "欢迎，{{name}}！🎉",

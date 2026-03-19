@@ -309,7 +309,18 @@
     "cat_nutrition": "Nutrisyon",
     "cat_development": "Pag-unlad",
     "cat_safety": "Kaligtasan",
-    "ph_tip": "Ang libreng bakuna at well-baby checkup ay makukuha sa inyong Barangay Health Station (BHS) o RHU. Magdala ng MCH Booklet!"
+    "ph_tip": "Ang libreng bakuna at well-baby checkup ay makukuha sa inyong Barangay Health Station (BHS) o RHU. Magdala ng MCH Booklet!",
+    "subtitle": "Subaybayan ang paglaki ni {{name}}",
+    "progress": "{{achieved}} sa {{total}} na nakamit",
+    "achieved_on": "Nakamit noong {{date}}",
+    "who_badge": "WHO",
+    "unmark_confirm_title": "Alisin ang milestone?",
+    "unmark_confirm_msg": "Sigurado ka bang aalisin ang milestone na ito?",
+    "unmark_confirm_yes": "Alisin",
+    "unmark_confirm_no": "Huwag",
+    "empty_stage": "Walang milestone para sa stage na ito",
+    "filter_all": "Lahat",
+    "current_stage": "Kasalukuyang stage"
   },
   "welcome": {
     "title": "Maligayang pagdating, {{name}}! 🎉",

@@ -309,7 +309,18 @@
     "cat_nutrition": "Nutrition",
     "cat_development": "Development",
     "cat_safety": "Safety",
-    "ph_tip": "Free vaccines and well-baby checkups are available at your local Barangay Health Station (BHS) or RHU. Bring your MCH Booklet!"
+    "ph_tip": "Free vaccines and well-baby checkups are available at your local Barangay Health Station (BHS) or RHU. Bring your MCH Booklet!",
+    "subtitle": "Track {{name}}'s developmental journey",
+    "progress": "{{achieved}} of {{total}} achieved",
+    "achieved_on": "Achieved {{date}}",
+    "who_badge": "WHO",
+    "unmark_confirm_title": "Remove milestone?",
+    "unmark_confirm_msg": "Are you sure you want to unmark this milestone?",
+    "unmark_confirm_yes": "Remove",
+    "unmark_confirm_no": "Cancel",
+    "empty_stage": "No milestones for this stage",
+    "filter_all": "All",
+    "current_stage": "Current stage"
   },
   "welcome": {
     "title": "Welcome, {{name}}! 🎉",
