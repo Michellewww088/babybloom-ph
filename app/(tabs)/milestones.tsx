@@ -192,6 +192,17 @@ export default function MilestonesScreen() {
     setSelectedCategory('all');
   }, [initialStage]);
 
+  // Auto-scroll stage chips to show the active stage
+  useEffect(() => {
+    const idx = STAGES.findIndex((s) => s.name === selectedStage);
+    if (idx > 0 && stageScrollRef.current) {
+      // Each chip ~90px wide + 8px gap; scroll so active chip is visible
+      setTimeout(() => {
+        stageScrollRef.current?.scrollTo({ x: Math.max(0, (idx - 1) * 98), animated: true });
+      }, 150);
+    }
+  }, [selectedStage]);
+
   // Milestones for selected stage
   const stageMilestones = useMemo(
     () => getMilestonesForStage(selectedStage),
