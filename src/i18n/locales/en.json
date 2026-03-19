@@ -65,9 +65,9 @@
     "milestones": "Milestones"
   },
   "home": {
-    "greeting_morning": "Good morning, Nanay! 🌞",
-    "greeting_afternoon": "Good afternoon, Nanay! ☀️",
-    "greeting_evening": "Good evening, Nanay! 🌙",
+    "greeting_morning": "Good morning, Nanay!",
+    "greeting_afternoon": "Good afternoon, Nanay!",
+    "greeting_evening": "Good evening, Nanay!",
     "last_fed": "Last fed",
     "sleep_today": "Sleep today",
     "next_vaccine": "Next vaccine",
@@ -577,7 +577,7 @@
   },
   "growth": {
     "title": "Growth Analysis",
-    "snapshot_title": "Growth Snapshot 📈",
+    "snapshot_title": "Growth Snapshot",
     "add_measurement": "+ Add Measurement",
     "view_full": "View Full Analysis →",
     "weight": "Weight",

@@ -65,9 +65,9 @@
     "milestones": "里程碑"
   },
   "home": {
-    "greeting_morning": "早上好，妈妈！🌞",
-    "greeting_afternoon": "下午好，妈妈！☀️",
-    "greeting_evening": "晚上好，妈妈！🌙",
+    "greeting_morning": "早上好，妈妈！",
+    "greeting_afternoon": "下午好，妈妈！",
+    "greeting_evening": "晚上好，妈妈！",
     "last_fed": "上次喂奶",
     "sleep_today": "今日睡眠",
     "next_vaccine": "下次疫苗",
@@ -577,7 +577,7 @@
   },
   "growth": {
     "title": "生长分析",
-    "snapshot_title": "生长快照 📈",
+    "snapshot_title": "生长快照",
     "add_measurement": "+ 添加测量",
     "view_full": "查看完整分析 →",
     "weight": "体重",

@@ -261,7 +261,7 @@ function HeroCard({ child }: { child: Child }) {
 
         {/* Text column */}
         <View style={hc.textCol}>
-          <Text style={hc.greeting}>{greeting}, Nanay!</Text>
+          <Text style={hc.greeting}>{greeting}</Text>
           <Text style={hc.ageLine}>{name} is {ageStr} old today</Text>
           {chipLabel && (
             <View style={hc.chip}>
@@ -526,7 +526,7 @@ function GrowthSnapshotCard() {
             <TrendingUp size={20} strokeWidth={1.5} color={Colors.textMid} />
           </View>
           <TouchableOpacity onPress={() => router.push('/growth-analysis')} activeOpacity={0.75}>
-            <Text style={gc.link}>{t('growth.view_full')} →</Text>
+            <Text style={gc.link}>{t('growth.view_full')}</Text>
           </TouchableOpacity>
         </View>
 

@@ -65,9 +65,9 @@
     "milestones": "Milestone"
   },
   "home": {
-    "greeting_morning": "Magandang umaga, Nanay! 🌞",
-    "greeting_afternoon": "Magandang hapon, Nanay! ☀️",
-    "greeting_evening": "Magandang gabi, Nanay! 🌙",
+    "greeting_morning": "Magandang umaga, Nanay!",
+    "greeting_afternoon": "Magandang hapon, Nanay!",
+    "greeting_evening": "Magandang gabi, Nanay!",
     "last_fed": "Huling Pinakain",
     "sleep_today": "Tulog ngayon",
     "next_vaccine": "Susunod na Bakuna",
@@ -577,7 +577,7 @@
   },
   "growth": {
     "title": "Pagsusuri ng Paglaki",
-    "snapshot_title": "Snapshot ng Paglaki 📈",
+    "snapshot_title": "Snapshot ng Paglaki",
     "add_measurement": "+ Magdagdag ng Sukat",
     "view_full": "Tingnan ang Buong Pagsusuri →",
     "weight": "Timbang",
