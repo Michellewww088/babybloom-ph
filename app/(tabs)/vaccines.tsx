@@ -74,21 +74,24 @@ function daysUntil(iso: string): number {
 }
 
 function statusColor(s: VaccineStatus) {
-  if (s === 'given')    return MINT;
-  if (s === 'upcoming') return BLUE;
-  if (s === 'overdue')  return '#E53E3E';
+  if (s === 'given')           return MINT;
+  if (s === 'upcoming')        return BLUE;
+  if (s === 'overdue')         return '#E53E3E';
+  if (s === 'not_applicable')  return '#9E9E9E';
   return GRAY;
 }
 function statusBg(s: VaccineStatus) {
-  if (s === 'given')    return Colors.softMint;
-  if (s === 'upcoming') return Colors.softBlue;
-  if (s === 'overdue')  return '#FFF5F5';
+  if (s === 'given')           return Colors.softMint;
+  if (s === 'upcoming')        return Colors.softBlue;
+  if (s === 'overdue')         return '#FFF5F5';
+  if (s === 'not_applicable')  return '#F5F5F5';
   return '#F5F5F5';
 }
 function statusIcon(s: VaccineStatus): React.ReactNode {
-  if (s === 'given')    return <CheckCircle2 size={16} color={MINT} />;
-  if (s === 'upcoming') return <Clock size={16} color={BLUE} />;
-  if (s === 'overdue')  return <AlertTriangle size={16} color={'#E53E3E'} />;
+  if (s === 'given')           return <CheckCircle2 size={16} color={MINT} />;
+  if (s === 'upcoming')        return <Clock size={16} color={BLUE} />;
+  if (s === 'overdue')         return <AlertTriangle size={16} color={'#E53E3E'} />;
+  if (s === 'not_applicable')  return <Ban size={16} color={'#9E9E9E'} />;
   return <XCircle size={16} color={GRAY} />;
 }
 
@@ -326,38 +329,34 @@ function VaccineTimelineCard({
 }: { record: VaccineRecord; onPress: () => void; isLast: boolean }) {
   const { t } = useTranslation();
 
-  // Check if this is a recurring vaccine
+  // Look up recurrence info from the EPI schedule
   const vaccineEntry = getVaccineByCode(record.code);
-  const isRecurring = record.status === 'overdue' && !!vaccineEntry?.recurrence;
+  const recurrence = vaccineEntry?.recurrence;
+  const isRecurring = recurrence?.type === 'annual' || recurrence?.type === 'every-n-years';
 
-  const dotColor = record.status === 'given'    ? Colors.mint
-    : record.status === 'upcoming' ? Colors.warning
-    : isRecurring                  ? GOLD
-    : record.status === 'overdue'  ? Colors.danger
+  const dotColor = record.status === 'given'           ? Colors.mint
+    : record.status === 'upcoming'        ? Colors.warning
+    : record.status === 'overdue'         ? Colors.danger
+    : record.status === 'not_applicable'  ? '#9E9E9E'
     : Colors.textLight;
 
-  const badgeBg = record.status === 'given'    ? Colors.softMint
-    : record.status === 'upcoming' ? Colors.warningBg
-    : isRecurring                  ? Colors.softGold
-    : record.status === 'overdue'  ? Colors.dangerBg
+  const badgeBg = record.status === 'given'           ? Colors.softMint
+    : record.status === 'upcoming'        ? Colors.warningBg
+    : record.status === 'overdue'         ? (isRecurring ? Colors.softGold : Colors.dangerBg)
+    : record.status === 'not_applicable'  ? '#F5F5F5'
     : Colors.divider;
 
-  const badgeColor = record.status === 'given'    ? Colors.mint
-    : record.status === 'upcoming' ? Colors.warning
-    : isRecurring                  ? GOLD
-    : record.status === 'overdue'  ? Colors.danger
+  const badgeColor = record.status === 'given'           ? Colors.mint
+    : record.status === 'upcoming'        ? Colors.warning
+    : record.status === 'overdue'         ? (isRecurring ? Colors.gold : Colors.danger)
+    : record.status === 'not_applicable'  ? '#9E9E9E'
     : Colors.textMid;
 
-  const recurringLabel = vaccineEntry?.recurrence
-    ? vaccineEntry.recurrence.type === 'annual'
-      ? t('vaccine_kb.annual_label')
-      : t('vaccine_kb.every_n_years_label', { n: vaccineEntry.recurrence.intervalYears })
-    : '';
-
-  const badgeLabel = record.status === 'given'    ? t('vaccine_log.status_given')
-    : record.status === 'upcoming' ? t('vaccine_log.status_upcoming')
-    : isRecurring                  ? `${t('vaccine_log.status_due_now')} 🔄`
-    : record.status === 'overdue'  ? t('vaccine_log.status_overdue')
+  // For recurring vaccines that are overdue, use "Due Now" instead of "Overdue"
+  const badgeLabel = record.status === 'given'           ? t('vaccine_log.status_given')
+    : record.status === 'upcoming'        ? t('vaccine_log.status_upcoming')
+    : record.status === 'overdue'         ? (isRecurring ? t('vaccine_log.status_due_now') : t('vaccine_log.status_overdue'))
+    : record.status === 'not_applicable'  ? t('vaccine_log.status_not_applicable')
     : t('vaccine_log.status_skipped');
 
   const roleIcon = record.administeredRole === 'pediatrician'
@@ -386,12 +385,15 @@ function VaccineTimelineCard({
           </View>
         </View>
 
-        {/* Recurring label subtitle */}
+        {/* Recurrence pill — shown for annual and every-n-years vaccines */}
         {isRecurring && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <RefreshCw size={11} strokeWidth={2} color={GOLD} />
-            <Text style={{ fontSize: 11, color: GOLD, fontWeight: '700' }}>{recurringLabel}</Text>
-            <Text style={{ fontSize: 11, color: Colors.textLight }}>· {t('vaccine_kb.next_due')}: {record.scheduledDate}</Text>
+          <View style={tl.recurrencePill}>
+            <Text style={tl.recurrencePillTxt}>
+              {'🔄 '}
+              {recurrence!.type === 'annual'
+                ? t('vaccine_log.recurrence_annual')
+                : t('vaccine_log.recurrence_every_n_years', { n: recurrence!.intervalYears })}
+            </Text>
           </View>
         )}
 
@@ -488,6 +490,9 @@ const tl = StyleSheet.create({
   epiFree:    { backgroundColor: Colors.softMint },
   epiPriv:    { backgroundColor: Colors.softGold },
   epiTxt:     { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', fontWeight: '800' },
+  recurrencePill:    { alignSelf: 'flex-start', backgroundColor: Colors.softBlue, borderRadius: 20,
+                       paddingHorizontal: 10, paddingVertical: 3 },
+  recurrencePillTxt: { fontSize: 11, fontFamily: 'PlusJakartaSans_700Bold', color: BLUE, fontWeight: '700' },
 });
 
 // ── Edit Modal (My Records) ────────────────────────────────────────────────────
@@ -624,9 +629,10 @@ function VaccineEditModal({
   };
 
   const STATUS_OPTS: { v: VaccineStatus; icon: React.ReactNode; l: string; c: string }[] = [
-    { v: 'given',    icon: <CheckCircle2 size={14} color={MINT} />, l: t('vaccine_log.status_given'),    c: MINT },
-    { v: 'upcoming', icon: <Clock size={14} color={BLUE} />,        l: t('vaccine_log.status_upcoming'), c: BLUE },
-    { v: 'skipped',  icon: <XCircle size={14} color={GRAY} />,      l: t('vaccine_log.status_skipped'),  c: GRAY },
+    { v: 'given',           icon: <CheckCircle2 size={14} color={MINT} />,     l: t('vaccine_log.status_given'),          c: MINT     },
+    { v: 'upcoming',        icon: <Clock size={14} color={BLUE} />,            l: t('vaccine_log.status_upcoming'),       c: BLUE     },
+    { v: 'skipped',         icon: <XCircle size={14} color={GRAY} />,          l: t('vaccine_log.status_skipped'),        c: GRAY     },
+    { v: 'not_applicable',  icon: <Ban size={14} color={'#9E9E9E'} />,         l: t('vaccine_log.status_not_applicable'), c: '#9E9E9E'},
   ];
 
   return (
@@ -1232,33 +1238,32 @@ function VaccineDetailModal({
             </View>
           )}
 
-          {/* Recurrence Info */}
-          {vaccine.recurrence && (
-            <View style={det.recurringBox}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <RefreshCw size={14} strokeWidth={2} color={GOLD} />
-                <Text style={det.recurringTitle}>
+          {/* Recurrence Info Box */}
+          {vaccine.recurrence && vaccine.recurrence.type !== 'once-series' && (
+            <View style={[det.collapsibleBody, { backgroundColor: Colors.softGold, borderLeftColor: Colors.gold, marginBottom: 8 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <RefreshCw size={14} strokeWidth={2} color={Colors.gold} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: Colors.gold, letterSpacing: 0.5 }}>
                   {vaccine.recurrence.type === 'annual'
                     ? t('vaccine_kb.annual_label')
                     : t('vaccine_kb.every_n_years_label', { n: vaccine.recurrence.intervalYears })}
+                  {' · '}{t('vaccine_kb.recurring_info')}
                 </Text>
               </View>
-              <Text style={det.recurringNote}>{vaccine.recurrence.noteEN}</Text>
-              {childRecord && (
-                <View style={{ marginTop: 10, gap: 6 }}>
-                  {childRecord.givenDate && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <CheckCircle2 size={12} strokeWidth={1.5} color={MINT} />
-                      <Text style={det.recurringDateLbl}>{t('vaccine_kb.last_given')}:</Text>
-                      <Text style={[det.recurringDateVal, { color: MINT }]}>{fmtDate(childRecord.givenDate)}</Text>
-                    </View>
-                  )}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Calendar size={12} strokeWidth={1.5} color={GOLD} />
-                    <Text style={det.recurringDateLbl}>{t('vaccine_kb.next_due')}:</Text>
-                    <Text style={[det.recurringDateVal, { color: GOLD }]}>{fmtDate(childRecord.scheduledDate)}</Text>
-                  </View>
-                </View>
+              <Text style={det.collapsibleTxt}>
+                {lang === 'en' ? vaccine.recurrence.noteEN
+                  : lang === 'fil' ? vaccine.recurrence.noteFIL
+                  : vaccine.recurrence.noteZH}
+              </Text>
+              {childRecord?.givenDate && (
+                <Text style={{ fontSize: 11, color: Colors.midGray, marginTop: 6 }}>
+                  {t('vaccine_kb.last_given')}: {fmtDate(childRecord.givenDate)}
+                </Text>
+              )}
+              {childRecord?.scheduledDate && (
+                <Text style={{ fontSize: 11, color: Colors.midGray, marginTop: 2 }}>
+                  {t('vaccine_kb.next_due')}: {fmtDate(childRecord.scheduledDate)}
+                </Text>
               )}
             </View>
           )}
@@ -1337,11 +1342,6 @@ const det = StyleSheet.create({
   collapsibleChevron:{ fontSize: 11, color: GRAY },
   collapsibleBody:  { backgroundColor: '#F0F8FF', borderRadius: 12, padding: 14, marginBottom: 8, borderLeftWidth: 3, borderLeftColor: BLUE },
   collapsibleTxt:   { fontSize: 13, color: DARK, lineHeight: 20 },
-  recurringBox:     { backgroundColor: Colors.softGold, borderRadius: 14, padding: 14, marginBottom: 8, borderLeftWidth: 3, borderLeftColor: GOLD },
-  recurringTitle:   { fontSize: 13, fontWeight: '800', color: GOLD },
-  recurringNote:    { fontSize: 12, color: DARK, lineHeight: 18 },
-  recurringDateLbl: { fontSize: 11, color: Colors.textMid ?? GRAY, fontWeight: '600' },
-  recurringDateVal: { fontSize: 11, fontWeight: '700' },
   childStatusBox:   { backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginTop: 4, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
   childStatusLbl:   { fontSize: 11, color: GRAY, fontWeight: '700', marginBottom: 8 },
   childStatusChip:  { alignSelf: 'flex-start', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginBottom: 12 },
@@ -1449,38 +1449,45 @@ function AgeGroupAccordion({
   const groupRecords = childRecords.filter(r =>
     group.vaccines.some(v => v.code === r.code)
   );
-  const givenInGroup = groupRecords.filter(r => r.status === 'given').length;
-  const totalInGroup = group.vaccines.length;
-  const hasOverdue   = groupRecords.some(r => r.status === 'overdue');
-  const hasUpcoming  = groupRecords.some(r => r.status === 'upcoming');
+  const givenInGroup      = groupRecords.filter(r => r.status === 'given').length;
+  const naInGroup         = groupRecords.filter(r => r.status === 'not_applicable').length;
+  const totalInGroup      = group.vaccines.length;
+  const hasOverdue        = groupRecords.some(r => r.status === 'overdue');
+  const hasUpcoming       = groupRecords.some(r => r.status === 'upcoming');
+  // All vaccines in this group have exceeded their catch-up window (no longer actionable)
+  const allNotApplicable  = groupRecords.length > 0 && naInGroup === groupRecords.length && givenInGroup === 0;
 
   return (
-    <View style={acc.card}>
+    <View style={[acc.card, allNotApplicable && { opacity: 0.55 }]}>
       <TouchableOpacity style={acc.hdr} onPress={() => setOpen(!open)} activeOpacity={0.85}>
         <View style={acc.ageBox}>
-          {renderAgeIcon ? renderAgeIcon(24, DARK) : <Baby size={24} color={DARK} />}
+          {renderAgeIcon ? renderAgeIcon(24, allNotApplicable ? '#9E9E9E' : DARK) : <Baby size={24} color={allNotApplicable ? '#9E9E9E' : DARK} />}
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={acc.ageLabel}>{ageLabel}</Text>
+          <Text style={[acc.ageLabel, allNotApplicable && { color: '#9E9E9E' }]}>{ageLabel}</Text>
           <Text style={acc.vaccineCount}>{totalInGroup} {t('vaccine_kb.vaccines_in_group', { count: totalInGroup })}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {childRecords.length > 0 && (
             <View style={[acc.progressBadge, {
-              backgroundColor: givenInGroup === totalInGroup ? Colors.softMint :
-                hasOverdue ? '#FFF5F5' : Colors.softBlue,
+              backgroundColor: allNotApplicable    ? '#F5F5F5' :
+                givenInGroup === totalInGroup       ? Colors.softMint :
+                hasOverdue                          ? '#FFF5F5' : Colors.softBlue,
             }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                {givenInGroup === totalInGroup
+                {allNotApplicable
+                  ? <Ban size={12} color={'#9E9E9E'} />
+                  : givenInGroup === totalInGroup
                   ? <CheckCircle2 size={12} color={MINT} />
                   : hasOverdue
                   ? <AlertTriangle size={12} color={'#E53E3E'} />
                   : <Clock size={12} color={BLUE} />}
                 <Text style={[acc.progressTxt, {
-                  color: givenInGroup === totalInGroup ? MINT :
-                    hasOverdue ? '#E53E3E' : BLUE,
+                  color: allNotApplicable           ? '#9E9E9E' :
+                    givenInGroup === totalInGroup   ? MINT :
+                    hasOverdue                      ? '#E53E3E' : BLUE,
                 }]}>
-                  {givenInGroup}/{totalInGroup}
+                  {allNotApplicable ? t('vaccine_log.status_not_applicable') : `${givenInGroup}/${totalInGroup}`}
                 </Text>
               </View>
             </View>
@@ -1509,15 +1516,26 @@ function AgeGroupAccordion({
                       </Text>
                     </View>
                   </View>
-                  {vaccine.recurrence && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2, marginBottom: 2 }}>
-                      <RefreshCw size={10} color={GOLD} strokeWidth={2} />
-                      <Text style={{ fontSize: 10, color: GOLD, fontWeight: '700' }}>
+                  {/* Recurrence badge */}
+                  {vaccine.recurrence && vaccine.recurrence.type !== 'once-series' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2, marginBottom: 2 }}>
+                      <RefreshCw size={10} color={Colors.gold} strokeWidth={2.5} />
+                      <Text style={{ fontSize: 10, color: Colors.gold, fontWeight: '700' }}>
                         {vaccine.recurrence.type === 'annual'
                           ? t('vaccine_kb.annual_label')
                           : t('vaccine_kb.every_n_years_label', { n: vaccine.recurrence.intervalYears })}
                       </Text>
                     </View>
+                  )}
+                  {/* Recurrence schedule note */}
+                  {vaccine.recurrence && (
+                    <Text style={acc.vaccRecurrenceNote} numberOfLines={2}>
+                      {vaccine.recurrence.type === 'annual'
+                        ? `${t('vaccine_log.recurrence_annual')} · ${vaccine.recurrence.noteEN}`
+                        : vaccine.recurrence.type === 'every-n-years'
+                        ? `${t('vaccine_log.recurrence_every_n_years', { n: vaccine.recurrence.intervalYears })} · ${vaccine.recurrence.noteEN}`
+                        : vaccine.recurrence.noteEN}
+                    </Text>
                   )}
                   <View style={acc.vaccMeta}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
@@ -1567,7 +1585,8 @@ const acc = StyleSheet.create({
   vaccDot:      { fontSize: 11, color: '#ccc' },
   vaccProtects: { fontSize: 11, color: GRAY, flex: 1 },
   statusDot:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  vaccChevron:  { fontSize: 18, color: '#ccc' },
+  vaccChevron:      { fontSize: 18, color: '#ccc' },
+  vaccRecurrenceNote: { fontSize: 11, color: GRAY, fontStyle: 'italic', marginBottom: 4, lineHeight: 16 },
 });
 
 // ── Knowledge Base Tab ─────────────────────────────────────────────────────────
@@ -1715,22 +1734,25 @@ const kb = StyleSheet.create({
 // ── Records Tab (existing log wrapped) ────────────────────────────────────────
 
 const RECORD_TABS: { key: VaccineStatus | 'all'; i18n: string }[] = [
-  { key: 'all',      i18n: 'vaccine_log.tab_all' },
-  { key: 'given',    i18n: 'vaccine_log.tab_given' },
-  { key: 'upcoming', i18n: 'vaccine_log.tab_upcoming' },
-  { key: 'overdue',  i18n: 'vaccine_log.tab_overdue' },
+  { key: 'all',            i18n: 'vaccine_log.tab_all' },
+  { key: 'given',          i18n: 'vaccine_log.tab_given' },
+  { key: 'upcoming',       i18n: 'vaccine_log.tab_upcoming' },
+  { key: 'overdue',        i18n: 'vaccine_log.tab_overdue' },
+  { key: 'not_applicable', i18n: 'vaccine_log.tab_not_applicable' },
 ];
 
 function RecordsTab({
   childName, ageMonths, allForChild,
-  givenCount, upcomingCount, overdueCount, totalCount,
-  overdueNames, nextUpcoming, onEditRecord,
+  givenCount, upcomingCount, overdueCount, notApplicableCount, totalCount,
+  overdueNames, nextUpcoming, onEditRecord, onAddCustom,
 }: {
   childName: string; ageMonths: number;
   allForChild: VaccineRecord[];
-  givenCount: number; upcomingCount: number; overdueCount: number; totalCount: number;
+  givenCount: number; upcomingCount: number; overdueCount: number;
+  notApplicableCount: number; totalCount: number;
   overdueNames: string[]; nextUpcoming: VaccineRecord | null;
   onEditRecord: (r: VaccineRecord) => void;
+  onAddCustom: () => void;
 }) {
   const { t }                       = useTranslation();
   const [activeFilter, setActiveFilter] = useState<VaccineStatus | 'all'>('all');
@@ -1741,16 +1763,31 @@ function RecordsTab({
     ? vaccineStore.getRecords(activeChild.id, activeFilter === 'all' ? undefined : activeFilter)
     : [];
 
+  // For the "all" tab, hide not_applicable by default to keep the list clean
+  const displayRecs = activeFilter === 'all'
+    ? filteredRecs.filter(r => r.status !== 'not_applicable')
+    : filteredRecs;
+
+  const countForTab = (key: VaccineStatus | 'all') => {
+    if (key === 'all')            return totalCount - notApplicableCount;
+    if (key === 'given')          return givenCount;
+    if (key === 'upcoming')       return upcomingCount;
+    if (key === 'overdue')        return overdueCount;
+    if (key === 'not_applicable') return notApplicableCount;
+    return 0;
+  };
+
   return (
     <View>
       <CoverageHero
         name={childName} ageMonths={ageMonths}
         givenCount={givenCount} upcomingCount={upcomingCount}
-        overdueCount={overdueCount} totalCount={totalCount}
+        overdueCount={overdueCount}
+        totalCount={totalCount - notApplicableCount}
       />
       <VaccineAISection
         childName={childName} ageMonths={ageMonths}
-        givenCount={givenCount} totalCount={totalCount}
+        givenCount={givenCount} totalCount={totalCount - notApplicableCount}
         overdueList={overdueNames}
         nextVaccineName={nextUpcoming?.nameEN ?? ''}
         nextVaccineDate={nextUpcoming?.scheduledDate ?? ''}
@@ -1758,14 +1795,10 @@ function RecordsTab({
       <LinearGradient colors={[Colors.gold,'#FFC642']} style={rt.gpBanner}>
         <Text style={rt.gpTxt}>{t('vaccine_log.garantisadong')}</Text>
       </LinearGradient>
-      <View style={rt.recurringNote}>
-        <RefreshCw size={12} strokeWidth={2} color={GOLD} />
-        <Text style={rt.recurringNoteTxt}>{t('vaccine_kb.recurring_info')}</Text>
-      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rt.filterRow} contentContainerStyle={rt.filterContent}>
         {RECORD_TABS.map(tab => {
           const active = activeFilter === tab.key;
-          const count  = tab.key === 'all' ? totalCount : tab.key === 'given' ? givenCount : tab.key === 'upcoming' ? upcomingCount : overdueCount;
+          const count  = countForTab(tab.key);
           return (
             <TouchableOpacity key={tab.key} style={[rt.tab, active && rt.tabActive]} onPress={() => { setActiveFilter(tab.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} activeOpacity={0.8}>
               <Text style={[rt.tabTxt, active && rt.tabTxtActive]}>
@@ -1775,7 +1808,16 @@ function RecordsTab({
           );
         })}
       </ScrollView>
-      {filteredRecs.length === 0 ? (
+
+      {/* not_applicable info banner — shown when that filter is active */}
+      {activeFilter === 'not_applicable' && notApplicableCount > 0 && (
+        <View style={rt.naBanner}>
+          <Ban size={14} strokeWidth={1.5} color={'#9E9E9E'} />
+          <Text style={rt.naBannerTxt}>{t('vaccine_log.not_applicable_info')}</Text>
+        </View>
+      )}
+
+      {displayRecs.length === 0 ? (
         <EmptyState
           illustration={null}
           illustrationColor={Colors.softBlue}
@@ -1784,11 +1826,11 @@ function RecordsTab({
         />
       ) : (
         <View style={rt.timeline}>
-          {filteredRecs.map((rec, idx) => (
+          {displayRecs.map((rec, idx) => (
             <VaccineTimelineCard
               key={rec.id}
               record={rec}
-              isLast={idx === filteredRecs.length - 1}
+              isLast={idx === displayRecs.length - 1}
               onPress={() => onEditRecord(rec)}
             />
           ))}
@@ -1800,10 +1842,8 @@ function RecordsTab({
 }
 
 const rt = StyleSheet.create({
-  gpBanner:        { borderRadius: 14, padding: 14, marginBottom: 8 },
-  gpTxt:           { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.white, lineHeight: 17 },
-  recurringNote:   { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.softGold, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
-  recurringNoteTxt:{ fontSize: 11, color: GOLD, fontWeight: '700', flex: 1 },
+  gpBanner:     { borderRadius: 14, padding: 14, marginBottom: 12 },
+  gpTxt:        { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.white, lineHeight: 17 },
   filterRow:    { marginBottom: 14 },
   filterContent:{ paddingHorizontal: 0, gap: 8 },
   tab:          { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5,
@@ -1812,6 +1852,200 @@ const rt = StyleSheet.create({
   tabTxt:       { fontSize: 12, fontFamily: 'PlusJakartaSans_700Bold', color: Colors.textMid },
   tabTxtActive: { color: Colors.white },
   timeline:     { paddingTop: 4 },
+  naBanner:     { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#F5F5F5',
+                  borderRadius: 12, padding: 12, marginBottom: 12, borderLeftWidth: 3, borderLeftColor: '#9E9E9E' },
+  naBannerTxt:  { flex: 1, fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: Colors.textMid, lineHeight: 17 },
+});
+
+// ── Custom Record Modal ────────────────────────────────────────────────────────
+
+function CustomVaccineModal({
+  visible, childId, onClose, onSave,
+}: {
+  visible: boolean; childId: string;
+  onClose: () => void; onSave: () => void;
+}) {
+  const { t } = useTranslation();
+  const vaccineStore = useVaccineStore();
+
+  const [nameEN,       setNameEN]       = useState('');
+  const [scheduledDt,  setScheduledDt]  = useState('');
+  const [alreadyGiven, setAlreadyGiven] = useState(false);
+  const [givenDt,      setGivenDt]      = useState('');
+  const [nextDue,      setNextDue]      = useState('');
+  const [brand,        setBrand]        = useState('');
+  const [doseNum,      setDoseNum]      = useState('');
+  const [notes,        setNotes]        = useState('');
+
+  const reset = () => {
+    setNameEN(''); setScheduledDt(''); setAlreadyGiven(false);
+    setGivenDt(''); setNextDue(''); setBrand(''); setDoseNum(''); setNotes('');
+  };
+
+  const save = () => {
+    if (!nameEN.trim()) {
+      Alert.alert(t('vaccine_log.custom_name_required_title'), t('vaccine_log.custom_name_required_msg'));
+      return;
+    }
+    if (!scheduledDt.trim()) {
+      Alert.alert(t('vaccine_log.date_required_title'), t('vaccine_log.date_required_msg'));
+      return;
+    }
+    if (alreadyGiven && !givenDt.trim()) {
+      Alert.alert(t('vaccine_log.date_required_title'), t('vaccine_log.date_given_required_msg'));
+      return;
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    vaccineStore.addCustomRecord({
+      childId,
+      nameEN: nameEN.trim(),
+      scheduledDate: scheduledDt.trim(),
+      givenDate:    alreadyGiven ? givenDt.trim() : undefined,
+      nextDueDate:  nextDue.trim() || undefined,
+      brand: brand.trim() || undefined,
+      doseNumber: doseNum ? parseInt(doseNum, 10) : undefined,
+      notes: notes.trim() || undefined,
+    });
+    reset();
+    onSave();
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={cm.wrap}>
+          <LinearGradient colors={[Colors.primary, '#F07090']} style={cm.hdr}>
+            <TouchableOpacity onPress={() => { reset(); onClose(); }} style={cm.closeBtn}>
+              <Text style={cm.closeTxt}>✕</Text>
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={cm.hdrTitle}>{t('vaccine_log.custom_modal_title')}</Text>
+              <Text style={cm.hdrSub}>{t('vaccine_log.custom_modal_subtitle')}</Text>
+            </View>
+            <View style={cm.customBadge}>
+              <Text style={cm.customBadgeTxt}>{t('vaccine_log.custom_badge')}</Text>
+            </View>
+          </LinearGradient>
+
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={cm.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <SectionHeader icon={<Pill size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_details')} />
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.custom_name_label')} *</Text>
+              <TextInput style={cm.input} value={nameEN} onChangeText={setNameEN}
+                placeholder={t('vaccine_log.custom_name_placeholder')} placeholderTextColor="#ccc" autoFocus />
+            </View>
+
+            <SectionHeader icon={<Calendar size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_schedule')} />
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_scheduled_date')} *</Text>
+              <TextInput style={cm.input} value={scheduledDt} onChangeText={setScheduledDt}
+                placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+            </View>
+
+            {/* Already Given toggle */}
+            <TouchableOpacity
+              style={[cm.fBlock, cm.toggleRow]}
+              onPress={() => setAlreadyGiven(v => !v)}
+              activeOpacity={0.75}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={cm.fLbl}>{t('vaccine_log.already_given_label')}</Text>
+                <Text style={cm.toggleHint}>{t('vaccine_log.already_given_hint')}</Text>
+              </View>
+              <View style={[cm.toggleTrack, alreadyGiven && cm.toggleTrackOn]}>
+                <View style={[cm.toggleThumb, alreadyGiven && cm.toggleThumbOn]} />
+              </View>
+            </TouchableOpacity>
+
+            {alreadyGiven && (
+              <View style={cm.fBlock}>
+                <Text style={cm.fLbl}>{t('vaccine_log.field_date_given')} *</Text>
+                <TextInput style={cm.input} value={givenDt} onChangeText={setGivenDt}
+                  placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+              </View>
+            )}
+
+            <SectionHeader icon={<Syringe size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_admin')} />
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_brand')}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {BRANDS.map(b => (
+                    <TouchableOpacity key={b} onPress={() => setBrand(brand === b ? '' : b)} activeOpacity={0.8}
+                      style={[cm.chip, brand === b && cm.chipActive]}>
+                      <Text style={[cm.chipTxt, brand === b && cm.chipTxtActive]}>{b}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_dose_number')}</Text>
+              <TextInput style={cm.input} value={doseNum} onChangeText={setDoseNum}
+                placeholder="1" placeholderTextColor="#ccc" keyboardType="number-pad" />
+            </View>
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_next_due')}</Text>
+              <TextInput style={cm.input} value={nextDue} onChangeText={setNextDue}
+                placeholder={t('vaccine_log.field_next_due_placeholder')} placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+            </View>
+
+            <View style={cm.fBlock}>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_notes')}</Text>
+              <TextInput style={[cm.input, cm.inputMulti]} value={notes} onChangeText={setNotes}
+                placeholder={t('vaccine_log.custom_notes_placeholder')} placeholderTextColor="#ccc" multiline numberOfLines={3} />
+            </View>
+
+            <TouchableOpacity onPress={save} activeOpacity={0.85} style={{ marginTop: 8 }}>
+              <LinearGradient colors={[Colors.primary, '#F07090']} style={cm.saveBtn}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Plus size={18} strokeWidth={2} color={Colors.white} />
+                  <Text style={cm.saveBtnTxt}>{t('vaccine_log.custom_save')}</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <View style={{ height: 48 }} />
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+const cm = StyleSheet.create({
+  wrap:         { flex: 1, backgroundColor: Colors.background },
+  hdr:          { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingHorizontal: 16, paddingBottom: 16 },
+  closeBtn:     { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
+  closeTxt:     { color: Colors.white, fontSize: 14, fontWeight: '700' },
+  hdrTitle:     { fontSize: 16, fontWeight: '800', color: Colors.white },
+  hdrSub:       { fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
+  customBadge:  { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  customBadgeTxt:{ fontSize: 11, fontWeight: '800', color: Colors.white },
+  content:      { padding: 16, paddingBottom: 32 },
+  fBlock:       { marginBottom: 14 },
+  fLbl:         { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 6 },
+  input:        { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 16, paddingVertical: 11, fontSize: 13, color: DARK, height: 52, fontFamily: 'PlusJakartaSans_400Regular' },
+  inputMulti:   { minHeight: 72, height: undefined, textAlignVertical: 'top', paddingTop: 12 },
+  chip:         { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  chipActive:   { borderColor: Colors.primary, backgroundColor: Colors.primarySoft },
+  chipTxt:      { fontSize: 12, fontWeight: '600', color: GRAY },
+  chipTxtActive:{ color: Colors.primary, fontWeight: '800' },
+  saveBtn:      { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10, shadowColor: Colors.primary, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  saveBtnTxt:   { color: Colors.white, fontSize: 16, fontWeight: '800' },
+  // Already Given toggle
+  toggleRow:    { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  toggleHint:   { fontSize: 11, color: '#AAA', fontFamily: 'PlusJakartaSans_400Regular', marginTop: 2 },
+  toggleTrack:  { width: 44, height: 24, borderRadius: 12, backgroundColor: '#DDD', padding: 2, justifyContent: 'center' },
+  toggleTrackOn:{ backgroundColor: Colors.mint },
+  toggleThumb:  { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 2, elevation: 2 },
+  toggleThumbOn:{ alignSelf: 'flex-end' },
 });
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
@@ -1821,13 +2055,14 @@ export default function VaccinesScreen() {
   const { activeChild } = useChildStore();
   const vaccineStore    = useVaccineStore();
 
-  const [isLoading,     setIsLoading]     = useState(true);
-  const [mainTab,       setMainTab]       = useState<MainTab>('knowledge');
-  const [detailVaccine, setDetailVaccine] = useState<VaccineEntry | null>(null);
-  const [detailRecord,  setDetailRecord]  = useState<VaccineRecord | undefined>(undefined);
-  const [detailVisible, setDetailVisible] = useState(false);
-  const [editRecord,    setEditRecord]    = useState<VaccineRecord | null>(null);
-  const [editVisible,   setEditVisible]   = useState(false);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [mainTab,        setMainTab]        = useState<MainTab>('knowledge');
+  const [detailVaccine,  setDetailVaccine]  = useState<VaccineEntry | null>(null);
+  const [detailRecord,   setDetailRecord]   = useState<VaccineRecord | undefined>(undefined);
+  const [detailVisible,  setDetailVisible]  = useState(false);
+  const [editRecord,     setEditRecord]     = useState<VaccineRecord | null>(null);
+  const [editVisible,    setEditVisible]    = useState(false);
+  const [customVisible,  setCustomVisible]  = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
@@ -1837,17 +2072,18 @@ export default function VaccinesScreen() {
   useEffect(() => {
     if (activeChild?.id && activeChild.birthday) {
       vaccineStore.autoPopulate(activeChild.id, activeChild.birthday);
-      vaccineStore.refreshStatuses(activeChild.id);
+      vaccineStore.refreshStatuses(activeChild.id, activeChild.birthday);
     }
   }, [activeChild?.id]);
 
-  const allForChild   = activeChild ? vaccineStore.getRecords(activeChild.id) : [];
-  const givenCount    = allForChild.filter(r => r.status === 'given').length;
-  const upcomingCount = allForChild.filter(r => r.status === 'upcoming').length;
-  const overdueCount  = allForChild.filter(r => r.status === 'overdue').length;
-  const totalCount    = allForChild.length;
-  const overdueNames  = allForChild.filter(r => r.status === 'overdue').map(r => r.code);
-  const nextUpcoming  = activeChild ? vaccineStore.getNextUpcoming(activeChild.id) : null;
+  const allForChild        = activeChild ? vaccineStore.getRecords(activeChild.id) : [];
+  const givenCount         = allForChild.filter(r => r.status === 'given').length;
+  const upcomingCount      = allForChild.filter(r => r.status === 'upcoming').length;
+  const overdueCount       = allForChild.filter(r => r.status === 'overdue').length;
+  const notApplicableCount = allForChild.filter(r => r.status === 'not_applicable').length;
+  const totalCount         = allForChild.length;
+  const overdueNames       = allForChild.filter(r => r.status === 'overdue').map(r => r.code);
+  const nextUpcoming       = activeChild ? vaccineStore.getNextUpcoming(activeChild.id) : null;
 
   const ageMonths = activeChild?.birthday
     ? Math.floor((Date.now() - new Date(activeChild.birthday).getTime()) / (1000*60*60*24*30.44))
@@ -1946,10 +2182,12 @@ export default function VaccinesScreen() {
             givenCount={givenCount}
             upcomingCount={upcomingCount}
             overdueCount={overdueCount}
+            notApplicableCount={notApplicableCount}
             totalCount={totalCount}
             overdueNames={overdueNames}
             nextUpcoming={nextUpcoming}
             onEditRecord={r => { setEditRecord(r); setEditVisible(true); }}
+            onAddCustom={() => setCustomVisible(true)}
           />
         )}
       </ScrollView>
@@ -1962,9 +2200,7 @@ export default function VaccinesScreen() {
             activeOpacity={0.9}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              const first = allForChild.find(r => r.status === 'overdue')
-                ?? allForChild.find(r => r.status === 'upcoming');
-              if (first) { setEditRecord(first); setEditVisible(true); }
+              setCustomVisible(true);
             }}
           >
             <Plus size={28} strokeWidth={2.5} color={Colors.white} />
@@ -1990,6 +2226,16 @@ export default function VaccinesScreen() {
         onSave={r => vaccineStore.updateRecord(r.id, r)}
         onDelete={id => { vaccineStore.deleteRecord(id); setEditVisible(false); }}
       />
+
+      {/* Custom Vaccine Modal (FAB in My Records tab) */}
+      {activeChild && (
+        <CustomVaccineModal
+          visible={customVisible}
+          childId={activeChild.id}
+          onClose={() => setCustomVisible(false)}
+          onSave={() => setCustomVisible(false)}
+        />
+      )}
     </View>
   );
 }

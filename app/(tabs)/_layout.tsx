@@ -284,7 +284,7 @@ export default function TabLayout() {
             <CutePageHeader
               title={t('milestones.title')}
               icon={<Star size={21} strokeWidth={1.5} color={Colors.white} />}
-              colors={['#FFB74D', '#FFC870']}
+              colors={[Colors.primary, '#E8527A']}
             />
           ),
           tabBarIcon: ({ focused }) => (

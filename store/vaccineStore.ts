@@ -4,15 +4,21 @@
  * Auto-populates from DOH EPI schedule on child profile creation
  */
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 import {
   DOH_EPI_SCHEDULE,
+  VACCINE_MAX_CATCHUP_WEEKS,
   calcScheduledDate,
   calcReminderDate,
+  getVaccineByCode,
 } from '../constants/vaccines-doh-epi';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type VaccineStatus = 'given' | 'upcoming' | 'overdue' | 'skipped';
+export type VaccineStatus = 'given' | 'upcoming' | 'overdue' | 'skipped' | 'not_applicable';
 export type AdministeredRole = 'pediatrician' | 'nurse' | 'midwife';
 export type VaccineSite = 'left_thigh' | 'right_thigh' | 'left_arm' | 'right_arm' | 'oral';
 
@@ -27,6 +33,7 @@ export interface VaccineRecord {
   nameZH: string;
   isFreeEPI: boolean;
   recommendedAgeWeeks: number;
+  isCustom?: boolean;     // true for vaccines added manually (not in DOH EPI schedule)
 
   // Status
   status: VaccineStatus;
@@ -69,6 +76,23 @@ interface VaccineStore {
   /** Auto-populate all vaccines for a child from DOH EPI schedule */
   autoPopulate: (childId: string, birthday: string) => void;
 
+  /**
+   * Add a custom vaccine record (not in DOH EPI schedule).
+   * Caller provides at minimum: childId, nameEN, scheduledDate.
+   */
+  addCustomRecord: (partial: {
+    childId: string;
+    nameEN: string;
+    nameFIL?: string;
+    nameZH?: string;
+    scheduledDate: string;
+    givenDate?: string;      // set → status becomes 'given'
+    nextDueDate?: string;
+    brand?: string;
+    doseNumber?: number;
+    notes?: string;
+  }) => void;
+
   /** Add or upsert a record */
   addRecord: (record: VaccineRecord) => void;
 
@@ -84,55 +108,143 @@ interface VaccineStore {
   /** Get next upcoming vaccine for a child */
   getNextUpcoming: (childId: string) => VaccineRecord | null;
 
-  /** Recalculate overdue status for a child based on today's date */
-  refreshStatuses: (childId: string) => void;
+  /** Recalculate overdue/not_applicable status for a child based on today's date + birthday */
+  refreshStatuses: (childId: string, birthday: string) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * For recurring vaccines, roll the initial scheduledDate forward by intervalYears
- * until the most recent past due date (not in the future).
- * Example: Flu scheduled 2021-09-16, today 2026-03-18, interval 1 year
- *   → rolls to 2025-09-16 (most recent past annual due date)
+ * For recurring vaccines (e.g. annual Flu, Typhoid every 3 years),
+ * roll the initial scheduledDate forward to the most recent past due date.
+ * E.g. a 5-year-old child: Flu first due 2021-09 → rolls to 2025-09.
  */
 function rollForwardScheduledDate(
   initialScheduledDate: string,
   intervalYears: number,
-  today: Date
+  today: Date,
 ): string {
   const initial = new Date(initialScheduledDate);
-  if (initial > today) return initialScheduledDate; // not yet due, keep as is
-
+  if (initial >= today) return initialScheduledDate; // not yet first due
   let current = new Date(initial);
-  while (true) {
+  for (;;) {
     const next = new Date(current);
     next.setFullYear(next.getFullYear() + intervalYears);
-    if (next > today) break; // next would be in the future, stop
+    if (next > today) break;
     current = next;
   }
   return current.toISOString().split('T')[0];
 }
 
-function computeStatus(scheduledDate: string, given: boolean, skipped: boolean): VaccineStatus {
-  if (given) return 'given';
+/**
+ * Compute the vaccine status given its scheduled date, the child's birthday,
+ * and whether it was already given or skipped.
+ *
+ * not_applicable: vaccine's catch-up window has closed (child is older than
+ *   VACCINE_MAX_CATCHUP_WEEKS for that vaccine code). Shows "N/A" instead of
+ *   "overdue" for vaccines the child can no longer safely receive.
+ */
+function computeStatus(
+  scheduledDate: string,
+  birthday: string,
+  code: string,
+  given: boolean,
+  skipped: boolean,
+): VaccineStatus {
+  if (given)   return 'given';
   if (skipped) return 'skipped';
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  // Age of child in weeks today
+  const bd = new Date(birthday);
+  bd.setHours(0, 0, 0, 0);
+  const ageWeeks = Math.floor((today.getTime() - bd.getTime()) / (7 * 24 * 60 * 60 * 1000));
+
+  // Check catch-up window — if the child is older than the max catch-up age,
+  // the vaccine window has passed and it's no longer applicable
+  const maxCatchup = VACCINE_MAX_CATCHUP_WEEKS[code];
+  if (maxCatchup !== undefined && ageWeeks > maxCatchup) {
+    return 'not_applicable';
+  }
+
   const sd = new Date(scheduledDate);
   sd.setHours(0, 0, 0, 0);
   return sd <= today ? 'overdue' : 'upcoming';
 }
 
+/**
+ * Auto-generate the next occurrence record for a recurring vaccine after it is marked given.
+ * Returns a new VaccineRecord for the next cycle, or null if:
+ * - The vaccine has no recurrence field
+ * - The recurrence type is 'once-series'
+ * - A record for the same code with the same scheduled year already exists in existingRecords
+ */
+export function autoGenerateNextOccurrence(
+  record: VaccineRecord,
+  givenDate: string,
+  existingRecords: VaccineRecord[],
+): VaccineRecord | null {
+  const vaccineEntry = getVaccineByCode(record.code);
+  if (!vaccineEntry?.recurrence) return null;
+  const { recurrence } = vaccineEntry;
+  if (recurrence.type === 'once-series') return null;
+
+  const intervalYears = recurrence.type === 'annual' ? 1 : (recurrence.intervalYears ?? 1);
+
+  const given = new Date(givenDate);
+  const nextDate = new Date(given);
+  nextDate.setFullYear(nextDate.getFullYear() + intervalYears);
+  const nextScheduledDate = nextDate.toISOString().split('T')[0];
+  const nextYear = nextDate.getFullYear();
+
+  // Dedup: don't create if a record for this code+year already exists
+  const alreadyExists = existingRecords.some((r) => {
+    if (r.childId !== record.childId || r.code !== record.code) return false;
+    if (r.status === 'given') return false; // already given records are historical, not future
+    const rYear = new Date(r.scheduledDate).getFullYear();
+    return rYear === nextYear;
+  });
+  if (alreadyExists) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  nextDate.setHours(0, 0, 0, 0);
+  const status: VaccineStatus = nextDate <= today ? 'overdue' : 'upcoming';
+
+  const reminderDate = calcReminderDate(nextScheduledDate);
+  const now = new Date().toISOString();
+
+  return {
+    id: `${record.childId}-${record.code}-${nextYear}-${Math.random().toString(36).slice(2, 7)}`,
+    childId: record.childId,
+    code: record.code,
+    nameEN: record.nameEN,
+    nameFIL: record.nameFIL,
+    nameZH: record.nameZH,
+    isFreeEPI: record.isFreeEPI,
+    recommendedAgeWeeks: record.recommendedAgeWeeks,
+    isCustom: record.isCustom,
+    status,
+    scheduledDate: nextScheduledDate,
+    reminderEnabled: true,
+    reminderDate,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 // ── Store Implementation ───────────────────────────────────────────────────────
 
-export const useVaccineStore = create<VaccineStore>((set, get) => ({
+export const useVaccineStore = create<VaccineStore>()(
+  persist(
+    (set, get) => ({
   records: [],
 
   autoPopulate: (childId, birthday) => {
-    const now = new Date().toISOString();
+    const now   = new Date().toISOString();
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const newRecords: VaccineRecord[] = [];
 
     for (const group of DOH_EPI_SCHEDULE) {
@@ -145,18 +257,17 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
 
         let scheduledDate = calcScheduledDate(birthday, group.recommendedAgeWeeks);
         // For recurring vaccines, roll forward to the most recent past due date
-        if (vaccine.recurrence) {
-          scheduledDate = rollForwardScheduledDate(
-            scheduledDate,
-            vaccine.recurrence.intervalYears,
-            today
-          );
+        if (vaccine.recurrence && vaccine.recurrence.type !== 'once-series') {
+          const intervalYears = vaccine.recurrence.type === 'annual'
+            ? 1
+            : (vaccine.recurrence.intervalYears ?? 1);
+          scheduledDate = rollForwardScheduledDate(scheduledDate, intervalYears, today);
         }
-        const reminderDate = calcReminderDate(scheduledDate);
-        const status = computeStatus(scheduledDate, false, false);
+        const reminderDate  = calcReminderDate(scheduledDate);
+        const status        = computeStatus(scheduledDate, birthday, vaccine.code, false, false);
 
         newRecords.push({
-          id: `${childId}-${vaccine.code}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+          id: `${childId}-${vaccine.code}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           childId,
           code: vaccine.code,
           nameEN: vaccine.nameEN,
@@ -164,6 +275,7 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
           nameZH: vaccine.nameZH,
           isFreeEPI: vaccine.isFreeEPI,
           recommendedAgeWeeks: group.recommendedAgeWeeks,
+          isCustom: false,
           status,
           scheduledDate,
           reminderEnabled: true,
@@ -179,6 +291,48 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     }
   },
 
+  addCustomRecord: (partial) => {
+    const now = new Date().toISOString();
+    const reminderDate = calcReminderDate(partial.scheduledDate);
+    const record: VaccineRecord = {
+      id:                 `${partial.childId}-custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      childId:            partial.childId,
+      code:               `custom-${Date.now()}`,
+      nameEN:             partial.nameEN,
+      nameFIL:            partial.nameFIL ?? partial.nameEN,
+      nameZH:             partial.nameZH ?? partial.nameEN,
+      isFreeEPI:          false,
+      recommendedAgeWeeks: 0,
+      isCustom:           true,
+      status:             partial.givenDate
+        ? 'given'
+        : (() => {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            // If nextDueDate is set and is in the future → upcoming (recurring vaccine)
+            if (partial.nextDueDate) {
+              const nd = new Date(partial.nextDueDate);
+              nd.setHours(0, 0, 0, 0);
+              if (nd > now) return 'upcoming';
+            }
+            const sd = new Date(partial.scheduledDate);
+            sd.setHours(0, 0, 0, 0);
+            return sd <= now ? 'overdue' : 'upcoming';
+          })(),
+      givenDate:          partial.givenDate,
+      scheduledDate:      partial.scheduledDate,
+      brand:              partial.brand,
+      doseNumber:         partial.doseNumber,
+      nextDueDate:        partial.nextDueDate,
+      notes:              partial.notes,
+      reminderEnabled:    true,
+      reminderDate,
+      createdAt:          now,
+      updatedAt:          now,
+    };
+    set((state) => ({ records: [...state.records, record] }));
+  },
+
   addRecord: (record) =>
     set((state) => {
       const idx = state.records.findIndex((r) => r.id === record.id);
@@ -191,13 +345,26 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     }),
 
   updateRecord: (id, updates) =>
-    set((state) => ({
-      records: state.records.map((r) =>
+    set((state) => {
+      const updatedRecords = state.records.map((r) =>
         r.id === id
           ? { ...r, ...updates, updatedAt: new Date().toISOString() }
           : r
-      ),
-    })),
+      );
+
+      // Auto-generate next occurrence for recurring vaccines when marked as given
+      if (updates.status === 'given' && updates.givenDate) {
+        const updatedRecord = updatedRecords.find((r) => r.id === id);
+        if (updatedRecord) {
+          const nextRecord = autoGenerateNextOccurrence(updatedRecord, updates.givenDate, updatedRecords);
+          if (nextRecord) {
+            return { records: [...updatedRecords, nextRecord] };
+          }
+        }
+      }
+
+      return { records: updatedRecords };
+    }),
 
   deleteRecord: (id) =>
     set((state) => ({
@@ -226,43 +393,53 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     return upcoming[0] ?? null;
   },
 
-  refreshStatuses: (childId) =>
+  refreshStatuses: (childId, birthday) =>
     set((state) => {
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
       return {
         records: state.records.map((r) => {
           if (r.childId !== childId) return r;
           if (r.status === 'given' || r.status === 'skipped') return r;
-
-          // For recurring vaccines, re-roll the scheduledDate to the most recent past due date
-          let scheduledDate = r.scheduledDate;
-          const vaccineEntry = DOH_EPI_SCHEDULE
-            .flatMap((g) => g.vaccines)
-            .find((v) => v.code === r.code);
-          if (vaccineEntry?.recurrence) {
-            // Find the original initial scheduled date (birthday + recommendedAgeWeeks)
-            // We can't recover birthday here, so we roll forward from the stored scheduledDate
-            scheduledDate = rollForwardScheduledDate(
-              r.scheduledDate,
-              vaccineEntry.recurrence.intervalYears,
-              today
-            );
+          if (r.isCustom) {
+            // For custom records: if nextDueDate is set and in the future → upcoming
+            if (r.nextDueDate) {
+              const nd = new Date(r.nextDueDate);
+              nd.setHours(0, 0, 0, 0);
+              const newStatus: VaccineStatus = nd > today ? 'upcoming' : 'overdue';
+              if (newStatus === r.status) return r;
+              return { ...r, status: newStatus, updatedAt: new Date().toISOString() };
+            }
+            return r;
           }
 
-          const newStatus = computeStatus(scheduledDate, false, false);
+          // For recurring vaccines, roll the scheduledDate forward before computing status
+          let scheduledDate = r.scheduledDate;
+          const vaccineData = getVaccineByCode(r.code);
+          if (vaccineData?.recurrence && vaccineData.recurrence.type !== 'once-series') {
+            const intervalYears = vaccineData.recurrence.type === 'annual'
+              ? 1
+              : (vaccineData.recurrence.intervalYears ?? 1);
+            scheduledDate = rollForwardScheduledDate(r.scheduledDate, intervalYears, today);
+          }
+
+          const newStatus = computeStatus(scheduledDate, birthday, r.code, false, false);
           if (newStatus === r.status && scheduledDate === r.scheduledDate) return r;
           return {
             ...r,
             scheduledDate,
-            reminderDate: calcReminderDate(scheduledDate),
             status: newStatus,
             updatedAt: new Date().toISOString(),
           };
         }),
       };
     }),
-}));
+    }),
+    {
+      name: 'vaccine-store',
+      storage: zustandStorage,
+    }
+  )
+);
 
 // ── Dev helper ────────────────────────────────────────────────────────────────
 if (typeof window !== 'undefined') {

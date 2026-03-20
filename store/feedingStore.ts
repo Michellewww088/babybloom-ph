@@ -1,4 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -65,57 +69,65 @@ interface FeedingStore {
   resumeTimer: () => void;
 }
 
-export const useFeedingStore = create<FeedingStore>((set) => ({
-  entries: [],
+export const useFeedingStore = create<FeedingStore>()(
+  persist(
+    (set) => ({
+      entries: [],
 
-  timerActive:    false,
-  timerStartedAt: null,
-  timerSide:      null,
-  timerPaused:    false,
-  timerPauseLog:  [],
-
-  addEntry: (entry) =>
-    set((state) => ({ entries: [entry, ...state.entries] })),
-
-  updateEntry: (id, updates) =>
-    set((state) => ({
-      entries: state.entries.map((e) => (e.id === id ? { ...e, ...updates } : e)),
-    })),
-
-  deleteEntry: (id) =>
-    set((state) => ({ entries: state.entries.filter((e) => e.id !== id) })),
-
-  startTimer: (side) =>
-    set({
-      timerActive:    true,
-      timerStartedAt: new Date().toISOString(),
-      timerSide:      side,
+      timerActive:    false,
+      timerStartedAt: null,
+      timerSide:      null,
       timerPaused:    false,
       timerPauseLog:  [],
+
+      addEntry: (entry) =>
+        set((state) => ({ entries: [entry, ...state.entries] })),
+
+      updateEntry: (id, updates) =>
+        set((state) => ({
+          entries: state.entries.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+        })),
+
+      deleteEntry: (id) =>
+        set((state) => ({ entries: state.entries.filter((e) => e.id !== id) })),
+
+      startTimer: (side) =>
+        set({
+          timerActive:    true,
+          timerStartedAt: new Date().toISOString(),
+          timerSide:      side,
+          timerPaused:    false,
+          timerPauseLog:  [],
+        }),
+
+      stopTimer: () =>
+        set({ timerActive: false, timerStartedAt: null, timerSide: null, timerPaused: false, timerPauseLog: [] }),
+
+      pauseTimer: () =>
+        set((state) => ({
+          timerPaused:   true,
+          timerPauseLog: [
+            ...state.timerPauseLog,
+            { pausedAt: new Date().toISOString() },
+          ],
+        })),
+
+      resumeTimer: () =>
+        set((state) => ({
+          timerPaused:   false,
+          timerPauseLog: state.timerPauseLog.map((interval, idx) =>
+            idx === state.timerPauseLog.length - 1 && !interval.resumedAt
+              ? { ...interval, resumedAt: new Date().toISOString() }
+              : interval
+          ),
+        })),
     }),
-
-  stopTimer: () =>
-    set({ timerActive: false, timerStartedAt: null, timerSide: null, timerPaused: false, timerPauseLog: [] }),
-
-  pauseTimer: () =>
-    set((state) => ({
-      timerPaused:   true,
-      timerPauseLog: [
-        ...state.timerPauseLog,
-        { pausedAt: new Date().toISOString() },
-      ],
-    })),
-
-  resumeTimer: () =>
-    set((state) => ({
-      timerPaused:   false,
-      timerPauseLog: state.timerPauseLog.map((interval, idx) =>
-        idx === state.timerPauseLog.length - 1 && !interval.resumedAt
-          ? { ...interval, resumedAt: new Date().toISOString() }
-          : interval
-      ),
-    })),
-}));
+    {
+      name: 'feeding-store',
+      storage: zustandStorage,
+    }
+  )
+);
 
 // Expose store in dev for browser preview testing
 if (typeof __DEV__ !== 'undefined' && __DEV__ && typeof window !== 'undefined') {

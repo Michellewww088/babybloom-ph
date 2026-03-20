@@ -4,6 +4,10 @@
  */
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 
 export type ReminderCategory =
   | 'vaccine' | 'checkup' | 'feeding' | 'sleep'
@@ -79,154 +83,162 @@ interface ReminderState {
   updateSettings: (updates: Partial<NotificationSettings>) => void;
 }
 
-export const useReminderStore = create<ReminderState>((set, get) => ({
-  reminders: [],
-  settings: {
-    masterEnabled: true,
-    vaccineReminders: true,
-    checkupReminders: true,
-    feedingReminders: true,
-    medicationReminders: true,
-    customReminders: true,
-    quietHoursEnabled: false,
-    quietHoursStart: '22:00',
-    quietHoursEnd: '06:00',
-  },
+export const useReminderStore = create<ReminderState>()(
+  persist(
+    (set, get) => ({
+      reminders: [],
+      settings: {
+        masterEnabled: true,
+        vaccineReminders: true,
+        checkupReminders: true,
+        feedingReminders: true,
+        medicationReminders: true,
+        customReminders: true,
+        quietHoursEnabled: false,
+        quietHoursStart: '22:00',
+        quietHoursEnd: '06:00',
+      },
 
-  addReminder: (r) => {
-    const id = uuid();
-    const newR: Reminder = { ...r, id, createdAt: new Date().toISOString() };
-    set(s => ({ reminders: [...s.reminders, newR] }));
-    return id;
-  },
+      addReminder: (r) => {
+        const id = uuid();
+        const newR: Reminder = { ...r, id, createdAt: new Date().toISOString() };
+        set(s => ({ reminders: [...s.reminders, newR] }));
+        return id;
+      },
 
-  updateReminder: (id, updates) => {
-    set(s => ({
-      reminders: s.reminders.map(r => r.id === id ? { ...r, ...updates } : r),
-    }));
-  },
+      updateReminder: (id, updates) => {
+        set(s => ({
+          reminders: s.reminders.map(r => r.id === id ? { ...r, ...updates } : r),
+        }));
+      },
 
-  deleteReminder: (id) => {
-    set(s => ({ reminders: s.reminders.filter(r => r.id !== id) }));
-  },
+      deleteReminder: (id) => {
+        set(s => ({ reminders: s.reminders.filter(r => r.id !== id) }));
+      },
 
-  getRemindersForChild: (childId) => {
-    return get().reminders.filter(r => r.childId === childId && r.isActive);
-  },
+      getRemindersForChild: (childId) => {
+        return get().reminders.filter(r => r.childId === childId && r.isActive);
+      },
 
-  getByDate: (childId, dateStr) => {
-    return get().reminders.filter(r =>
-      r.childId === childId &&
-      r.isActive &&
-      r.scheduledAt.startsWith(dateStr)
-    );
-  },
+      getByDate: (childId, dateStr) => {
+        return get().reminders.filter(r =>
+          r.childId === childId &&
+          r.isActive &&
+          r.scheduledAt.startsWith(dateStr)
+        );
+      },
 
-  getDatesWithCategories: (childId, year, month) => {
-    const map = new Map<number, ReminderCategory[]>();
-    const rs = get().reminders.filter(r => r.childId === childId && r.isActive);
-    for (const r of rs) {
-      const d = new Date(r.scheduledAt);
-      if (d.getFullYear() === year && d.getMonth() === month) {
-        const day = d.getDate();
-        if (!map.has(day)) map.set(day, []);
-        const cats = map.get(day)!;
-        if (!cats.includes(r.category)) cats.push(r.category);
-      }
+      getDatesWithCategories: (childId, year, month) => {
+        const map = new Map<number, ReminderCategory[]>();
+        const rs = get().reminders.filter(r => r.childId === childId && r.isActive);
+        for (const r of rs) {
+          const d = new Date(r.scheduledAt);
+          if (d.getFullYear() === year && d.getMonth() === month) {
+            const day = d.getDate();
+            if (!map.has(day)) map.set(day, []);
+            const cats = map.get(day)!;
+            if (!cats.includes(r.category)) cats.push(r.category);
+          }
+        }
+        return map;
+      },
+
+      getUpcoming: (childId, days = 60) => {
+        const now = new Date(); now.setHours(0, 0, 0, 0);
+        const end = new Date(now);
+        end.setDate(end.getDate() + days);
+        return get().reminders
+          .filter(r => {
+            if (r.childId !== childId || !r.isActive) return false;
+            const d = new Date(r.scheduledAt);
+            return d >= now && d <= end;
+          })
+          .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+      },
+
+      autoGeneratePPS: (childId, birthday, nickname) => {
+        const existing = get().reminders.filter(r => r.childId === childId && r.autoType === 'pps');
+        if (existing.length > 0) return; // already done
+
+        const bd = new Date(birthday);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        for (const slot of PPS_SCHEDULE) {
+          const checkupDate = new Date(bd);
+          checkupDate.setDate(checkupDate.getDate() + slot.weeks * 7);
+          if (checkupDate < sevenDaysAgo) continue; // skip far past
+
+          // Create reminder 3 days before checkup
+          const reminderDate = new Date(checkupDate);
+          reminderDate.setDate(reminderDate.getDate() - 3);
+          const iso = reminderDate.toISOString().split('T')[0] + 'T09:00';
+
+          get().addReminder({
+            childId,
+            title: `🏥 ${slot.labelEN} well-baby checkup for ${nickname}`,
+            category: 'checkup',
+            scheduledAt: iso,
+            allDay: false,
+            repeatType: 'none',
+            notifyMinutesBefore: 1440,
+            notes: 'Bring your MCH Booklet (Mother & Child Health Booklet). PPS recommended well-baby visit.',
+            isActive: true,
+            isAutoGenerated: true,
+            autoType: 'pps',
+          });
+        }
+      },
+
+      autoGenerateGP: (childId, year) => {
+        const existing = get().reminders.filter(r =>
+          r.childId === childId &&
+          r.autoType === 'gp' &&
+          r.scheduledAt.startsWith(`${year}`)
+        );
+        if (existing.length >= 2) return;
+
+        // June 15 → July campaign
+        get().addReminder({
+          childId,
+          title: '🌟 Garantisadong Pambata: Coming in July! Free Vitamin A + deworming at BHS',
+          category: 'gp',
+          scheduledAt: `${year}-06-15T09:00`,
+          allDay: true,
+          repeatType: 'none',
+          notifyMinutesBefore: 0,
+          notes: 'Every July: Free Vitamin A + deworming at Barangay Health Station (BHS) for children 6 months to 5 years.',
+          isActive: true,
+          isAutoGenerated: true,
+          autoType: 'gp',
+        });
+
+        // December 15 → January campaign
+        get().addReminder({
+          childId,
+          title: '🌟 Garantisadong Pambata: Coming in January! Free Vitamin A + deworming at BHS',
+          category: 'gp',
+          scheduledAt: `${year}-12-15T09:00`,
+          allDay: true,
+          repeatType: 'none',
+          notifyMinutesBefore: 0,
+          notes: 'Every January: Free Vitamin A + deworming at Barangay Health Station (BHS) for children 6 months to 5 years.',
+          isActive: true,
+          isAutoGenerated: true,
+          autoType: 'gp',
+        });
+      },
+
+      updateSettings: (updates) => {
+        set(s => ({ settings: { ...s.settings, ...updates } }));
+      },
+    }),
+    {
+      name: 'reminder-store',
+      storage: zustandStorage,
     }
-    return map;
-  },
-
-  getUpcoming: (childId, days = 60) => {
-    const now = new Date(); now.setHours(0, 0, 0, 0);
-    const end = new Date(now);
-    end.setDate(end.getDate() + days);
-    return get().reminders
-      .filter(r => {
-        if (r.childId !== childId || !r.isActive) return false;
-        const d = new Date(r.scheduledAt);
-        return d >= now && d <= end;
-      })
-      .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
-  },
-
-  autoGeneratePPS: (childId, birthday, nickname) => {
-    const existing = get().reminders.filter(r => r.childId === childId && r.autoType === 'pps');
-    if (existing.length > 0) return; // already done
-
-    const bd = new Date(birthday);
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    for (const slot of PPS_SCHEDULE) {
-      const checkupDate = new Date(bd);
-      checkupDate.setDate(checkupDate.getDate() + slot.weeks * 7);
-      if (checkupDate < sevenDaysAgo) continue; // skip far past
-
-      // Create reminder 3 days before checkup
-      const reminderDate = new Date(checkupDate);
-      reminderDate.setDate(reminderDate.getDate() - 3);
-      const iso = reminderDate.toISOString().split('T')[0] + 'T09:00';
-
-      get().addReminder({
-        childId,
-        title: `🏥 ${slot.labelEN} well-baby checkup for ${nickname}`,
-        category: 'checkup',
-        scheduledAt: iso,
-        allDay: false,
-        repeatType: 'none',
-        notifyMinutesBefore: 1440,
-        notes: 'Bring your MCH Booklet (Mother & Child Health Booklet). PPS recommended well-baby visit.',
-        isActive: true,
-        isAutoGenerated: true,
-        autoType: 'pps',
-      });
-    }
-  },
-
-  autoGenerateGP: (childId, year) => {
-    const existing = get().reminders.filter(r =>
-      r.childId === childId &&
-      r.autoType === 'gp' &&
-      r.scheduledAt.startsWith(`${year}`)
-    );
-    if (existing.length >= 2) return;
-
-    // June 15 → July campaign
-    get().addReminder({
-      childId,
-      title: '🌟 Garantisadong Pambata: Coming in July! Free Vitamin A + deworming at BHS',
-      category: 'gp',
-      scheduledAt: `${year}-06-15T09:00`,
-      allDay: true,
-      repeatType: 'none',
-      notifyMinutesBefore: 0,
-      notes: 'Every July: Free Vitamin A + deworming at Barangay Health Station (BHS) for children 6 months to 5 years.',
-      isActive: true,
-      isAutoGenerated: true,
-      autoType: 'gp',
-    });
-
-    // December 15 → January campaign
-    get().addReminder({
-      childId,
-      title: '🌟 Garantisadong Pambata: Coming in January! Free Vitamin A + deworming at BHS',
-      category: 'gp',
-      scheduledAt: `${year}-12-15T09:00`,
-      allDay: true,
-      repeatType: 'none',
-      notifyMinutesBefore: 0,
-      notes: 'Every January: Free Vitamin A + deworming at Barangay Health Station (BHS) for children 6 months to 5 years.',
-      isActive: true,
-      isAutoGenerated: true,
-      autoType: 'gp',
-    });
-  },
-
-  updateSettings: (updates) => {
-    set(s => ({ settings: { ...s.settings, ...updates } }));
-  },
-}));
+  )
+);
 
 // Dev access
 if (typeof window !== 'undefined') {

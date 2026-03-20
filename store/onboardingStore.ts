@@ -1,4 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 
 // Captures onboarding answers so child-profile can pre-fill matching fields
 export interface OnboardingSnapshot {
@@ -23,8 +27,16 @@ const EMPTY: OnboardingSnapshot = {
   language:  'en',
 };
 
-export const useOnboardingStore = create<OnboardingStore>((set) => ({
-  data:      { ...EMPTY },
-  setData:   (data) => set((s) => ({ data: { ...s.data, ...data } })),
-  clearData: () => set({ data: { ...EMPTY } }),
-}));
+export const useOnboardingStore = create<OnboardingStore>()(
+  persist(
+    (set) => ({
+      data:      { ...EMPTY },
+      setData:   (data) => set((s) => ({ data: { ...s.data, ...data } })),
+      clearData: () => set({ data: { ...EMPTY } }),
+    }),
+    {
+      name: 'onboarding-store',
+      storage: zustandStorage,
+    }
+  )
+);

@@ -5,8 +5,8 @@
  */
 
 export interface VaccineRecurrence {
-  type: 'annual' | 'every-n-years';
-  intervalYears: number;
+  type: 'annual' | 'every-n-years' | 'once-series';
+  intervalYears?: number;   // for every-n-years
   noteEN: string;
   noteFIL: string;
   noteZH: string;
@@ -311,9 +311,9 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
         recurrence: {
           type: 'annual',
           intervalYears: 1,
-          noteEN: 'Give every year, ideally before flu season (June–October in the Philippines). Flu strains change annually, so yearly vaccination keeps your child protected.',
-          noteFIL: 'Ibigay taon-taon, mas mabuti bago ang flu season (Hunyo–Oktubre sa Pilipinas). Nagbabago ang flu strains bawat taon, kaya kailangan ng taunang bakuna.',
-          noteZH: '每年接种，最好在流感季节前（菲律宾6月至10月）。流感病毒株每年变化，因此需要每年接种以保持保护。',
+          noteEN: 'Give annually every year. First-timers under 9 need 2 doses, 4 weeks apart.',
+          noteFIL: 'Ibigay taon-taon. Ang mga bata na wala pang 9 na taong gulang na unang beses ay nangangailangan ng 2 dosis, 4 linggo ang pagitan.',
+          noteZH: '每年接种。9岁以下首次接种需打2剂，间隔4周。',
         },
       },
     ],
@@ -364,6 +364,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           fil: 'Sa pribadong klinika (mga ₱1,500–₱2,500)',
           zh: '私立诊所（约₱1,500–₱2,500/剂）',
         },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'First of 2 doses. Give HepA2 booster 6–12 months later for lifetime protection.',
+          noteFIL: 'Una sa 2 dosis. Ibigay ang HepA2 booster pagkatapos ng 6-12 buwan para sa panghabambuhay na proteksyon.',
+          noteZH: '2剂系列第1针。6-12个月后接种HepA2加强针，可获终身保护。',
+        },
       },
     ],
   },
@@ -391,6 +397,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           fil: 'Sa pribadong klinika (mga ₱1,500–₱2,000)',
           zh: '私立诊所（约₱1,500–₱2,000）',
         },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'One dose at 12–15 months. Optional 2nd dose 3+ months later for better protection.',
+          noteFIL: 'Isang dosis sa 12-15 buwan. Optional na ika-2 dosis pagkatapos ng 3+ buwan para sa mas mahusay na proteksyon.',
+          noteZH: '12-15月龄接种1剂。3个月后可选接种第2剂以增强保护。',
+        },
       },
       {
         code: 'HepA2',
@@ -407,6 +419,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           en: 'Private clinics',
           fil: 'Pribadong klinika',
           zh: '私立诊所',
+        },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'Final booster dose of the Hepatitis A series. Gives lifetime protection.',
+          noteFIL: 'Panghuling booster dose ng Hepatitis A series. Nagbibigay ng panghabambuhay na proteksyon.',
+          noteZH: '甲肝系列最终加强针，提供终身保护。',
         },
       },
     ],
@@ -434,6 +452,12 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
           en: 'Free at BHS or RHU',
           fil: 'Libre sa BHS o RHU',
           zh: '在社区卫生站免费接种',
+        },
+        recurrence: {
+          type: 'once-series',
+          noteEN: 'One-time booster dose. Gives lifetime protection when combined with MMR1.',
+          noteFIL: 'Isang beses na booster dose. Nagbibigay ng panghabambuhay na proteksyon kasama ang MMR1.',
+          noteZH: '一次性加强针。与MMR1合用提供终身保护。',
         },
       },
     ],
@@ -501,14 +525,50 @@ export const DOH_EPI_SCHEDULE: AgeGroup[] = [
         recurrence: {
           type: 'every-n-years',
           intervalYears: 3,
-          noteEN: 'Booster required every 3 years per Philippine Pediatric Society (PPS) recommendation. Typhoid is endemic in the Philippines, so protection must be maintained especially before school entry.',
-          noteFIL: 'Kailangan ng booster bawat 3 taon ayon sa rekomendasyon ng Philippine Pediatric Society (PPS). Laganap ang typhoid sa Pilipinas, kaya importante ang patuloy na proteksyon lalo na bago pumasok sa paaralan.',
-          noteZH: '根据菲律宾儿科学会（PPS）建议，每3年需要加强接种。伤寒在菲律宾流行，因此需要持续保持保护，特别是在入学前。',
+          noteEN: 'Repeat every 3 years. Recommended from age 2+.',
+          noteFIL: 'Ulitin tuwing 3 taon. Inirerekomenda mula 2 taong gulang pataas.',
+          noteZH: '每3年重复接种。建议从2岁起接种。',
         },
       },
     ],
   },
 ];
+
+/**
+ * Maximum child age (in weeks) at which catch-up vaccination is still appropriate.
+ * After this age, autoPopulate sets status to 'not_applicable' instead of 'overdue'.
+ *
+ * Sources: DOH EPI Philippines, WHO catch-up schedule, Philippine Pediatric Society (PPS).
+ * - Rotavirus: hard medical cutoff due to intussusception risk (1st dose ≤14 wks, last ≤32 wks)
+ * - BCG/EPI series: meaningful catch-up up to 1 year
+ * - MMR/Varicella/HepA: catch-up valid into school age
+ * - Annual vaccines (Flu): always applicable
+ */
+export const VACCINE_MAX_CATCHUP_WEEKS: Record<string, number> = {
+  BCG:          52,   // catch-up valid up to 1 year
+  HepB1:        52,
+  Penta1:       52,
+  Penta2:       52,
+  Penta3:       52,
+  OPV1:         52,
+  OPV2:         52,
+  OPV3:         52,
+  PCV1:         52,
+  PCV2:         52,
+  PCV3:         52,
+  IPV1:         52,
+  Rota1:        20,   // MEDICAL CUTOFF: 1st dose must be given before 20 weeks (intussusception risk)
+  Rota2:        32,   // MEDICAL CUTOFF: last dose must be given before 32 weeks / 8 months
+  Flu1:         520,  // annual vaccine — always applicable, no catch-up limit
+  MMR1:         156,  // catch-up valid to 3 years
+  MMR2:         260,  // catch-up valid to 5 years
+  HepA1:        260,  // catch-up valid to 5 years
+  HepA2:        520,  // booster — no practical limit
+  Varicella1:   520,  // catch-up valid through childhood
+  DPTBooster:   156,  // booster catch-up valid to 3 years
+  OPVBooster:   156,
+  Typhoid:      520,  // recommended every 3 years — always applicable
+};
 
 /** Flat list of all vaccines (useful for lookup by code) */
 export const ALL_VACCINES: VaccineEntry[] = DOH_EPI_SCHEDULE.flatMap((g) => g.vaccines);

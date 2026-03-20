@@ -2,8 +2,12 @@
  * sleepStore.ts — Zustand store for Sleep Tracker
  * Handles timer state, sleep entries, background persistence via AsyncStorage
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,7 +92,9 @@ export interface WeekDay {
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useSleepStore = create<SleepStore>((set, get) => ({
+export const useSleepStore = create<SleepStore>()(
+  persist(
+    (set, get) => ({
   entries:        [],
   timerActive:    false,
   timerStartedAt: null,
@@ -187,7 +193,13 @@ export const useSleepStore = create<SleepStore>((set, get) => ({
       .sort((a, b) => new Date(b.endedAt!).getTime() - new Date(a.endedAt!).getTime());
     return entries[0]?.endedAt ?? null;
   },
-}));
+    }),
+    {
+      name: 'sleep-store',
+      storage: zustandStorage,
+    }
+  )
+);
 
 // ─── Dev window exposure ──────────────────────────────────────────────────────
 

@@ -65,9 +65,9 @@
     "milestones": "Milestone"
   },
   "home": {
-    "greeting_morning": "Magandang umaga, Nanay! 🌞",
-    "greeting_afternoon": "Magandang hapon, Nanay! ☀️",
-    "greeting_evening": "Magandang gabi, Nanay! 🌙",
+    "greeting_morning": "Magandang umaga, Nanay!",
+    "greeting_afternoon": "Magandang hapon, Nanay!",
+    "greeting_evening": "Magandang gabi, Nanay!",
     "last_fed": "Huling Pinakain",
     "sleep_today": "Tulog ngayon",
     "next_vaccine": "Susunod na Bakuna",
@@ -309,7 +309,18 @@
     "cat_nutrition": "Nutrisyon",
     "cat_development": "Pag-unlad",
     "cat_safety": "Kaligtasan",
-    "ph_tip": "Ang libreng bakuna at well-baby checkup ay makukuha sa inyong Barangay Health Station (BHS) o RHU. Magdala ng MCH Booklet!"
+    "ph_tip": "Ang libreng bakuna at well-baby checkup ay makukuha sa inyong Barangay Health Station (BHS) o RHU. Magdala ng MCH Booklet!",
+    "subtitle": "Subaybayan ang paglaki ni {{name}}",
+    "progress": "{{achieved}} sa {{total}} na nakamit",
+    "achieved_on": "Nakamit noong {{date}}",
+    "who_badge": "WHO",
+    "unmark_confirm_title": "Alisin ang milestone?",
+    "unmark_confirm_msg": "Sigurado ka bang aalisin ang milestone na ito?",
+    "unmark_confirm_yes": "Alisin",
+    "unmark_confirm_no": "Huwag",
+    "empty_stage": "Walang milestone para sa stage na ito",
+    "filter_all": "Lahat",
+    "current_stage": "Kasalukuyang stage"
   },
   "welcome": {
     "title": "Maligayang pagdating, {{name}}! 🎉",
@@ -577,7 +588,7 @@
   },
   "growth": {
     "title": "Pagsusuri ng Paglaki",
-    "snapshot_title": "Snapshot ng Paglaki 📈",
+    "snapshot_title": "Snapshot ng Paglaki",
     "add_measurement": "+ Magdagdag ng Sukat",
     "view_full": "Tingnan ang Buong Pagsusuri →",
     "weight": "Timbang",
@@ -657,7 +668,11 @@
     "status_given": "Nabigay",
     "status_upcoming": "Paparating",
     "status_overdue": "Huli na",
+    "status_due_now": "Dapat Na",
     "status_skipped": "Nilaktawan",
+    "recurrence_annual": "Taon-taon",
+    "recurrence_every_n_years": "Bawat {{n}} Taon",
+    "recurrence_note_label": "Iskedyul",
     "due_label": "Takdang Petsa",
     "given_label": "Ibinigay noong",
     "scheduled_label": "Nakatakda",
@@ -721,6 +736,7 @@
     "field_brand": "Brand ng Bakuna",
     "field_dose_number": "Bilang ng Dosis",
     "field_next_due": "Susunod na Petsa",
+    "field_next_due_placeholder": "hal. 2026-09-01 (Typhoid booster tuwing 3 taon)",
     "field_admin_role": "Tungkulin",
     "field_site": "Lugar ng Iniksyon",
     "field_expiry": "Petsa ng Expiry ng Lot",
@@ -734,7 +750,22 @@
     "cert_perm_title": "Kailangan ang Pahintulot",
     "cert_perm_msg": "Mangyaring payagan ang access sa photo library para mag-upload ng sertipiko.",
     "dose_label": "Dosis {{n}}",
-    "status_due_now": "Dapat Na"
+    "status_not_applicable": "Hindi Applicable",
+    "tab_not_applicable": "Hindi Applicable",
+    "not_applicable_info": "Ang mga bakunang ito ay hindi na applicable batay sa kasalukuyang edad ng iyong anak. Lumipas na ang catch-up window. Maaaring kumonsulta sa iyong Pedia kung inirerekomenda pa rin ang late vaccination.",
+    "custom_modal_title": "Magdagdag ng Custom na Bakuna",
+    "custom_modal_subtitle": "I-record ang bakunang wala sa EPI schedule",
+    "custom_badge": "Custom",
+    "custom_name_label": "Pangalan ng Bakuna",
+    "custom_name_placeholder": "hal. Gardasil 9, HPV, Dengvaxia",
+    "custom_notes_placeholder": "Opsyonal na tala tungkol sa bakunang ito",
+    "custom_name_required_title": "Kailangan ang Pangalan",
+    "custom_name_required_msg": "Mangyaring ilagay ang pangalan ng bakuna.",
+    "custom_save": "Idagdag ang Rekord ng Bakuna",
+    "field_scheduled_date": "Nakatakdang Petsa",
+    "already_given_label": "Nabigay Na",
+    "already_given_hint": "I-toggle kung nabigay na ang bakunang ito",
+    "date_given_required_msg": "Mangyaring ilagay ang petsa ng pagbibigay ng bakuna."
   },
   "vitamins": {
     "title": "Bitamina at Gamot",
@@ -915,9 +946,9 @@
     "res_5_body": "Nalaktawan ang isang bakuna? Huwag mag-alala - hindi pa huli para makahabol! Ang DOH ay may flexible na catch-up immunization schedule.\n\n📋 Ano ang gagawin: Bisitahin ang pinakamalapit na BHS/RHU o pediatrician. Magdala ng MCH Booklet. Ang health worker ay gagawa ng catch-up plan.\n\n✅ Hindi kailangang magsimula muli: Kung natanggap na ng inyong anak ang 1st at 2nd dose ng Pentavalent ngunit nalaktawan ang 3rd, ang 3rd dose lamang ang kailangan.\n\n🇵🇭 Garantisadong Pambata: Bawat Enero at Hulyo, naglulunsad ang DOH ng libreng immunization drives sa lahat ng BHS!",
     "annual_label": "Taon-taon",
     "every_n_years_label": "Bawat {{n}} Taon",
-    "recurring_info": "🔄 = Paulit-ulit na bakuna — kailangan ibigay muli",
+    "recurring_info": "🔄 Paulit-ulit na bakuna",
     "last_given": "Huling nabigay",
-    "next_due": "Susunod na petsa"
+    "next_due": "Susunod na dapat ibigay"
   },
   "feeding_guide": {
     "screen_title": "Gabay sa Pagpapakain",
