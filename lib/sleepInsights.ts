@@ -35,22 +35,53 @@ export interface DailySleepSummary {
 //   Sources: WHO Sleep Guidelines 2019, AAP, Philippine Pediatric Society
 
 interface SleepThresholds {
-  minHours:       number;
-  maxHours:       number;
-  idealNaps:      number;
-  maxNaps:        number;
-  minNightHours:  number;
-  minNapMinutes:  number;
-  maxNapMinutes:  number;
-  ageLabel:       string;
+  minHours:          number;
+  maxHours:          number;
+  idealNaps:         number;
+  maxNaps:           number;
+  minNightHours:     number;
+  minNapMinutes:     number;
+  maxNapMinutes:     number;
+  nightStretchHours: number;  // typical longest night stretch
+  ageLabel:          string;
 }
 
 const getThresholds = (ageMonths: number): SleepThresholds => {
-  if (ageMonths <  4) return { minHours: 14, maxHours: 17, idealNaps: 3, maxNaps: 5, minNightHours: 7,  minNapMinutes: 15, maxNapMinutes: 120, ageLabel: 'newborn'   };
-  if (ageMonths < 12) return { minHours: 12, maxHours: 15, idealNaps: 2, maxNaps: 3, minNightHours: 9,  minNapMinutes: 30, maxNapMinutes: 120, ageLabel: 'infant'    };
-  if (ageMonths < 24) return { minHours: 11, maxHours: 14, idealNaps: 1, maxNaps: 2, minNightHours: 10, minNapMinutes: 60, maxNapMinutes: 120, ageLabel: 'toddler'   };
-  if (ageMonths < 36) return { minHours: 11, maxHours: 14, idealNaps: 1, maxNaps: 1, minNightHours: 10, minNapMinutes: 60, maxNapMinutes: 120, ageLabel: 'toddler'   };
-  return                     { minHours: 10, maxHours: 13, idealNaps: 0, maxNaps: 1, minNightHours: 10, minNapMinutes: 60, maxNapMinutes: 120, ageLabel: 'preschool' };
+  // ── 0–3 months: Newborn ──────────────────────────────────────────────────
+  // WHO: 14–17h total; 4–5 naps; night stretches 2–4h
+  if (ageMonths <  3) return { minHours: 14, maxHours: 17, idealNaps: 4, maxNaps: 5, minNightHours: 6,  minNapMinutes: 15, maxNapMinutes:  90, nightStretchHours: 3,  ageLabel: 'newborn'       };
+
+  // ── 3–6 months: Young Infant ─────────────────────────────────────────────
+  // WHO: 14–16h total; 3–4 naps; night stretches 4–6h
+  if (ageMonths <  6) return { minHours: 14, maxHours: 16, idealNaps: 3, maxNaps: 4, minNightHours: 8,  minNapMinutes: 30, maxNapMinutes: 120, nightStretchHours: 5,  ageLabel: 'young infant'  };
+
+  // ── 6–9 months: Older Infant ─────────────────────────────────────────────
+  // WHO/AAP: 13–15h total; 2–3 naps; night stretches 6–8h
+  if (ageMonths <  9) return { minHours: 13, maxHours: 15, idealNaps: 2, maxNaps: 3, minNightHours: 9,  minNapMinutes: 30, maxNapMinutes: 120, nightStretchHours: 7,  ageLabel: 'infant'        };
+
+  // ── 9–12 months: Late Infant ─────────────────────────────────────────────
+  // WHO/AAP: 13–14h total; 2 naps; night sleep 10–12h
+  if (ageMonths < 12) return { minHours: 13, maxHours: 14, idealNaps: 2, maxNaps: 2, minNightHours: 10, minNapMinutes: 45, maxNapMinutes: 120, nightStretchHours: 11, ageLabel: 'infant'        };
+
+  // ── 12–24 months: Early Toddler ──────────────────────────────────────────
+  // WHO: 12–14h total; 1–2 naps; night sleep 10–12h
+  if (ageMonths < 24) return { minHours: 12, maxHours: 14, idealNaps: 1, maxNaps: 2, minNightHours: 10, minNapMinutes: 60, maxNapMinutes: 120, nightStretchHours: 11, ageLabel: 'toddler'       };
+
+  // ── 24–36 months: Late Toddler ───────────────────────────────────────────
+  // WHO: 11–14h total; 1 nap (may begin to drop); night sleep 10–12h
+  if (ageMonths < 36) return { minHours: 11, maxHours: 14, idealNaps: 1, maxNaps: 1, minNightHours: 10, minNapMinutes: 60, maxNapMinutes: 120, nightStretchHours: 11, ageLabel: 'toddler'       };
+
+  // ── 36–60 months: Preschool ──────────────────────────────────────────────
+  // WHO/AAP: 10–13h total; optional nap; night sleep 10–12h
+  if (ageMonths < 60) return { minHours: 10, maxHours: 13, idealNaps: 0, maxNaps: 1, minNightHours: 10, minNapMinutes: 60, maxNapMinutes: 120, nightStretchHours: 11, ageLabel: 'preschooler'   };
+
+  // ── 60–84 months: Early School-Age ──────────────────────────────────────
+  // WHO/AAP: 9–11h total; no nap needed; night sleep 9–11h
+  if (ageMonths < 84) return { minHours:  9, maxHours: 11, idealNaps: 0, maxNaps: 0, minNightHours:  9, minNapMinutes:  0, maxNapMinutes:   0, nightStretchHours: 10, ageLabel: 'school-age'    };
+
+  // ── 84–144 months: Late School-Age (7–12 yr) ────────────────────────────
+  // WHO/AAP: 9–11h total; no nap; night sleep 9–11h
+  return                     { minHours:  9, maxHours: 11, idealNaps: 0, maxNaps: 0, minNightHours:  9, minNapMinutes:  0, maxNapMinutes:   0, nightStretchHours: 10, ageLabel: 'school-age'    };
 };
 
 // ─── Per-sleep Analysis ───────────────────────────────────────────────────────

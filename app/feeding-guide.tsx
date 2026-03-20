@@ -44,42 +44,76 @@ type TopTab = 'timeline' | 'superfoods' | 'allergens';
 // ─────────────────────────────────────────────────────────────────────────────
 
 function buildTimelineSummary(ageMonths: number, childName: string, lang: string): string {
+  // ── 0–5 months: exclusive breastfeeding ───────────────────────────────────
   if (ageMonths < 6) {
     const msgs: Record<string, string> = {
-      en: `🤱 ${childName} is ${ageMonths}mo — still in the exclusive breastfeeding stage. Breast milk is all Baby needs right now. Start solids at 6 months or when readiness signs appear. You're doing great, Nanay! 💕`,
-      fil: `🤱 Si ${childName} ay ${ageMonths} buwan pa — nasa eksklusibong pagpapasuso pa. Ang gatas ng ina ay lahat ng kailangan ni Baby ngayon. Magsimula ng solids sa 6 buwan o kapag lumabas ang readiness signs. Magaling ka, Nanay! 💕`,
-      zh: `🤱 ${childName}现在${ageMonths}个月——还处于纯母乳喂养阶段。母乳就是宝宝现在所需的一切。在6个月或出现准备迹象时开始辅食。妈妈加油！💕`,
+      en:  `🤱 ${childName} is ${ageMonths}mo — still in the exclusive breastfeeding stage. Breast milk or formula is all Baby needs. Breastfeed 8–12×/day; formula-fed babies take 120–180 ml per feed. Start solids at 6 months or when readiness signs appear. You're doing great, Nanay! 💕`,
+      fil: `🤱 Si ${childName} ay ${ageMonths} buwan pa — nasa eksklusibong pagpapasuso pa. Ang gatas ng ina o formula ay lahat ng kailangan ni Baby. Magpasuso 8–12×/araw; ang formula-fed na sanggol ay kumukonsumo ng 120–180 ml bawat pagpapakain. Magsimula ng solids sa 6 buwan. Magaling ka, Nanay! 💕`,
+      zh:  `🤱 ${childName}现在${ageMonths}个月——还处于纯母乳/配方奶阶段。母乳每天8–12次按需喂养；配方奶每次120–180毫升。在6个月或出现准备迹象时开始辅食。妈妈加油！💕`,
     };
     return msgs[lang] || msgs.en;
   }
-  if (ageMonths < 8) {
+  // ── 6 months: first foods ─────────────────────────────────────────────────
+  if (ageMonths === 6) {
     const msgs: Record<string, string> = {
-      en: `🥣 ${childName} is ready for first foods! Start with smooth purees like lugaw, kamote, and kalabasa — 2–3 teaspoons at first. Continue breastfeeding alongside solids. One new food every 3–5 days. 🌟`,
-      fil: `🥣 Handa na si ${childName} para sa unang pagkain! Magsimula sa malambot na puree tulad ng lugaw, kamote, at kalabasa — 2–3 kutsarita muna. Ipagpatuloy ang pagpapasuso kasabay ng solids. Isang bagong pagkain bawat 3–5 araw. 🌟`,
-      zh: `🥣 ${childName}已经准备好吃第一口辅食了！从顺滑泥糊开始，如稀饭、红薯和南瓜——先从2–3茶匙开始。继续母乳喂养同时添加辅食。每3–5天引入一种新食物。🌟`,
+      en:  `🥣 ${childName} is ready for first foods! Start with iron-rich single-ingredient purees — lugaw, kamote, kalabasa, mongo. Introduce one new food every 3–5 days to watch for reactions. Aim for 2–3 small solids sessions + continue breast milk or formula. 🌟`,
+      fil: `🥣 Handa na si ${childName} para sa unang pagkain! Magsimula sa iron-rich single-ingredient purees — lugaw, kamote, kalabasa, mongo. Mag-uvain ng isang bagong pagkain bawat 3–5 araw para masundan ang mga reaksyon. Target ang 2–3 maliit na solids sessions + ipagpatuloy ang gatas ng ina o formula. 🌟`,
+      zh:  `🥣 ${childName}已经准备好吃第一口辅食了！从富铁的单一成分泥糊开始——稀饭、红薯、南瓜、绿豆。每3–5天引入一种新食物，观察反应。每天2–3次辅食 + 继续母乳/配方奶。🌟`,
     };
     return msgs[lang] || msgs.en;
   }
-  if (ageMonths < 10) {
+  // ── 7–8 months: mashed textures ──────────────────────────────────────────
+  if (ageMonths < 9) {
     const msgs: Record<string, string> = {
-      en: `🍽️ ${childName} is ready for more variety! Introduce mashed textures, proteins (fish, chicken, egg yolk), and 3–4 meals a day. This is the best time to introduce PH superfoods for iron and DHA. 💪`,
-      fil: `🍽️ Handa na si ${childName} para sa mas maraming pagkain! Mag-uvain ng mashed texture, protina (isda, manok, pula ng itlog), at 3–4 kain sa isang araw. Ito ang pinakamabuting oras para mag-uvain ng PH superfoods para sa iron at DHA. 💪`,
-      zh: `🍽️ ${childName}已经准备好更多变化了！引入捣碎质地、蛋白质（鱼、鸡肉、蛋黄）和每天3–4餐。这是引入菲律宾超级食物补充铁和DHA的最佳时机。💪`,
+      en:  `🍌 ${childName} is ready for mashed foods! Banana, avocado, egg yolk, soft tofu, fish, and chicken are great now. Aim for 3 meals + 1–2 snacks. Egg yolk is a great first protein — introduce egg white separately at 8+ months. 💪`,
+      fil: `🍌 Handa na si ${childName} para sa mashed foods! Saging, abokado, pula ng itlog, malambot na tofu, isda, at manok ay maganda ngayon. Target ang 3 kain + 1–2 meryenda. Ang pula ng itlog ay mahusay na unang protina — mag-uvain ng puti ng itlog nang hiwalay sa 8+ buwan. 💪`,
+      zh:  `🍌 ${childName}已经准备好捣碎食物了！香蕉、牛油果、蛋黄、软豆腐、鱼和鸡肉都很适合。目标每天3餐 + 1–2次零食。蛋黄是很好的第一蛋白质——8个月以上单独引入蛋白。💪`,
     };
     return msgs[lang] || msgs.en;
   }
+  // ── 9–11 months: finger foods ─────────────────────────────────────────────
   if (ageMonths < 12) {
     const msgs: Record<string, string> = {
-      en: `👣 ${childName} is almost 1 year old! Soft finger foods and small pieces of family meals are great now. 3–4 meals + 1–2 snacks per day. Almost ready for the family table! 🎉`,
-      fil: `👣 Malapit nang mag-1 taon si ${childName}! Malambot na finger foods at maliliit na piraso ng pagkain ng pamilya ay maganda ngayon. 3–4 kain + 1–2 meryenda sa isang araw. Halos handa na para sa hapag ng pamilya! 🎉`,
-      zh: `👣 ${childName}快满1岁了！现在软手指食物和家庭餐的小块非常适合。每天3–4餐 + 1–2次零食。几乎准备好上家庭餐桌了！🎉`,
+      en:  `👣 ${childName} is ready for soft finger foods! Small bite-sized pieces baby can pick up. Reduce formula to ~500 ml/day — solids are now the main meal. 3–4 meals + 1–2 snacks. Almost ready for the family table! 🎉`,
+      fil: `👣 Handa na si ${childName} para sa malambot na finger foods! Maliliit na piraso na maaaring pulutin ni Baby. Bawasan ang formula sa ~500 ml/araw — ang solids na ang pangunahing pagkain. 3–4 kain + 1–2 meryenda. Halos handa na para sa hapag ng pamilya! 🎉`,
+      zh:  `👣 ${childName}已经准备好软手指食物了！小口大小的块让宝宝自己抓。配方奶减少到每天约500毫升——辅食现在是主餐。每天3–4餐 + 1–2次零食。快要上家庭餐桌了！🎉`,
     };
     return msgs[lang] || msgs.en;
   }
+  // ── 12 months: cow's milk transition ─────────────────────────────────────
+  if (ageMonths === 12) {
+    const msgs: Record<string, string> = {
+      en:  `🥛 Happy 1st birthday, ${childName}! Switch from formula to whole cow's milk (360–480 ml/day max). No honey, whole nuts, or added salt. Baby joins the full family table — 3 meals + 2 snacks. Continue breastfeeding if possible. 🎂`,
+      fil: `🥛 Maligayang kaarawan, ${childName}! Lumipat mula formula patungong buong gatas ng baka (360–480 ml/araw). Walang pulot, buo na mani, o dagdag na asin. Sumali na si Baby sa buong hapag ng pamilya — 3 kain + 2 meryenda. Ipagpatuloy ang pagpapasuso kung posible. 🎂`,
+      zh:  `🥛 生日快乐，${childName}！从配方奶改用全脂牛奶（每天最多360–480毫升）。不加蜂蜜、整颗坚果或盐。宝宝加入完整的家庭餐桌——每天3餐 + 2次零食。如可能继续母乳喂养。🎂`,
+    };
+    return msgs[lang] || msgs.en;
+  }
+  // ── 13–23 months: 1–2 years ──────────────────────────────────────────────
+  if (ageMonths < 24) {
+    const msgs: Record<string, string> = {
+      en:  `🌟 ${childName} is on full family foods! Water is the main drink — no juice or sweetened drinks. Offer a rainbow of veggies, protein, grains, and dairy at every meal. Encourage self-feeding — it builds independence and fine motor skills! 🥄`,
+      fil: `🌟 Si ${childName} ay kumakain na ng pagkain ng pamilya! Tubig ang pangunahing inumin — walang juice o matamis na inumin. Mag-alok ng iba't ibang gulay, protina, butil, at dairy sa bawat kain. Hikayating kumain nang mag-isa — nagtatayo ito ng kalayaan at fine motor skills! 🥄`,
+      zh:  `🌟 ${childName}现在吃家庭食物了！水是主要饮品——不喝果汁或甜饮料。每餐提供彩虹般的蔬菜、蛋白质、谷物和乳制品。鼓励自主进食——培养独立性和精细运动技能！🥄`,
+    };
+    return msgs[lang] || msgs.en;
+  }
+  // ── 24–59 months: 2–5 years ──────────────────────────────────────────────
+  if (ageMonths < 60) {
+    const ageYears = Math.floor(ageMonths / 12);
+    const msgs: Record<string, string> = {
+      en:  `🍱 ${childName} is ${ageYears} years old — all food groups at every meal! Limit juice to 120 ml/day (100% fruit juice only). Avoid sugary snacks, processed meats, and fried fast foods. This is the perfect time to build lifelong healthy eating habits! 🥦`,
+      fil: `🍱 ${ageYears} taon na si ${childName} — lahat ng food groups sa bawat kain! Limitahan ang juice sa 120 ml/araw (100% fruit juice lamang). Iwasan ang matamis na meryenda, processed na karne, at piniritong fast foods. Ito ang perpektong oras para bumuo ng malusog na gawi sa pagkain! 🥦`,
+      zh:  `🍱 ${childName}已经${ageYears}岁了——每餐包含所有食物组！将果汁限制在每天120毫升（仅100%纯果汁）。避免含糖零食、加工肉类和油炸快餐。这是建立终身健康饮食习惯的最佳时机！🥦`,
+    };
+    return msgs[lang] || msgs.en;
+  }
+  // ── 60–143 months: 5–12 years ────────────────────────────────────────────
+  const ageYears = Math.floor(ageMonths / 12);
   const msgs: Record<string, string> = {
-    en: `🌟 ${childName} is on full family foods! Low salt, no honey, varied textures. Continue breastfeeding up to 2+ years. Encourage self-feeding — it builds independence and fine motor skills! 🥄`,
-    fil: `🌟 Si ${childName} ay kumakain na ng pagkain ng pamilya! Mababang asin, walang pulot, iba't ibang texture. Ipagpatuloy ang pagpapasuso hanggang 2+ taon. Hikayating kumain nang mag-isa — nagtatayo ito ng kalayaan at fine motor skills! 🥄`,
-    zh: `🌟 ${childName}现在吃家庭食物了！低盐、无蜂蜜、多样化质地。继续母乳喂养至2岁以上。鼓励自主进食——这培养独立性和精细运动技能！🥄`,
+    en:  `🎒 ${childName} is ${ageYears} years old — school nutrition matters! Pack a balanced lunchbox: carbs + protein + veggies + fruit. Iron-rich foods (isda, malunggay, mongo) are especially important for girls. Milk or dairy daily for strong bones (480–720 ml). Limit chips, instant noodles, and sugary drinks. 📚`,
+    fil: `🎒 ${ageYears} taon na si ${childName} — mahalaga ang nutrisyon sa paaralan! Mag-pack ng balanseng lunchbox: carbs + protina + gulay + prutas. Ang iron-rich na pagkain (isda, malunggay, mongo) ay espesyal na mahalaga para sa mga batang babae. Gatas o dairy araw-araw para sa matibay na buto (480–720 ml). Limitahan ang chips, instant noodles, at matamis na inumin. 📚`,
+    zh:  `🎒 ${childName}已经${ageYears}岁了——学校营养很重要！带一个均衡的午餐盒：碳水 + 蛋白质 + 蔬菜 + 水果。富铁食物（鱼、辣木叶、绿豆）对女孩尤其重要。每天牛奶或乳制品强健骨骼（480–720毫升）。限制薯片、方便面和含糖饮料。📚`,
   };
   return msgs[lang] || msgs.en;
 }
@@ -125,7 +159,12 @@ export default function FeedingGuideScreen() {
   const childAllergies = activeChild?.allergies ?? [];
 
   const [activeTab, setActiveTab]           = useState<TopTab>('timeline');
-  const [expandedStage, setExpandedStage]   = useState<string | null>('stage_6_8');
+  // Auto-expand the child's current age stage on first render
+  const defaultStage = useMemo(() => {
+    const found = AGE_STAGES.find(s => ageMonths >= s.ageMin && ageMonths <= s.ageMax);
+    return found?.id ?? AGE_STAGES[1].id;
+  }, [ageMonths]);
+  const [expandedStage, setExpandedStage]   = useState<string | null>(defaultStage);
   const [selectedFood, setSelectedFood]     = useState<Superfood | null>(null);
   const [selectedAllergen, setSelectedAllergen] = useState<Allergen | null>(null);
 
