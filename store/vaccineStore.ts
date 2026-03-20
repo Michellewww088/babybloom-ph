@@ -301,10 +301,16 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
       status:             partial.givenDate
         ? 'given'
         : (() => {
-            const sd = new Date(partial.scheduledDate);
-            sd.setHours(0, 0, 0, 0);
             const now = new Date();
             now.setHours(0, 0, 0, 0);
+            // If nextDueDate is set and is in the future → upcoming (recurring vaccine)
+            if (partial.nextDueDate) {
+              const nd = new Date(partial.nextDueDate);
+              nd.setHours(0, 0, 0, 0);
+              if (nd > now) return 'upcoming';
+            }
+            const sd = new Date(partial.scheduledDate);
+            sd.setHours(0, 0, 0, 0);
             return sd <= now ? 'overdue' : 'upcoming';
           })(),
       givenDate:          partial.givenDate,
@@ -388,7 +394,17 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
         records: state.records.map((r) => {
           if (r.childId !== childId) return r;
           if (r.status === 'given' || r.status === 'skipped') return r;
-          if (r.isCustom) return r; // custom records don't auto-expire
+          if (r.isCustom) {
+            // For custom records: if nextDueDate is set and in the future → upcoming
+            if (r.nextDueDate) {
+              const nd = new Date(r.nextDueDate);
+              nd.setHours(0, 0, 0, 0);
+              const newStatus: VaccineStatus = nd > today ? 'upcoming' : 'overdue';
+              if (newStatus === r.status) return r;
+              return { ...r, status: newStatus, updatedAt: new Date().toISOString() };
+            }
+            return r;
+          }
 
           // For recurring vaccines, roll the scheduledDate forward before computing status
           let scheduledDate = r.scheduledDate;
