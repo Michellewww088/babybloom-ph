@@ -4,6 +4,8 @@
  * Auto-populates from DOH EPI schedule on child profile creation
  */
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   DOH_EPI_SCHEDULE,
   VACCINE_MAX_CATCHUP_WEEKS,
@@ -233,7 +235,9 @@ export function autoGenerateNextOccurrence(
 
 // ── Store Implementation ───────────────────────────────────────────────────────
 
-export const useVaccineStore = create<VaccineStore>((set, get) => ({
+export const useVaccineStore = create<VaccineStore>()(
+  persist(
+    (set, get) => ({
   records: [],
 
   autoPopulate: (childId, birthday) => {
@@ -427,7 +431,13 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
         }),
       };
     }),
-}));
+    }),
+    {
+      name: 'vaccine-store',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
 
 // ── Dev helper ────────────────────────────────────────────────────────────────
 if (typeof window !== 'undefined') {

@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Captures onboarding answers so child-profile can pre-fill matching fields
 export interface OnboardingSnapshot {
@@ -23,8 +25,16 @@ const EMPTY: OnboardingSnapshot = {
   language:  'en',
 };
 
-export const useOnboardingStore = create<OnboardingStore>((set) => ({
-  data:      { ...EMPTY },
-  setData:   (data) => set((s) => ({ data: { ...s.data, ...data } })),
-  clearData: () => set({ data: { ...EMPTY } }),
-}));
+export const useOnboardingStore = create<OnboardingStore>()(
+  persist(
+    (set) => ({
+      data:      { ...EMPTY },
+      setData:   (data) => set((s) => ({ data: { ...s.data, ...data } })),
+      clearData: () => set({ data: { ...EMPTY } }),
+    }),
+    {
+      name: 'onboarding-store',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);

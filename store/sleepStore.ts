@@ -4,6 +4,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,7 +89,9 @@ export interface WeekDay {
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useSleepStore = create<SleepStore>((set, get) => ({
+export const useSleepStore = create<SleepStore>()(
+  persist(
+    (set, get) => ({
   entries:        [],
   timerActive:    false,
   timerStartedAt: null,
@@ -187,7 +190,13 @@ export const useSleepStore = create<SleepStore>((set, get) => ({
       .sort((a, b) => new Date(b.endedAt!).getTime() - new Date(a.endedAt!).getTime());
     return entries[0]?.endedAt ?? null;
   },
-}));
+    }),
+    {
+      name: 'sleep-store',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
 
 // ─── Dev window exposure ──────────────────────────────────────────────────────
 

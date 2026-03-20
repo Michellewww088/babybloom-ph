@@ -4,6 +4,8 @@
  */
 
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -123,106 +125,114 @@ const SEED_GP: GPVisit[] = [];
 // Store creation
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const useVitaminStore = create<VitaminState>((set, get) => ({
-  entries:  SEED_ENTRIES,
-  gpVisits: SEED_GP,
+export const useVitaminStore = create<VitaminState>()(
+  persist(
+    (set, get) => ({
+      entries:  SEED_ENTRIES,
+      gpVisits: SEED_GP,
 
-  // ── Entry CRUD ─────────────────────────────────────────────────────────────
+      // ── Entry CRUD ─────────────────────────────────────────────────────────────
 
-  addEntry: (entry) => set(s => ({
-    entries: [
-      {
-        ...entry,
-        id:        uuid(),
-        doseLogs:  [],
-        createdAt: new Date().toISOString(),
+      addEntry: (entry) => set(s => ({
+        entries: [
+          {
+            ...entry,
+            id:        uuid(),
+            doseLogs:  [],
+            createdAt: new Date().toISOString(),
+          },
+          ...s.entries,
+        ],
+      })),
+
+      updateEntry: (id, patch) => set(s => ({
+        entries: s.entries.map(e => e.id === id ? { ...e, ...patch } : e),
+      })),
+
+      deleteEntry: (id) => set(s => ({
+        entries: s.entries.filter(e => e.id !== id),
+      })),
+
+      // ── Dose logging ───────────────────────────────────────────────────────────
+
+      logDose: (id, taken) => set(s => ({
+        entries: s.entries.map(e => {
+          if (e.id !== id) return e;
+          const today = todayISO();
+          const existing = e.doseLogs.findIndex(d => d.date === today);
+          const log: DoseLog = { date: today, taken, time: new Date().toTimeString().slice(0,5) };
+          if (existing >= 0) {
+            const logs = [...e.doseLogs];
+            logs[existing] = log;
+            return { ...e, doseLogs: logs };
+          }
+          return { ...e, doseLogs: [...e.doseLogs, log] };
+        }),
+      })),
+
+      // ── GP Visits ──────────────────────────────────────────────────────────────
+
+      addGPVisit: (visit) => set(s => ({
+        gpVisits: [
+          { ...visit, id: uuid(), createdAt: new Date().toISOString() },
+          ...s.gpVisits,
+        ],
+      })),
+
+      deleteGPVisit: (id) => set(s => ({
+        gpVisits: s.gpVisits.filter(v => v.id !== id),
+      })),
+
+      // ── Selectors ──────────────────────────────────────────────────────────────
+
+      getEntriesForChild: (childId) =>
+        get().entries.filter(e => e.childId === childId),
+
+      getActiveEntries: (childId) => {
+        const today = todayISO();
+        return get().entries.filter(e =>
+          e.childId === childId &&
+          (!e.endDate || e.endDate >= today),
+        );
       },
-      ...s.entries,
-    ],
-  })),
 
-  updateEntry: (id, patch) => set(s => ({
-    entries: s.entries.map(e => e.id === id ? { ...e, ...patch } : e),
-  })),
+      getPastEntries: (childId) => {
+        const today = todayISO();
+        return get().entries.filter(e =>
+          e.childId === childId &&
+          e.endDate !== null &&
+          e.endDate < today,
+        );
+      },
 
-  deleteEntry: (id) => set(s => ({
-    entries: s.entries.filter(e => e.id !== id),
-  })),
+      getGPVisitsForChild: (childId) =>
+        get().gpVisits.filter(v => v.childId === childId).sort(
+          (a, b) => b.date.localeCompare(a.date),
+        ),
 
-  // ── Dose logging ───────────────────────────────────────────────────────────
+      getTodayDoseStatus: (id) => {
+        const today = todayISO();
+        const entry = get().entries.find(e => e.id === id);
+        return entry?.doseLogs.find(d => d.date === today);
+      },
 
-  logDose: (id, taken) => set(s => ({
-    entries: s.entries.map(e => {
-      if (e.id !== id) return e;
-      const today = todayISO();
-      const existing = e.doseLogs.findIndex(d => d.date === today);
-      const log: DoseLog = { date: today, taken, time: new Date().toTimeString().slice(0,5) };
-      if (existing >= 0) {
-        const logs = [...e.doseLogs];
-        logs[existing] = log;
-        return { ...e, doseLogs: logs };
-      }
-      return { ...e, doseLogs: [...e.doseLogs, log] };
+      getAdherencePercent: (id, days = 7) => {
+        const entry = get().entries.find(e => e.id === id);
+        if (!entry) return 0;
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+        const recent = entry.doseLogs.filter(d => new Date(d.date) >= cutoff);
+        if (recent.length === 0) return 0;
+        const taken = recent.filter(d => d.taken).length;
+        return Math.round((taken / days) * 100);
+      },
     }),
-  })),
-
-  // ── GP Visits ──────────────────────────────────────────────────────────────
-
-  addGPVisit: (visit) => set(s => ({
-    gpVisits: [
-      { ...visit, id: uuid(), createdAt: new Date().toISOString() },
-      ...s.gpVisits,
-    ],
-  })),
-
-  deleteGPVisit: (id) => set(s => ({
-    gpVisits: s.gpVisits.filter(v => v.id !== id),
-  })),
-
-  // ── Selectors ──────────────────────────────────────────────────────────────
-
-  getEntriesForChild: (childId) =>
-    get().entries.filter(e => e.childId === childId),
-
-  getActiveEntries: (childId) => {
-    const today = todayISO();
-    return get().entries.filter(e =>
-      e.childId === childId &&
-      (!e.endDate || e.endDate >= today),
-    );
-  },
-
-  getPastEntries: (childId) => {
-    const today = todayISO();
-    return get().entries.filter(e =>
-      e.childId === childId &&
-      e.endDate !== null &&
-      e.endDate < today,
-    );
-  },
-
-  getGPVisitsForChild: (childId) =>
-    get().gpVisits.filter(v => v.childId === childId).sort(
-      (a, b) => b.date.localeCompare(a.date),
-    ),
-
-  getTodayDoseStatus: (id) => {
-    const today = todayISO();
-    const entry = get().entries.find(e => e.id === id);
-    return entry?.doseLogs.find(d => d.date === today);
-  },
-
-  getAdherencePercent: (id, days = 7) => {
-    const entry = get().entries.find(e => e.id === id);
-    if (!entry) return 0;
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    const recent = entry.doseLogs.filter(d => new Date(d.date) >= cutoff);
-    if (recent.length === 0) return 0;
-    const taken = recent.filter(d => d.taken).length;
-    return Math.round((taken / days) * 100);
-  },
-}));
+    {
+      name: 'vitamin-store',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
 
 // Expose on window for dev tools
 if (typeof window !== 'undefined') {

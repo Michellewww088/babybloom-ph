@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -138,39 +140,47 @@ interface MilestoneStore {
   getAchievedForChild: (childId: string) => ChildMilestone[];
 }
 
-export const useMilestoneStore = create<MilestoneStore>((set, get) => ({
-  childMilestones: [],
+export const useMilestoneStore = create<MilestoneStore>()(
+  persist(
+    (set, get) => ({
+      childMilestones: [],
 
-  markAchieved: (childId, milestoneRefId) => {
-    const today = new Date().toISOString().split('T')[0];
-    const newEntry: ChildMilestone = {
-      id:               `${childId}-${milestoneRefId}-${Date.now()}`,
-      child_id:         childId,
-      milestone_ref_id: milestoneRefId,
-      achieved_date:    today,
-      created_at:       new Date().toISOString(),
-    };
-    set((state) => ({
-      childMilestones: [...state.childMilestones, newEntry],
-    }));
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  },
+      markAchieved: (childId, milestoneRefId) => {
+        const today = new Date().toISOString().split('T')[0];
+        const newEntry: ChildMilestone = {
+          id:               `${childId}-${milestoneRefId}-${Date.now()}`,
+          child_id:         childId,
+          milestone_ref_id: milestoneRefId,
+          achieved_date:    today,
+          created_at:       new Date().toISOString(),
+        };
+        set((state) => ({
+          childMilestones: [...state.childMilestones, newEntry],
+        }));
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      },
 
-  unmarkAchieved: (childId, milestoneRefId) => {
-    set((state) => ({
-      childMilestones: state.childMilestones.filter(
-        (m) => !(m.child_id === childId && m.milestone_ref_id === milestoneRefId)
-      ),
-    }));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  },
+      unmarkAchieved: (childId, milestoneRefId) => {
+        set((state) => ({
+          childMilestones: state.childMilestones.filter(
+            (m) => !(m.child_id === childId && m.milestone_ref_id === milestoneRefId)
+          ),
+        }));
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      },
 
-  getMilestonesForStage: (stageName) =>
-    MILESTONES_DATA.filter((m) => m.stage_name === stageName),
+      getMilestonesForStage: (stageName) =>
+        MILESTONES_DATA.filter((m) => m.stage_name === stageName),
 
-  getAchievedForChild: (childId) =>
-    get().childMilestones.filter((m) => m.child_id === childId),
-}));
+      getAchievedForChild: (childId) =>
+        get().childMilestones.filter((m) => m.child_id === childId),
+    }),
+    {
+      name: 'milestone-store',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
 
 // Expose in dev mode
 if (typeof __DEV__ !== 'undefined' && __DEV__ && typeof window !== 'undefined') {

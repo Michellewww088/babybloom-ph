@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,44 +61,52 @@ interface ChildStore {
   clearWelcomeModal:  () => void;
 }
 
-export const useChildStore = create<ChildStore>((set) => ({
-  children:         [],
-  activeChild:      null,
-  showWelcomeModal: false,
+export const useChildStore = create<ChildStore>()(
+  persist(
+    (set) => ({
+      children:         [],
+      activeChild:      null,
+      showWelcomeModal: false,
 
-  setChildren: (children) => set({ children }),
+      setChildren: (children) => set({ children }),
 
-  setActiveChild: (activeChild) => set({ activeChild }),
+      setActiveChild: (activeChild) => set({ activeChild }),
 
-  // Auto-select first child and trigger welcome animation
-  addChild: (child) =>
-    set((state) => ({
-      children:         [...state.children, child],
-      activeChild:      state.activeChild ?? child,
-      showWelcomeModal: true,
-    })),
+      // Auto-select first child and trigger welcome animation
+      addChild: (child) =>
+        set((state) => ({
+          children:         [...state.children, child],
+          activeChild:      state.activeChild ?? child,
+          showWelcomeModal: true,
+        })),
 
-  clearWelcomeModal: () => set({ showWelcomeModal: false }),
+      clearWelcomeModal: () => set({ showWelcomeModal: false }),
 
-  updateChild: (id, updates) =>
-    set((state) => ({
-      children: state.children.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-      activeChild:
-        state.activeChild?.id === id
-          ? { ...state.activeChild, ...updates }
-          : state.activeChild,
-    })),
+      updateChild: (id, updates) =>
+        set((state) => ({
+          children: state.children.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+          activeChild:
+            state.activeChild?.id === id
+              ? { ...state.activeChild, ...updates }
+              : state.activeChild,
+        })),
 
-  removeChild: (id) =>
-    set((state) => {
-      const children = state.children.filter((c) => c.id !== id);
-      return {
-        children,
-        activeChild:
-          state.activeChild?.id === id ? (children[0] ?? null) : state.activeChild,
-      };
+      removeChild: (id) =>
+        set((state) => {
+          const children = state.children.filter((c) => c.id !== id);
+          return {
+            children,
+            activeChild:
+              state.activeChild?.id === id ? (children[0] ?? null) : state.activeChild,
+          };
+        }),
     }),
-}));
+    {
+      name: 'child-store',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
 
 // Expose store in dev for browser console testing
 if (typeof __DEV__ !== 'undefined' && __DEV__ && typeof window !== 'undefined') {
