@@ -135,9 +135,12 @@ export function getStageForAge(ageMonths: number): StageName {
 
 interface MilestoneStore {
   childMilestones: ChildMilestone[];
+  /** Stage-checklist checked items keyed as `${childId}-${itemId}` */
+  stageCheckedItems: Record<string, boolean>;
 
   markAchieved: (childId: string, milestoneRefId: string) => void;
   unmarkAchieved: (childId: string, milestoneRefId: string) => void;
+  toggleStageItem: (childId: string, itemId: string) => void;
   getMilestonesForStage: (stageName: string) => MilestoneRef[];
   getAchievedForChild: (childId: string) => ChildMilestone[];
 }
@@ -146,6 +149,7 @@ export const useMilestoneStore = create<MilestoneStore>()(
   persist(
     (set, get) => ({
       childMilestones: [],
+      stageCheckedItems: {},
 
       markAchieved: (childId, milestoneRefId) => {
         const today = new Date().toISOString().split('T')[0];
@@ -169,6 +173,17 @@ export const useMilestoneStore = create<MilestoneStore>()(
           ),
         }));
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      },
+
+      toggleStageItem: (childId, itemId) => {
+        const key = `${childId}-${itemId}`;
+        set((state) => ({
+          stageCheckedItems: {
+            ...state.stageCheckedItems,
+            [key]: !state.stageCheckedItems[key],
+          },
+        }));
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       },
 
       getMilestonesForStage: (stageName) =>

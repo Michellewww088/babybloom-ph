@@ -312,8 +312,14 @@ export default function MilestonesScreen() {
   const childName = activeChild ? getChildDisplayName(activeChild) : 'Baby';
   const ageMonths = activeChild ? getAgeInMonths(activeChild.birthday) : 0;
 
-  const { getMilestonesForStage, getAchievedForChild, markAchieved, unmarkAchieved } =
-    useMilestoneStore();
+  const {
+    childMilestones,
+    stageCheckedItems,
+    getMilestonesForStage,
+    markAchieved,
+    unmarkAchieved,
+    toggleStageItem: storeToggleStageItem,
+  } = useMilestoneStore();
 
   // ── Top tab ─────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TopTab>('memory');
@@ -358,10 +364,12 @@ export default function MilestonesScreen() {
     const cats = Array.from(new Set(stageMilestones.map((m) => m.category)));
     return cats;
   }, [stageMilestones]);
+  // Derive achievedList directly from childMilestones so useMemo re-runs
+  // whenever the store state changes (marking/unmarking a milestone).
   const achievedList = useMemo(() => {
     if (!activeChild) return [];
-    return getAchievedForChild(activeChild.id);
-  }, [activeChild, getAchievedForChild]);
+    return childMilestones.filter((m) => m.child_id === activeChild.id);
+  }, [activeChild, childMilestones]);
   const achievedSet = useMemo(
     () => new Set(achievedList.map((a) => a.milestone_ref_id)),
     [achievedList]
@@ -419,17 +427,24 @@ export default function MilestonesScreen() {
   );
 
   // ── Tab 3: Stage Checklist state ─────────────────────────────────────────────
-  const [selectedStageIdx, setSelectedStageIdx]   = useState(0);
-  const [checkedStageItems, setCheckedStageItems] = useState<Record<string, boolean>>({});
+  const [selectedStageIdx, setSelectedStageIdx] = useState(0);
 
   const currentStage = STAGE_CHECKLISTS[selectedStageIdx];
-  const toggleStageItem = (id: string) =>
-    setCheckedStageItems((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  // Persisted via milestoneStore — survives page reload
+  const isStageItemDone = useCallback(
+    (itemId: string) => !!stageCheckedItems[`${activeChild?.id ?? 'guest'}-${itemId}`],
+    [stageCheckedItems, activeChild]
+  );
+  const toggleStageItem = useCallback(
+    (itemId: string) => storeToggleStageItem(activeChild?.id ?? 'guest', itemId),
+    [storeToggleStageItem, activeChild]
+  );
   const stageProgress = useMemo(() => {
     const total = currentStage.items.length;
-    const done  = currentStage.items.filter((it) => checkedStageItems[it.id]).length;
+    const done  = currentStage.items.filter((it) => isStageItemDone(it.id)).length;
     return { done, total, pct: total > 0 ? done / total : 0 };
-  }, [currentStage, checkedStageItems]);
+  }, [currentStage, isStageItemDone]);
 
   // ── Tab 2: old milestone tab (left for compatibility with MILESTONES constant) ─
   const [selectedAgeIdx, setSelectedAgeIdx] = useState(0);
@@ -814,7 +829,7 @@ export default function MilestonesScreen() {
           {/* Checklist items */}
           <View style={s.checklistCard}>
             {currentStage.items.map((item) => {
-              const done  = !!checkedStageItems[item.id];
+              const done  = isStageItemDone(item.id);
               const label = lang === 'fil' ? item.fil : lang === 'zh' ? item.zh : item.en;
               const catColor = CATEGORY_COLORS[item.category];
               const CatIcon  = CATEGORY_ICONS[item.category];
