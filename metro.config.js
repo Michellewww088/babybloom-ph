@@ -9,6 +9,12 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
+// Exclude .claude/worktrees and .git from file watching to avoid ENOSPC
+config.resolver.blockList = [
+  /\/.claude\/worktrees\/.*/,
+  /\/\.git\/.*/,
+];
+
 const originalResolveRequest = config.resolver.resolveRequest;
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
