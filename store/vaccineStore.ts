@@ -82,6 +82,7 @@ interface VaccineStore {
     nameFIL?: string;
     nameZH?: string;
     scheduledDate: string;
+    givenDate?: string;      // set → status becomes 'given'
     nextDueDate?: string;
     brand?: string;
     doseNumber?: number;
@@ -297,7 +298,16 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
       isFreeEPI:          false,
       recommendedAgeWeeks: 0,
       isCustom:           true,
-      status:             'upcoming',
+      status:             partial.givenDate
+        ? 'given'
+        : (() => {
+            const sd = new Date(partial.scheduledDate);
+            sd.setHours(0, 0, 0, 0);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            return sd <= now ? 'overdue' : 'upcoming';
+          })(),
+      givenDate:          partial.givenDate,
       scheduledDate:      partial.scheduledDate,
       brand:              partial.brand,
       doseNumber:         partial.doseNumber,

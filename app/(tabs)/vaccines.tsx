@@ -1868,14 +1868,19 @@ function CustomVaccineModal({
   const { t } = useTranslation();
   const vaccineStore = useVaccineStore();
 
-  const [nameEN,      setNameEN]      = useState('');
-  const [scheduledDt, setScheduledDt] = useState('');
-  const [nextDue,     setNextDue]     = useState('');
-  const [brand,       setBrand]       = useState('');
-  const [doseNum,     setDoseNum]     = useState('');
-  const [notes,       setNotes]       = useState('');
+  const [nameEN,       setNameEN]       = useState('');
+  const [scheduledDt,  setScheduledDt]  = useState('');
+  const [alreadyGiven, setAlreadyGiven] = useState(false);
+  const [givenDt,      setGivenDt]      = useState('');
+  const [nextDue,      setNextDue]      = useState('');
+  const [brand,        setBrand]        = useState('');
+  const [doseNum,      setDoseNum]      = useState('');
+  const [notes,        setNotes]        = useState('');
 
-  const reset = () => { setNameEN(''); setScheduledDt(''); setNextDue(''); setBrand(''); setDoseNum(''); setNotes(''); };
+  const reset = () => {
+    setNameEN(''); setScheduledDt(''); setAlreadyGiven(false);
+    setGivenDt(''); setNextDue(''); setBrand(''); setDoseNum(''); setNotes('');
+  };
 
   const save = () => {
     if (!nameEN.trim()) {
@@ -1886,11 +1891,16 @@ function CustomVaccineModal({
       Alert.alert(t('vaccine_log.date_required_title'), t('vaccine_log.date_required_msg'));
       return;
     }
+    if (alreadyGiven && !givenDt.trim()) {
+      Alert.alert(t('vaccine_log.date_required_title'), t('vaccine_log.date_given_required_msg'));
+      return;
+    }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     vaccineStore.addCustomRecord({
       childId,
       nameEN: nameEN.trim(),
       scheduledDate: scheduledDt.trim(),
+      givenDate:    alreadyGiven ? givenDt.trim() : undefined,
       nextDueDate:  nextDue.trim() || undefined,
       brand: brand.trim() || undefined,
       doseNumber: doseNum ? parseInt(doseNum, 10) : undefined,
@@ -1930,10 +1940,33 @@ function CustomVaccineModal({
             <SectionHeader icon={<Calendar size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_schedule')} />
 
             <View style={cm.fBlock}>
-              <Text style={cm.fLbl}>{t('vaccine_log.field_date_given')} *</Text>
+              <Text style={cm.fLbl}>{t('vaccine_log.field_scheduled_date')} *</Text>
               <TextInput style={cm.input} value={scheduledDt} onChangeText={setScheduledDt}
                 placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
             </View>
+
+            {/* Already Given toggle */}
+            <TouchableOpacity
+              style={[cm.fBlock, cm.toggleRow]}
+              onPress={() => setAlreadyGiven(v => !v)}
+              activeOpacity={0.75}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={cm.fLbl}>{t('vaccine_log.already_given_label')}</Text>
+                <Text style={cm.toggleHint}>{t('vaccine_log.already_given_hint')}</Text>
+              </View>
+              <View style={[cm.toggleTrack, alreadyGiven && cm.toggleTrackOn]}>
+                <View style={[cm.toggleThumb, alreadyGiven && cm.toggleThumbOn]} />
+              </View>
+            </TouchableOpacity>
+
+            {alreadyGiven && (
+              <View style={cm.fBlock}>
+                <Text style={cm.fLbl}>{t('vaccine_log.field_date_given')} *</Text>
+                <TextInput style={cm.input} value={givenDt} onChangeText={setGivenDt}
+                  placeholder="YYYY-MM-DD" placeholderTextColor="#ccc" keyboardType="numbers-and-punctuation" />
+              </View>
+            )}
 
             <SectionHeader icon={<Syringe size={14} strokeWidth={1.5} color={Colors.primary} />} label={t('vaccine_log.sec_admin')} />
 
@@ -2006,6 +2039,13 @@ const cm = StyleSheet.create({
   chipTxtActive:{ color: Colors.primary, fontWeight: '800' },
   saveBtn:      { borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10, shadowColor: Colors.primary, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   saveBtnTxt:   { color: Colors.white, fontSize: 16, fontWeight: '800' },
+  // Already Given toggle
+  toggleRow:    { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  toggleHint:   { fontSize: 11, color: '#AAA', fontFamily: 'PlusJakartaSans_400Regular', marginTop: 2 },
+  toggleTrack:  { width: 44, height: 24, borderRadius: 12, backgroundColor: '#DDD', padding: 2, justifyContent: 'center' },
+  toggleTrackOn:{ backgroundColor: Colors.mint },
+  toggleThumb:  { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFF', shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 2, elevation: 2 },
+  toggleThumbOn:{ alignSelf: 'flex-end' },
 });
 
 // ── Main Screen ────────────────────────────────────────────────────────────────

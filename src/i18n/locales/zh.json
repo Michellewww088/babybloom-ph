@@ -849,7 +849,11 @@
     "custom_notes_placeholder": "关于此疫苗的可选备注",
     "custom_name_required_title": "需要填写名称",
     "custom_name_required_msg": "请输入疫苗名称。",
-    "custom_save": "添加疫苗记录"
+    "custom_save": "添加疫苗记录",
+    "field_scheduled_date": "计划接种日期",
+    "already_given_label": "已接种",
+    "already_given_hint": "如果已经接种过此疫苗，请开启",
+    "date_given_required_msg": "请填写接种日期。"
   },
   "insights": {
     "title": "数据报告 📊",

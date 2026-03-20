@@ -761,7 +761,11 @@
     "custom_notes_placeholder": "Opsyonal na tala tungkol sa bakunang ito",
     "custom_name_required_title": "Kailangan ang Pangalan",
     "custom_name_required_msg": "Mangyaring ilagay ang pangalan ng bakuna.",
-    "custom_save": "Idagdag ang Rekord ng Bakuna"
+    "custom_save": "Idagdag ang Rekord ng Bakuna",
+    "field_scheduled_date": "Nakatakdang Petsa",
+    "already_given_label": "Nabigay Na",
+    "already_given_hint": "I-toggle kung nabigay na ang bakunang ito",
+    "date_given_required_msg": "Mangyaring ilagay ang petsa ng pagbibigay ng bakuna."
   },
   "vitamins": {
     "title": "Bitamina at Gamot",

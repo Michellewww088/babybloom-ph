@@ -761,7 +761,11 @@
     "custom_notes_placeholder": "Optional notes about this vaccine",
     "custom_name_required_title": "Name Required",
     "custom_name_required_msg": "Please enter the vaccine name.",
-    "custom_save": "Add Vaccine Record"
+    "custom_save": "Add Vaccine Record",
+    "field_scheduled_date": "Scheduled Date",
+    "already_given_label": "Already Received",
+    "already_given_hint": "Toggle on if this vaccine was already given",
+    "date_given_required_msg": "Please enter the date this vaccine was given."
   },
   "vitamins": {
     "title": "Vitamins & Medications",
