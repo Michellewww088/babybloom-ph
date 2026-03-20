@@ -317,9 +317,19 @@ export default function MilestonesScreen() {
     stageCheckedItems,
     getMilestonesForStage,
     markAchieved,
+    editAchievement,
     unmarkAchieved,
     toggleStageItem: storeToggleStageItem,
   } = useMilestoneStore();
+
+  // ── Achievement modal state ──────────────────────────────────────────────────
+  const [achieveModal, setAchieveModal] = useState<{
+    visible: boolean;
+    item: MilestoneRef | null;
+    mode: 'mark' | 'edit';   // mark = first time; edit = already achieved
+    date: string;
+    notes: string;
+  }>({ visible: false, item: null, mode: 'mark', date: today(), notes: '' });
 
   // ── Top tab ─────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TopTab>('memory');
@@ -394,24 +404,40 @@ export default function MilestonesScreen() {
     (item: MilestoneRef, isAchieved: boolean) => {
       if (!activeChild) return;
       if (isAchieved) {
-        Alert.alert(
-          t('milestones.unmark_confirm_title'),
-          t('milestones.unmark_confirm_msg'),
-          [
-            { text: t('milestones.unmark_confirm_no'), style: 'cancel' },
-            {
-              text: t('milestones.unmark_confirm_yes'),
-              style: 'destructive',
-              onPress: () => unmarkAchieved(activeChild.id, item.id),
-            },
-          ]
+        // Already achieved → open modal in "edit" mode to change date or unmark
+        const existing = childMilestones.find(
+          (m) => m.child_id === activeChild.id && m.milestone_ref_id === item.id
         );
+        setAchieveModal({
+          visible: true,
+          item,
+          mode: 'edit',
+          date: existing?.achieved_date ?? today(),
+          notes: existing?.notes ?? '',
+        });
       } else {
-        markAchieved(activeChild.id, item.id);
+        // Not yet achieved → open modal to pick the date
+        setAchieveModal({ visible: true, item, mode: 'mark', date: today(), notes: '' });
       }
     },
-    [activeChild, markAchieved, unmarkAchieved, t]
+    [activeChild, childMilestones]
   );
+
+  const handleAchieveModalSave = useCallback(() => {
+    if (!activeChild || !achieveModal.item) return;
+    if (achieveModal.mode === 'mark') {
+      markAchieved(activeChild.id, achieveModal.item.id, achieveModal.date, achieveModal.notes || undefined);
+    } else {
+      editAchievement(activeChild.id, achieveModal.item.id, achieveModal.date, achieveModal.notes || undefined);
+    }
+    setAchieveModal((s) => ({ ...s, visible: false }));
+  }, [activeChild, achieveModal, markAchieved, editAchievement]);
+
+  const handleAchieveModalUnmark = useCallback(() => {
+    if (!activeChild || !achieveModal.item) return;
+    unmarkAchieved(activeChild.id, achieveModal.item.id);
+    setAchieveModal((s) => ({ ...s, visible: false }));
+  }, [activeChild, achieveModal, unmarkAchieved]);
 
   const renderMilestoneCard = useCallback(
     ({ item }: { item: MilestoneRef }) => {
@@ -1017,6 +1043,82 @@ export default function MilestonesScreen() {
         </View>
       </Modal>
 
+      {/* ══════════════════════════════════════════════════════════════════════
+          ACHIEVEMENT MODAL — mark / edit milestone achieved date
+      ══════════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={achieveModal.visible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setAchieveModal((s) => ({ ...s, visible: false }))}
+      >
+        <View style={s.modalBackdrop}>
+          <View style={[s.modalSheet, { paddingBottom: 32 }]}>
+
+            {/* Header */}
+            <View style={achStyles.header}>
+              <Text style={achStyles.emoji}>
+                {achieveModal.mode === 'mark' ? '🎉' : '✏️'}
+              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={achStyles.title}>
+                  {achieveModal.mode === 'mark'
+                    ? t('milestones.achieve_modal_title')
+                    : t('milestones.achieve_modal_edit_title')}
+                </Text>
+                <Text style={achStyles.milestoneText} numberOfLines={2}>
+                  {achieveModal.item?.milestone_text}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setAchieveModal((s) => ({ ...s, visible: false }))}>
+                <Text style={achStyles.closeBtn}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Date picker */}
+            <Text style={achStyles.label}>{t('milestones.achieve_modal_date_label')}</Text>
+            <TextInput
+              style={achStyles.dateInput}
+              value={achieveModal.date}
+              onChangeText={(v) => setAchieveModal((s) => ({ ...s, date: v }))}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={Colors.textLight}
+              maxLength={10}
+            />
+            <Text style={achStyles.dateHint}>{t('milestones.achieve_modal_date_hint')}</Text>
+
+            {/* Notes */}
+            <Text style={[achStyles.label, { marginTop: 14 }]}>{t('milestones.achieve_modal_notes_label')}</Text>
+            <TextInput
+              style={achStyles.notesInput}
+              value={achieveModal.notes}
+              onChangeText={(v) => setAchieveModal((s) => ({ ...s, notes: v }))}
+              placeholder={t('milestones.achieve_modal_notes_hint')}
+              placeholderTextColor={Colors.textLight}
+              multiline
+              numberOfLines={2}
+            />
+
+            {/* Save */}
+            <TouchableOpacity onPress={handleAchieveModalSave} activeOpacity={0.85}>
+              <LinearGradient colors={[Colors.primaryPink, '#C2185B']} style={achStyles.saveBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                <Text style={achStyles.saveBtnText}>
+                  {achieveModal.mode === 'mark' ? t('milestones.achieve_modal_save') : t('milestones.achieve_modal_update')}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Unmark — only in edit mode */}
+            {achieveModal.mode === 'edit' && (
+              <TouchableOpacity style={achStyles.unmarkBtn} onPress={handleAchieveModalUnmark} activeOpacity={0.75}>
+                <Text style={achStyles.unmarkBtnText}>{t('milestones.achieve_modal_unmark')}</Text>
+              </TouchableOpacity>
+            )}
+
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -1292,4 +1394,52 @@ const devStyles = StyleSheet.create({
   // Empty state
   emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 12 },
   emptyText:  { fontFamily: 'PlusJakartaSans_400Regular', fontSize: 15, color: Colors.textLight, textAlign: 'center' },
+});
+
+const achStyles = StyleSheet.create({
+  header: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 20,
+  },
+  emoji: { fontSize: 32, lineHeight: 38 },
+  title: {
+    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 16, color: Colors.textDark, marginBottom: 4,
+  },
+  milestoneText: {
+    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 13, color: Colors.textMid, lineHeight: 18,
+  },
+  closeBtn: {
+    fontSize: 18, color: Colors.textLight, paddingHorizontal: 4, paddingVertical: 2,
+  },
+  label: {
+    fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 13, color: Colors.textMid, marginBottom: 6,
+  },
+  dateInput: {
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12,
+    paddingHorizontal: 14, paddingVertical: 11,
+    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 15, color: Colors.textDark,
+    backgroundColor: Colors.background,
+  },
+  dateHint: {
+    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 11, color: Colors.textLight,
+    marginTop: 5, marginBottom: 4,
+  },
+  notesInput: {
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12,
+    paddingHorizontal: 14, paddingVertical: 11, minHeight: 64,
+    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 14, color: Colors.textDark,
+    backgroundColor: Colors.background, textAlignVertical: 'top',
+  },
+  saveBtn: {
+    marginTop: 20, borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+  },
+  saveBtnText: {
+    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 15, color: Colors.white,
+  },
+  unmarkBtn: {
+    marginTop: 12, paddingVertical: 12, alignItems: 'center',
+  },
+  unmarkBtnText: {
+    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 14, color: Colors.primaryPink,
+    textDecorationLine: 'underline',
+  },
 });

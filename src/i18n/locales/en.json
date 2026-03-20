@@ -320,7 +320,16 @@
     "unmark_confirm_no": "Cancel",
     "empty_stage": "No milestones for this stage",
     "filter_all": "All",
-    "current_stage": "Current stage"
+    "current_stage": "Current stage",
+    "achieve_modal_title": "Record Achievement 🎉",
+    "achieve_modal_edit_title": "Edit Achievement",
+    "achieve_modal_date_label": "When did this happen?",
+    "achieve_modal_date_hint": "Format: YYYY-MM-DD — can be in the past",
+    "achieve_modal_notes_label": "Notes (optional)",
+    "achieve_modal_notes_hint": "e.g. First time at the park!",
+    "achieve_modal_save": "Save Achievement",
+    "achieve_modal_update": "Update",
+    "achieve_modal_unmark": "Remove this achievement"
   },
   "welcome": {
     "title": "Welcome, {{name}}! 🎉",

@@ -320,7 +320,16 @@
     "unmark_confirm_no": "不",
     "empty_stage": "该阶段暂无里程碑",
     "filter_all": "全部",
-    "current_stage": "当前阶段"
+    "current_stage": "当前阶段",
+    "achieve_modal_title": "记录里程碑 🎉",
+    "achieve_modal_edit_title": "编辑里程碑",
+    "achieve_modal_date_label": "这是什么时候发生的？",
+    "achieve_modal_date_hint": "格式：YYYY-MM-DD — 可以填写过去的日期",
+    "achieve_modal_notes_label": "备注（选填）",
+    "achieve_modal_notes_hint": "例：第一次去公园！",
+    "achieve_modal_save": "保存",
+    "achieve_modal_update": "更新",
+    "achieve_modal_unmark": "取消该里程碑"
   },
   "welcome": {
     "title": "欢迎，{{name}}！🎉",
