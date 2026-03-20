@@ -7,7 +7,7 @@
  * Hand-maintained here because the Supabase CLI is not installed in this
  * environment. Re-generate after any schema changes once the CLI is available.
  *
- * Last updated: 2026-03-16 (migration: 20260316214019_vaccines_new_fields)
+ * Last updated: 2026-03-20 (migration: 20260320000000_pregnancy_tables)
  */
 
 export type Json =
@@ -337,6 +337,193 @@ export interface Database {
           notes?: string | null;
         };
       };
+
+      // ── pregnancy_profiles ─────────────────────────────────────────────
+      pregnancy_profiles: {
+        Row: {
+          id: string;
+          user_id: string;
+          lmp_date: string;
+          due_date: string;
+          ob_name: string | null;
+          clinic: string | null;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          lmp_date: string;
+          due_date: string;
+          ob_name?: string | null;
+          clinic?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          lmp_date?: string;
+          due_date?: string;
+          ob_name?: string | null;
+          clinic?: string | null;
+          is_active?: boolean;
+        };
+      };
+
+      // ── pregnancy_logs ─────────────────────────────────────────────────
+      pregnancy_logs: {
+        Row: {
+          id: string;
+          pregnancy_id: string;
+          week: number;
+          weight_kg: number | null;
+          bp_systolic: number | null;
+          bp_diastolic: number | null;
+          symptoms: Json;
+          notes: string | null;
+          logged_at: string;
+        };
+        Insert: {
+          id?: string;
+          pregnancy_id: string;
+          week: number;
+          weight_kg?: number | null;
+          bp_systolic?: number | null;
+          bp_diastolic?: number | null;
+          symptoms?: Json;
+          notes?: string | null;
+          logged_at?: string;
+        };
+        Update: {
+          week?: number;
+          weight_kg?: number | null;
+          bp_systolic?: number | null;
+          bp_diastolic?: number | null;
+          symptoms?: Json;
+          notes?: string | null;
+          logged_at?: string;
+        };
+      };
+
+      // ── prenatal_appointments ──────────────────────────────────────────
+      prenatal_appointments: {
+        Row: {
+          id: string;
+          pregnancy_id: string;
+          appointment_date: string;
+          clinic: string | null;
+          ob_name: string | null;
+          purpose: string | null;
+          findings: string | null;
+          next_appointment_date: string | null;
+          results_url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          pregnancy_id: string;
+          appointment_date: string;
+          clinic?: string | null;
+          ob_name?: string | null;
+          purpose?: string | null;
+          findings?: string | null;
+          next_appointment_date?: string | null;
+          results_url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          appointment_date?: string;
+          clinic?: string | null;
+          ob_name?: string | null;
+          purpose?: string | null;
+          findings?: string | null;
+          next_appointment_date?: string | null;
+          results_url?: string | null;
+        };
+      };
+
+      // ── kick_counts ────────────────────────────────────────────────────
+      kick_counts: {
+        Row: {
+          id: string;
+          pregnancy_id: string;
+          logged_at: string;
+          kicks_count: number;
+          duration_minutes: number | null;
+        };
+        Insert: {
+          id?: string;
+          pregnancy_id: string;
+          logged_at?: string;
+          kicks_count: number;
+          duration_minutes?: number | null;
+        };
+        Update: {
+          kicks_count?: number;
+          duration_minutes?: number | null;
+          logged_at?: string;
+        };
+      };
+
+      // ── contractions ───────────────────────────────────────────────────
+      contractions: {
+        Row: {
+          id: string;
+          pregnancy_id: string;
+          started_at: string;
+          ended_at: string | null;
+          duration_seconds: number | null;
+          interval_seconds: number | null;
+        };
+        Insert: {
+          id?: string;
+          pregnancy_id: string;
+          started_at: string;
+          ended_at?: string | null;
+          duration_seconds?: number | null;
+          interval_seconds?: number | null;
+        };
+        Update: {
+          started_at?: string;
+          ended_at?: string | null;
+          duration_seconds?: number | null;
+          interval_seconds?: number | null;
+        };
+      };
+
+      // ── pregnancy_weeks ────────────────────────────────────────────────
+      pregnancy_weeks: {
+        Row: {
+          id: string;
+          week: number;
+          baby_size_name: string | null;
+          baby_size_cm: number | null;
+          baby_weight_g: number | null;
+          baby_development: string | null;
+          mama_symptoms: string | null;
+          mama_tips: string | null;
+          trimester: 'first' | 'second' | 'third' | null;
+        };
+        Insert: {
+          id?: string;
+          week: number;
+          baby_size_name?: string | null;
+          baby_size_cm?: number | null;
+          baby_weight_g?: number | null;
+          baby_development?: string | null;
+          mama_symptoms?: string | null;
+          mama_tips?: string | null;
+          trimester?: 'first' | 'second' | 'third' | null;
+        };
+        Update: {
+          baby_size_name?: string | null;
+          baby_size_cm?: number | null;
+          baby_weight_g?: number | null;
+          baby_development?: string | null;
+          mama_symptoms?: string | null;
+          mama_tips?: string | null;
+          trimester?: 'first' | 'second' | 'third' | null;
+        };
+      };
     };
 
     Views: Record<string, never>;
@@ -354,10 +541,18 @@ export interface Database {
 export type Tables<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row'];
 
-export type UserProfileRow     = Tables<'user_profiles'>;
-export type ChildRow           = Tables<'children'>;
-export type VaccineRow         = Tables<'vaccines'>;
-export type VaccineScheduleRow = Tables<'vaccines_schedule'>;
-export type FeedingLogRow      = Tables<'feeding_logs'>;
-export type SleepLogRow        = Tables<'sleep_logs'>;
-export type GrowthRecordRow    = Tables<'growth_records'>;
+export type UserProfileRow          = Tables<'user_profiles'>;
+export type ChildRow                = Tables<'children'>;
+export type VaccineRow              = Tables<'vaccines'>;
+export type VaccineScheduleRow      = Tables<'vaccines_schedule'>;
+export type FeedingLogRow           = Tables<'feeding_logs'>;
+export type SleepLogRow             = Tables<'sleep_logs'>;
+export type GrowthRecordRow         = Tables<'growth_records'>;
+
+// ── Pregnancy Hub ──────────────────────────────────────────────────────────
+export type PregnancyProfileRow     = Tables<'pregnancy_profiles'>;
+export type PregnancyLogRow         = Tables<'pregnancy_logs'>;
+export type PrenatalAppointmentRow  = Tables<'prenatal_appointments'>;
+export type KickCountRow            = Tables<'kick_counts'>;
+export type ContractionRow          = Tables<'contractions'>;
+export type PregnancyWeekRow        = Tables<'pregnancy_weeks'>;
