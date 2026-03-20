@@ -152,6 +152,11 @@ export const useMilestoneStore = create<MilestoneStore>()(
       stageCheckedItems: {},
 
       markAchieved: (childId, milestoneRefId) => {
+        // Dedup guard — never add the same milestone twice for the same child
+        const already = get().childMilestones.some(
+          (m) => m.child_id === childId && m.milestone_ref_id === milestoneRefId
+        );
+        if (already) return;
         const today = new Date().toISOString().split('T')[0];
         const newEntry: ChildMilestone = {
           id:               `${childId}-${milestoneRefId}-${Date.now()}`,

@@ -349,10 +349,13 @@ export default function MilestonesScreen() {
 
   useEffect(() => {
     const idx = STAGES.findIndex((s) => s.name === selectedStage);
-    if (idx > 0 && stageScrollRef.current) {
+    if (idx >= 0 && stageScrollRef.current) {
       setTimeout(() => {
-        stageScrollRef.current?.scrollTo({ x: Math.max(0, (idx - 1) * 98), animated: true });
-      }, 150);
+        // Center the active chip: chip ~90px wide, 14px gap, scroll so chip is in center of viewport
+        const CHIP_W = 104; // paddingH*2 + text + margin
+        const scrollX = Math.max(0, idx * CHIP_W - 120);
+        stageScrollRef.current?.scrollTo({ x: scrollX, animated: true });
+      }, 200);
     }
   }, [selectedStage]);
 
