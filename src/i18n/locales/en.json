@@ -329,7 +329,11 @@
     "achieve_modal_notes_hint": "e.g. First time at the park!",
     "achieve_modal_save": "Save Achievement",
     "achieve_modal_update": "Update",
-    "achieve_modal_unmark": "Remove this achievement"
+    "achieve_modal_unmark": "Remove this achievement",
+    "date_today": "Today",
+    "date_yesterday": "Yesterday",
+    "date_days_ago": "days ago",
+    "date_week_ago": "week ago"
   },
   "welcome": {
     "title": "Welcome, {{name}}! 🎉",

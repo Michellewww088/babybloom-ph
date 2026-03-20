@@ -329,7 +329,11 @@
     "achieve_modal_notes_hint": "例：第一次去公园！",
     "achieve_modal_save": "保存",
     "achieve_modal_update": "更新",
-    "achieve_modal_unmark": "取消该里程碑"
+    "achieve_modal_unmark": "取消该里程碑",
+    "date_today": "今天",
+    "date_yesterday": "昨天",
+    "date_days_ago": "天前",
+    "date_week_ago": "周前"
   },
   "welcome": {
     "title": "欢迎，{{name}}！🎉",

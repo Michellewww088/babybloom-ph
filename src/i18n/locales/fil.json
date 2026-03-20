@@ -329,7 +329,11 @@
     "achieve_modal_notes_hint": "hal. Unang beses sa parke!",
     "achieve_modal_save": "I-save ang Tagumpay",
     "achieve_modal_update": "I-update",
-    "achieve_modal_unmark": "Alisin ang tagumpay na ito"
+    "achieve_modal_unmark": "Alisin ang tagumpay na ito",
+    "date_today": "Ngayon",
+    "date_yesterday": "Kahapon",
+    "date_days_ago": "araw na ang nakalipas",
+    "date_week_ago": "linggo na ang nakalipas"
   },
   "welcome": {
     "title": "Maligayang pagdating, {{name}}! 🎉",

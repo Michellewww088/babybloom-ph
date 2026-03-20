@@ -1053,68 +1053,128 @@ export default function MilestonesScreen() {
         onRequestClose={() => setAchieveModal((s) => ({ ...s, visible: false }))}
       >
         <View style={s.modalBackdrop}>
-          <View style={[s.modalSheet, { paddingBottom: 32 }]}>
+          <View style={achStyles.sheet}>
 
-            {/* Header */}
-            <View style={achStyles.header}>
-              <Text style={achStyles.emoji}>
-                {achieveModal.mode === 'mark' ? '🎉' : '✏️'}
+            {/* ── Gradient hero banner ── */}
+            <LinearGradient
+              colors={achieveModal.mode === 'mark' ? ['#FFD6E7', '#FFF0A0'] : ['#E8E0FF', '#D4C8FF']}
+              style={achStyles.heroBanner}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            >
+              {/* Close button */}
+              <TouchableOpacity
+                style={achStyles.closeCircle}
+                onPress={() => setAchieveModal((s) => ({ ...s, visible: false }))}
+                activeOpacity={0.7}
+              >
+                <Text style={achStyles.closeBtnText}>✕</Text>
+              </TouchableOpacity>
+
+              {/* Big emoji */}
+              <Text style={achStyles.bigEmoji}>
+                {achieveModal.mode === 'mark' ? '🌟' : '✏️'}
               </Text>
-              <View style={{ flex: 1 }}>
-                <Text style={achStyles.title}>
-                  {achieveModal.mode === 'mark'
-                    ? t('milestones.achieve_modal_title')
-                    : t('milestones.achieve_modal_edit_title')}
-                </Text>
-                <Text style={achStyles.milestoneText} numberOfLines={2}>
+              <Text style={achStyles.heroTitle}>
+                {achieveModal.mode === 'mark'
+                  ? t('milestones.achieve_modal_title')
+                  : t('milestones.achieve_modal_edit_title')}
+              </Text>
+              {/* Milestone text pill */}
+              <View style={achStyles.milestonePill}>
+                <CircleCheck size={13} color={achieveModal.mode === 'mark' ? Colors.primaryPink : '#7B5CF0'} strokeWidth={2} />
+                <Text style={[achStyles.milestonePillText, achieveModal.mode === 'edit' && { color: '#7B5CF0' }]} numberOfLines={2}>
                   {achieveModal.item?.milestone_text}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => setAchieveModal((s) => ({ ...s, visible: false }))}>
-                <Text style={achStyles.closeBtn}>✕</Text>
+            </LinearGradient>
+
+            {/* ── Body ── */}
+            <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+            <View style={achStyles.body}>
+
+              {/* Date label */}
+              <Text style={achStyles.label}>
+                📅 {t('milestones.achieve_modal_date_label')}
+              </Text>
+
+              {/* Quick date shortcut chips — wrapped row */}
+              <View style={achStyles.shortcutRow}>
+                {[
+                  { label: `✨ ${t('milestones.date_today')}`,   days: 0 },
+                  { label: `🌙 ${t('milestones.date_yesterday')}`, days: 1 },
+                  { label: `📅 3 ${t('milestones.date_days_ago')}`, days: 3 },
+                  { label: `📅 1 ${t('milestones.date_week_ago')}`, days: 7 },
+                ].map(({ label, days }) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - days);
+                  const val = d.toISOString().split('T')[0];
+                  const isActive = achieveModal.date === val;
+                  return (
+                    <TouchableOpacity
+                      key={days}
+                      style={[achStyles.shortcutChip, isActive && achStyles.shortcutChipActive]}
+                      onPress={() => setAchieveModal((s) => ({ ...s, date: val }))}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[achStyles.shortcutChipText, isActive && achStyles.shortcutChipTextActive]}>
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Manual date input */}
+              <TextInput
+                style={achStyles.dateInput}
+                value={achieveModal.date}
+                onChangeText={(v) => setAchieveModal((s) => ({ ...s, date: v }))}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={Colors.textLight}
+                maxLength={10}
+              />
+              <Text style={achStyles.dateHint}>💡 {t('milestones.achieve_modal_date_hint')}</Text>
+
+              {/* Notes */}
+              <Text style={[achStyles.label, { marginTop: 16 }]}>
+                📝 {t('milestones.achieve_modal_notes_label')}
+              </Text>
+              <TextInput
+                style={achStyles.notesInput}
+                value={achieveModal.notes}
+                onChangeText={(v) => setAchieveModal((s) => ({ ...s, notes: v }))}
+                placeholder={t('milestones.achieve_modal_notes_hint')}
+                placeholderTextColor={Colors.textLight}
+                multiline
+                numberOfLines={3}
+              />
+
+              {/* Save button */}
+              <TouchableOpacity onPress={handleAchieveModalSave} activeOpacity={0.85} style={{ marginTop: 20 }}>
+                <LinearGradient
+                  colors={achieveModal.mode === 'mark' ? [Colors.primaryPink, '#C2185B'] : ['#7B5CF0', '#5B3FC5']}
+                  style={achStyles.saveBtn}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                >
+                  <Text style={achStyles.saveBtnText}>
+                    {achieveModal.mode === 'mark'
+                      ? t('milestones.achieve_modal_save')
+                      : t('milestones.achieve_modal_update')}
+                  </Text>
+                </LinearGradient>
               </TouchableOpacity>
+
+              {/* Unmark — edit mode only */}
+              {achieveModal.mode === 'edit' && (
+                <TouchableOpacity style={achStyles.unmarkBtn} onPress={handleAchieveModalUnmark} activeOpacity={0.75}>
+                  <View style={achStyles.unmarkInner}>
+                    <Text style={achStyles.unmarkBtnText}>🗑️ {t('milestones.achieve_modal_unmark')}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
             </View>
-
-            {/* Date picker */}
-            <Text style={achStyles.label}>{t('milestones.achieve_modal_date_label')}</Text>
-            <TextInput
-              style={achStyles.dateInput}
-              value={achieveModal.date}
-              onChangeText={(v) => setAchieveModal((s) => ({ ...s, date: v }))}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.textLight}
-              maxLength={10}
-            />
-            <Text style={achStyles.dateHint}>{t('milestones.achieve_modal_date_hint')}</Text>
-
-            {/* Notes */}
-            <Text style={[achStyles.label, { marginTop: 14 }]}>{t('milestones.achieve_modal_notes_label')}</Text>
-            <TextInput
-              style={achStyles.notesInput}
-              value={achieveModal.notes}
-              onChangeText={(v) => setAchieveModal((s) => ({ ...s, notes: v }))}
-              placeholder={t('milestones.achieve_modal_notes_hint')}
-              placeholderTextColor={Colors.textLight}
-              multiline
-              numberOfLines={2}
-            />
-
-            {/* Save */}
-            <TouchableOpacity onPress={handleAchieveModalSave} activeOpacity={0.85}>
-              <LinearGradient colors={[Colors.primaryPink, '#C2185B']} style={achStyles.saveBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                <Text style={achStyles.saveBtnText}>
-                  {achieveModal.mode === 'mark' ? t('milestones.achieve_modal_save') : t('milestones.achieve_modal_update')}
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Unmark — only in edit mode */}
-            {achieveModal.mode === 'edit' && (
-              <TouchableOpacity style={achStyles.unmarkBtn} onPress={handleAchieveModalUnmark} activeOpacity={0.75}>
-                <Text style={achStyles.unmarkBtnText}>{t('milestones.achieve_modal_unmark')}</Text>
-              </TouchableOpacity>
-            )}
-
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1397,49 +1457,99 @@ const devStyles = StyleSheet.create({
 });
 
 const achStyles = StyleSheet.create({
-  header: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 20,
+  // Sheet — no inner padding (banner goes edge-to-edge)
+  sheet: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 28, borderTopRightRadius: 28,
   },
-  emoji: { fontSize: 32, lineHeight: 38 },
-  title: {
-    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 16, color: Colors.textDark, marginBottom: 4,
+
+  // Gradient hero at the top
+  heroBanner: {
+    paddingTop: 20, paddingBottom: 22, paddingHorizontal: 20, alignItems: 'center', gap: 6,
   },
-  milestoneText: {
-    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 13, color: Colors.textMid, lineHeight: 18,
+  closeCircle: {
+    position: 'absolute', top: 14, right: 14,
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  closeBtn: {
-    fontSize: 18, color: Colors.textLight, paddingHorizontal: 4, paddingVertical: 2,
+  closeBtnText: { fontSize: 13, color: '#555', fontWeight: '700' },
+  bigEmoji:   { fontSize: 44, lineHeight: 52, marginBottom: 2 },
+  heroTitle:  {
+    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 18, color: Colors.textDark, textAlign: 'center',
   },
+  milestonePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.65)', borderRadius: 20,
+    paddingHorizontal: 14, paddingVertical: 7, marginTop: 4, maxWidth: '92%',
+  },
+  milestonePillText: {
+    fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 12, color: Colors.primaryPink,
+    flexShrink: 1, lineHeight: 17,
+  },
+
+  // Body
+  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 32 },
+
   label: {
-    fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 13, color: Colors.textMid, marginBottom: 6,
+    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 13, color: Colors.textDark, marginBottom: 10,
   },
+
+  // Quick shortcut chips
+  shortcutRow:  { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
+  shortcutChip: {
+    paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20,
+    backgroundColor: Colors.softPink, borderWidth: 1.5, borderColor: Colors.border,
+    marginRight: 8, marginBottom: 8,
+  },
+  shortcutChipActive: {
+    backgroundColor: Colors.primaryPink, borderColor: Colors.primaryPink,
+  },
+  shortcutChipText: {
+    fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 12, color: Colors.textMid,
+  },
+  shortcutChipTextActive: { color: Colors.white },
+
+  // Date input
   dateInput: {
-    borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 11,
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: 14,
+    paddingHorizontal: 16, paddingVertical: 13,
     fontFamily: 'PlusJakartaSans_400Regular', fontSize: 15, color: Colors.textDark,
     backgroundColor: Colors.background,
   },
   dateHint: {
     fontFamily: 'PlusJakartaSans_400Regular', fontSize: 11, color: Colors.textLight,
-    marginTop: 5, marginBottom: 4,
+    marginTop: 6, lineHeight: 16,
   },
+
+  // Notes input
   notesInput: {
-    borderWidth: 1.5, borderColor: Colors.border, borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 11, minHeight: 64,
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: 14,
+    paddingHorizontal: 16, paddingVertical: 13, minHeight: 70,
     fontFamily: 'PlusJakartaSans_400Regular', fontSize: 14, color: Colors.textDark,
     backgroundColor: Colors.background, textAlignVertical: 'top',
   },
+
+  // Save button
   saveBtn: {
-    marginTop: 20, borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
+    ...Platform.select({
+      ios:     { shadowColor: Colors.primaryPink, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10 },
+      android: { elevation: 4 },
+      web:     { boxShadow: '0 4px 14px rgba(230,59,111,0.35)' },
+    }),
   },
   saveBtnText: {
-    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 15, color: Colors.white,
+    fontFamily: 'PlusJakartaSans_700Bold', fontSize: 16, color: Colors.white, letterSpacing: 0.3,
   },
-  unmarkBtn: {
-    marginTop: 12, paddingVertical: 12, alignItems: 'center',
+
+  // Unmark button
+  unmarkBtn: { marginTop: 14, alignItems: 'center' },
+  unmarkInner: {
+    paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12,
+    borderWidth: 1.5, borderColor: '#FFCDD2', backgroundColor: '#FFF5F5',
   },
   unmarkBtnText: {
-    fontFamily: 'PlusJakartaSans_400Regular', fontSize: 14, color: Colors.primaryPink,
-    textDecorationLine: 'underline',
+    fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 13, color: '#E53935',
   },
 });
