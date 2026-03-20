@@ -138,7 +138,8 @@ interface MilestoneStore {
   /** Stage-checklist checked items keyed as `${childId}-${itemId}` */
   stageCheckedItems: Record<string, boolean>;
 
-  markAchieved: (childId: string, milestoneRefId: string) => void;
+  markAchieved: (childId: string, milestoneRefId: string, achievedDate?: string, notes?: string) => void;
+  editAchievement: (childId: string, milestoneRefId: string, achievedDate: string, notes?: string) => void;
   unmarkAchieved: (childId: string, milestoneRefId: string) => void;
   toggleStageItem: (childId: string, itemId: string) => void;
   getMilestonesForStage: (stageName: string) => MilestoneRef[];
@@ -151,19 +152,36 @@ export const useMilestoneStore = create<MilestoneStore>()(
       childMilestones: [],
       stageCheckedItems: {},
 
-      markAchieved: (childId, milestoneRefId) => {
-        const today = new Date().toISOString().split('T')[0];
+      markAchieved: (childId, milestoneRefId, achievedDate, notes) => {
+        // Dedup guard — never add the same milestone twice for the same child
+        const already = get().childMilestones.some(
+          (m) => m.child_id === childId && m.milestone_ref_id === milestoneRefId
+        );
+        if (already) return;
+        const date = achievedDate ?? new Date().toISOString().split('T')[0];
         const newEntry: ChildMilestone = {
           id:               `${childId}-${milestoneRefId}-${Date.now()}`,
           child_id:         childId,
           milestone_ref_id: milestoneRefId,
-          achieved_date:    today,
+          achieved_date:    date,
+          notes:            notes,
           created_at:       new Date().toISOString(),
         };
         set((state) => ({
           childMilestones: [...state.childMilestones, newEntry],
         }));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      },
+
+      editAchievement: (childId, milestoneRefId, achievedDate, notes) => {
+        set((state) => ({
+          childMilestones: state.childMilestones.map((m) =>
+            m.child_id === childId && m.milestone_ref_id === milestoneRefId
+              ? { ...m, achieved_date: achievedDate, notes: notes ?? m.notes }
+              : m
+          ),
+        }));
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       },
 
       unmarkAchieved: (childId, milestoneRefId) => {
