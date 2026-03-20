@@ -4,8 +4,10 @@
  */
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -229,7 +231,7 @@ export const useVitaminStore = create<VitaminState>()(
     }),
     {
       name: 'vitamin-store',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: zustandStorage,
     }
   )
 );

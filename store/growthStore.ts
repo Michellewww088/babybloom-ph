@@ -3,8 +3,10 @@
  * Per CLAUDE.md: local state (mirrors Supabase growth_records table schema)
  */
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 
 export interface GrowthRecord {
   id:                   string;
@@ -74,7 +76,7 @@ export const useGrowthStore = create<GrowthStore>()(
     }),
     {
       name: 'growth-store',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: zustandStorage,
     }
   )
 );

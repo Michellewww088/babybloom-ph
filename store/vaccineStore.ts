@@ -4,8 +4,10 @@
  * Auto-populates from DOH EPI schedule on child profile creation
  */
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persist } from 'zustand/middleware';
+import { zustandStorage } from './storage';
+
+
 import {
   DOH_EPI_SCHEDULE,
   VACCINE_MAX_CATCHUP_WEEKS,
@@ -434,7 +436,7 @@ export const useVaccineStore = create<VaccineStore>()(
     }),
     {
       name: 'vaccine-store',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: zustandStorage,
     }
   )
 );
