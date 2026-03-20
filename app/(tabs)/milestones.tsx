@@ -132,6 +132,13 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; color?
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/** Format age range for a stage chip: "0–3 mos", "3–5 yrs", etc. */
+function fmtAgeRange(minMonths: number, maxMonths: number): string {
+  const fmt = (m: number) =>
+    m >= 24 ? `${Math.round(m / 12)}y` : `${m}m`;
+  return `${fmt(minMonths)}–${fmt(maxMonths)}`;
+}
+
 function getAgeInMonths(birthday: string): number {
   const birth = new Date(birthday);
   const now   = new Date();
@@ -524,6 +531,9 @@ export default function MilestonesScreen() {
             >
               <Text style={[devStyles.stageChipText, isActive && devStyles.stageChipTextActive]}>
                 {stage.name}
+              </Text>
+              <Text style={[devStyles.stageChipAge, isActive && devStyles.stageChipAgeActive]}>
+                {fmtAgeRange(stage.minMonths, stage.maxMonths)}
               </Text>
               {isCurrentStage && !isActive && (
                 <View style={devStyles.currentDot} />
@@ -1183,12 +1193,12 @@ const devStyles = StyleSheet.create({
   },
   stageChip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 20,
     backgroundColor: Colors.softPink,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 4,
+    gap: 1,
   },
   stageChipActive: { backgroundColor: Colors.primary },
   stageChipText: {
@@ -1197,6 +1207,12 @@ const devStyles = StyleSheet.create({
     color: Colors.primary,
   },
   stageChipTextActive: { color: Colors.white },
+  stageChipAge: {
+    fontFamily: 'PlusJakartaSans_400Regular',
+    fontSize: 10,
+    color: Colors.textLight,
+  },
+  stageChipAgeActive: { color: 'rgba(255,255,255,0.8)' },
   currentDot: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.primary,
   },
