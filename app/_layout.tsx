@@ -107,6 +107,10 @@ export default function RootLayout() {
           name="welcome"
           options={{ presentation: 'card', animation: 'fade', gestureEnabled: false }}
         />
+        <Stack.Screen
+          name="kick-counter"
+          options={{ presentation: 'card', animation: 'slide_from_right' }}
+        />
         <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: true }} />
       </Stack>
     </>
