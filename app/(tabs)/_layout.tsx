@@ -9,8 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect, Line, Polygon, Ellipse } from 'react-native-svg';
-import { Calendar, Syringe, BookOpen, Star, Flower2, Sparkles } from 'lucide-react-native';
+import { Calendar, Syringe, BookOpen, Star, Flower2, Sparkles, Heart } from 'lucide-react-native';
 import Colors from '../../constants/Colors';
+import { usePregnancyStore } from '../../store/pregnancyStore';
+
+const LAVENDER = Colors.secondary; // #C9A7E8
+const LAV_BG   = Colors.secondaryBg; // #F0E6FF
 
 const PINK   = Colors.primaryPink;  // #E63B6F
 const GRAY   = '#B8B8CC';
@@ -134,6 +138,21 @@ function StarIcon({ active }: { active: boolean }) {
   );
 }
 
+function MamaIcon({ active }: { active: boolean }) {
+  const c = active ? LAVENDER : GRAY;
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24">
+      <Path
+        d="M12 21 C12 21 3 14.5 3 8.5 C3 5.42 5.42 3 8.5 3 C10.24 3 11.91 3.81 13 5.08 C14.09 3.81 15.76 3 17.5 3 C20.58 3 23 5.42 23 8.5 C23 14.5 12 21 12 21Z"
+        fill={active ? LAVENDER + '30' : 'none'}
+        stroke={c} strokeWidth="2" strokeLinejoin="round"
+      />
+      {/* Inner glow dot when active */}
+      {active && <Circle cx="12" cy="10" r="2.5" fill={LAVENDER} opacity="0.55" />}
+    </Svg>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Tab icon wrapper (pill highlight when active)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -188,6 +207,7 @@ const ph = StyleSheet.create({
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  const isPregnancyMode = usePregnancyStore(s => s.isPregnancyMode);
   return (
     <Tabs
       screenOptions={{
@@ -290,6 +310,29 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon Icon={StarIcon} active={focused} />
           ),
+        }}
+      />
+
+      {/* Tab 6 — Mama (Pregnancy Hub) — only visible when isPregnancyMode = true */}
+      <Tabs.Screen
+        name="mama"
+        options={{
+          href: isPregnancyMode ? undefined : null,
+          title: 'Mama',
+          headerShown: false,
+          tabBarActiveTintColor: LAVENDER,
+          tabBarIcon: ({ focused }) => (
+            <View style={[
+              ti.wrap,
+              focused && { backgroundColor: LAV_BG },
+            ]}>
+              <MamaIcon active={focused} />
+            </View>
+          ),
+          tabBarLabelStyle: {
+            fontSize: 10, fontWeight: '700', marginTop: 2,
+            color: isPregnancyMode ? LAVENDER : GRAY,
+          },
         }}
       />
     </Tabs>
