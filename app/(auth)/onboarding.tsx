@@ -13,6 +13,7 @@ import { SUPPORTED_LANGUAGES, type LanguageCode } from '../../src/i18n';
 import { supabase } from '../../src/lib/supabase';
 import Colors from '../../constants/Colors';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { usePregnancyStore } from '../../store/pregnancyStore';
 import { Calendar, Star, Lightbulb, Heart, Cake, Check, PartyPopper } from 'lucide-react-native';
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -261,6 +262,7 @@ function IconGenderOther() {
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const { setData: saveOnboardingData } = useOnboardingStore();
+  const { setActivePregnancy, setIsPregnancyMode } = usePregnancyStore();
 
   const [step,        setStep]        = useState(1);
   const [saving,      setSaving]      = useState(false);
@@ -326,13 +328,50 @@ export default function OnboardingScreen() {
         await supabase.from('user_profiles').upsert({
           id: user.id, language, onboarding_completed: true,
         });
+
+        // ── Pregnant path: create pregnancy profile, skip baby profile ──
+        if (!skipped && status === 'pregnant' && dateValue) {
+          // Calculate LMP from due date (due date − 280 days)
+          const due = new Date(dateValue);
+          const lmp = new Date(due.getTime() - 280 * 24 * 60 * 60 * 1000);
+          const lmpStr = lmp.toISOString().split('T')[0];
+
+          // Save to Supabase
+          const { data: pregnancy } = await supabase
+            .from('pregnancy_profiles')
+            .insert({ user_id: user.id, lmp_date: lmpStr, due_date: dateValue, is_active: true })
+            .select()
+            .single();
+
+          // Hydrate the store
+          setActivePregnancy(pregnancy ?? {
+            id: `local-${Date.now()}`,
+            user_id: user.id,
+            lmp_date: lmpStr,
+            due_date: dateValue,
+            ob_name: null,
+            clinic: null,
+            is_active: true,
+            created_at: new Date().toISOString(),
+          });
+          setIsPregnancyMode(true);
+        }
       }
     } catch (err: any) {
       console.warn('Onboarding save failed:', err.message);
     } finally {
       setSaving(false);
     }
-    router.replace(skipped ? '/(tabs)' : '/child-profile');
+
+    if (skipped) {
+      router.replace('/(tabs)');
+    } else if (status === 'pregnant') {
+      // Pregnant users go straight to dashboard — no baby profile needed yet
+      router.replace('/(tabs)');
+    } else {
+      // Parenting users create baby profile next
+      router.replace('/child-profile');
+    }
   }
 
   const isLastStep = step === MAX_STEPS;
