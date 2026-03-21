@@ -7,7 +7,7 @@
  * Hand-maintained here because the Supabase CLI is not installed in this
  * environment. Re-generate after any schema changes once the CLI is available.
  *
- * Last updated: 2026-03-20 (migration: 20260320000000_pregnancy_tables)
+ * Last updated: 2026-03-21 (migration: 20260321000000_pregnancy_tables)
  */
 
 export type Json =
@@ -337,6 +337,7 @@ export interface Database {
           notes?: string | null;
         };
       };
+    };
 
       // ── pregnancy_profiles ─────────────────────────────────────────────
       pregnancy_profiles: {
@@ -400,7 +401,6 @@ export interface Database {
           bp_diastolic?: number | null;
           symptoms?: Json;
           notes?: string | null;
-          logged_at?: string;
         };
       };
 
@@ -460,7 +460,6 @@ export interface Database {
         Update: {
           kicks_count?: number;
           duration_minutes?: number | null;
-          logged_at?: string;
         };
       };
 
@@ -483,7 +482,6 @@ export interface Database {
           interval_seconds?: number | null;
         };
         Update: {
-          started_at?: string;
           ended_at?: string | null;
           duration_seconds?: number | null;
           interval_seconds?: number | null;
@@ -533,6 +531,7 @@ export interface Database {
     Enums: {
       administered_role: 'pediatrician' | 'nurse' | 'midwife';
       vaccine_site: 'left_thigh' | 'right_thigh' | 'left_arm' | 'right_arm' | 'oral';
+      pregnancy_trimester: 'first' | 'second' | 'third';
     };
   };
 }
@@ -548,8 +547,6 @@ export type VaccineScheduleRow      = Tables<'vaccines_schedule'>;
 export type FeedingLogRow           = Tables<'feeding_logs'>;
 export type SleepLogRow             = Tables<'sleep_logs'>;
 export type GrowthRecordRow         = Tables<'growth_records'>;
-
-// ── Pregnancy Hub ──────────────────────────────────────────────────────────
 export type PregnancyProfileRow     = Tables<'pregnancy_profiles'>;
 export type PregnancyLogRow         = Tables<'pregnancy_logs'>;
 export type PrenatalAppointmentRow  = Tables<'prenatal_appointments'>;
