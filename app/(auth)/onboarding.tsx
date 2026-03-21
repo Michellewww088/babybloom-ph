@@ -313,6 +313,9 @@ export default function OnboardingScreen() {
   function skipAll() { handleFinish(true); }
 
   async function handleFinish(skipped = false) {
+    // Capture status now — before any async calls change closure scope
+    const isPregnant = !skipped && status === 'pregnant';
+
     if (!skipped) {
       saveOnboardingData({
         status, birthType, babyCount,
@@ -321,6 +324,25 @@ export default function OnboardingScreen() {
         childGender,
       } as any);
     }
+
+    // ── If pregnant: set store immediately (before Supabase, no waiting) ──
+    if (isPregnant && dateValue) {
+      const due    = new Date(dateValue);
+      const lmp    = new Date(due.getTime() - 280 * 24 * 60 * 60 * 1000);
+      const lmpStr = lmp.toISOString().split('T')[0];
+      setActivePregnancy({
+        id:         `local-${Date.now()}`,
+        user_id:    '',
+        lmp_date:   lmpStr,
+        due_date:   dateValue,
+        ob_name:    null,
+        clinic:     null,
+        is_active:  true,
+        created_at: new Date().toISOString(),
+      });
+      setIsPregnancyMode(true);
+    }
+
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -329,47 +351,31 @@ export default function OnboardingScreen() {
           id: user.id, language, onboarding_completed: true,
         });
 
-        // ── Pregnant path: create pregnancy profile, skip baby profile ──
-        if (!skipped && status === 'pregnant' && dateValue) {
-          // Calculate LMP from due date (due date − 280 days)
-          const due = new Date(dateValue);
-          const lmp = new Date(due.getTime() - 280 * 24 * 60 * 60 * 1000);
+        // Also persist pregnancy profile to Supabase (best-effort)
+        if (isPregnant && dateValue) {
+          const due    = new Date(dateValue);
+          const lmp    = new Date(due.getTime() - 280 * 24 * 60 * 60 * 1000);
           const lmpStr = lmp.toISOString().split('T')[0];
-
-          // Save to Supabase
           const { data: pregnancy } = await supabase
             .from('pregnancy_profiles')
             .insert({ user_id: user.id, lmp_date: lmpStr, due_date: dateValue, is_active: true })
             .select()
             .single();
-
-          // Hydrate the store
-          setActivePregnancy(pregnancy ?? {
-            id: `local-${Date.now()}`,
-            user_id: user.id,
-            lmp_date: lmpStr,
-            due_date: dateValue,
-            ob_name: null,
-            clinic: null,
-            is_active: true,
-            created_at: new Date().toISOString(),
-          });
-          setIsPregnancyMode(true);
+          // Update store with real DB id if insert succeeded
+          if (pregnancy) setActivePregnancy(pregnancy);
         }
       }
     } catch (err: any) {
       console.warn('Onboarding save failed:', err.message);
+      // Store is already hydrated above — safe to continue
     } finally {
       setSaving(false);
     }
 
-    if (skipped) {
-      router.replace('/(tabs)');
-    } else if (status === 'pregnant') {
-      // Pregnant users go straight to dashboard — no baby profile needed yet
+    // ── Route: pregnant → dashboard, parenting → baby profile ──
+    if (skipped || isPregnant) {
       router.replace('/(tabs)');
     } else {
-      // Parenting users create baby profile next
       router.replace('/child-profile');
     }
   }
