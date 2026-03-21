@@ -9,6 +9,7 @@ import {
   StyleSheet, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import {
   ClipboardList, Heart, Timer, CalendarDays,
   FileText, ShoppingBag, ChevronDown, ChevronUp,
@@ -206,7 +207,14 @@ export default function MamaScreen() {
       <Text style={s.sectionTitle}>What would you like to do?</Text>
       <View style={s.grid}>
         {FEATURES.map(({ key, label, Icon }, i) => (
-          <TouchableOpacity key={key} style={s.gridTile} activeOpacity={0.75}>
+          <TouchableOpacity
+            key={key}
+            style={s.gridTile}
+            activeOpacity={0.75}
+            onPress={() => {
+              if (key === 'kick') router.push('/kick-counter');
+            }}
+          >
             <View style={[s.gridIconWrap, { backgroundColor: FEAT_COLORS[i] + '20' }]}>
               <Icon size={22} strokeWidth={1.5} color={FEAT_COLORS[i]} />
             </View>
