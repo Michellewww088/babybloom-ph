@@ -30,6 +30,7 @@ import {
   DOMAIN_META, MilestoneDomain, AgeGroup,
 } from '@/constants/milestones';
 import { EmptyState } from '@/components/EmptyState';
+import MilestoneShareSheet, { type ShareMilestoneData } from '@/components/milestones/MilestoneShareSheet';
 
 import {
   BookOpen, Trophy, CircleCheck,
@@ -300,6 +301,20 @@ const MilestoneCard = React.memo(function MilestoneCard({
   );
 });
 
+// ── Stage colour / label map (for share card) ─────────────────────────────────
+const STAGE_META: Record<string, { color: string; label: string }> = {
+  'Newborn':       { color: '#C9A7E8', label: 'Newborn'       },
+  'Young Infant':  { color: '#E8527A', label: 'Young Infant'  },
+  'Older Infant':  { color: '#F5A623', label: 'Older Infant'  },
+  'Toddler I':     { color: '#27AE7A', label: 'Toddler I'     },
+  'Toddler II':    { color: '#1A73C8', label: 'Toddler II'    },
+  'Toddler III':   { color: '#E8637C', label: 'Toddler III'   },
+  'Preschool':     { color: '#F5A623', label: 'Preschool'     },
+  'School Age I':  { color: '#27AE7A', label: 'School Age I'  },
+  'School Age II': { color: '#1A73C8', label: 'School Age II' },
+  'Preteen':       { color: '#C9A7E8', label: 'Preteen'       },
+};
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -330,6 +345,11 @@ export default function MilestonesScreen() {
     date: string;
     notes: string;
   }>({ visible: false, item: null, mode: 'mark', date: today(), notes: '' });
+
+  // ── Share sheet state ────────────────────────────────────────────────────────
+  const [shareSheet, setShareSheet] = useState<{ visible: boolean; data: ShareMilestoneData | null }>({
+    visible: false, data: null,
+  });
 
   // ── Top tab ─────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TopTab>('memory');
@@ -425,13 +445,33 @@ export default function MilestonesScreen() {
 
   const handleAchieveModalSave = useCallback(() => {
     if (!activeChild || !achieveModal.item) return;
-    if (achieveModal.mode === 'mark') {
+    const isNewMark = achieveModal.mode === 'mark';
+    if (isNewMark) {
       markAchieved(activeChild.id, achieveModal.item.id, achieveModal.date, achieveModal.notes || undefined);
     } else {
       editAchievement(activeChild.id, achieveModal.item.id, achieveModal.date, achieveModal.notes || undefined);
     }
     setAchieveModal((s) => ({ ...s, visible: false }));
-  }, [activeChild, achieveModal, markAchieved, editAchievement]);
+
+    // Show share sheet only when newly marking (not editing)
+    if (isNewMark) {
+      const stageName = getStageForAge(ageMonths);
+      const stageMeta = STAGE_META[stageName] ?? { color: Colors.primary, label: stageName };
+      setTimeout(() => {
+        setShareSheet({
+          visible: true,
+          data: {
+            childName:     childName,
+            ageMonths:     ageMonths,
+            milestoneText: achieveModal.item!.milestone_text,
+            stageLabel:    stageMeta.label,
+            stageColor:    stageMeta.color,
+            achievedDate:  achieveModal.date,
+          },
+        });
+      }, 350); // small delay so achievement modal finishes closing first
+    }
+  }, [activeChild, achieveModal, markAchieved, editAchievement, childName, ageMonths]);
 
   const handleAchieveModalUnmark = useCallback(() => {
     if (!activeChild || !achieveModal.item) return;
@@ -1178,6 +1218,13 @@ export default function MilestonesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* ── Share Milestone Sheet ─────────────────────────────────────── */}
+      <MilestoneShareSheet
+        visible={shareSheet.visible}
+        data={shareSheet.data}
+        onClose={() => setShareSheet({ visible: false, data: null })}
+      />
 
     </View>
   );
