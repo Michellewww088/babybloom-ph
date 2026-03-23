@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { zustandStorage } from './storage';
-
+import { scheduleVaccineReminder, cancelVaccineReminder } from '../src/lib/notifications';
 
 import {
   DOH_EPI_SCHEDULE,
@@ -358,8 +358,34 @@ export const useVaccineStore = create<VaccineStore>()(
         if (updatedRecord) {
           const nextRecord = autoGenerateNextOccurrence(updatedRecord, updates.givenDate, updatedRecords);
           if (nextRecord) {
+            // Schedule notification for the new next-dose record
+            if (nextRecord.nextDueDate && nextRecord.reminderEnabled) {
+              scheduleVaccineReminder({
+                vaccineCode: nextRecord.code,
+                vaccineName: nextRecord.nameEN,
+                nextDueDate: nextRecord.nextDueDate,
+                childId:     nextRecord.childId,
+                childName:   '',  // childName resolved in UI layer
+              });
+            }
             return { records: [...updatedRecords, nextRecord] };
           }
+        }
+      }
+
+      // Schedule / cancel reminder when nextDueDate or reminderEnabled changes
+      const updatedRecord = updatedRecords.find((r) => r.id === id);
+      if (updatedRecord) {
+        if (updates.nextDueDate && updatedRecord.reminderEnabled !== false) {
+          scheduleVaccineReminder({
+            vaccineCode: updatedRecord.code,
+            vaccineName: updatedRecord.nameEN,
+            nextDueDate: updates.nextDueDate,
+            childId:     updatedRecord.childId,
+            childName:   '',
+          });
+        } else if (updates.reminderEnabled === false) {
+          cancelVaccineReminder(updatedRecord.code, updatedRecord.childId);
         }
       }
 
@@ -367,9 +393,14 @@ export const useVaccineStore = create<VaccineStore>()(
     }),
 
   deleteRecord: (id) =>
-    set((state) => ({
-      records: state.records.filter((r) => r.id !== id),
-    })),
+    set((state) => {
+      // Cancel any scheduled notifications for this record
+      const record = state.records.find((r) => r.id === id);
+      if (record) {
+        cancelVaccineReminder(record.code, record.childId);
+      }
+      return { records: state.records.filter((r) => r.id !== id) };
+    }),
 
   getRecords: (childId, status) => {
     const records = get().records.filter((r) => r.childId === childId);
