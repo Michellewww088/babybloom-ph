@@ -14,7 +14,8 @@ import { supabase } from '../../src/lib/supabase';
 import Colors from '../../constants/Colors';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { usePregnancyStore } from '../../store/pregnancyStore';
-import { Calendar, Star, Lightbulb, Heart, Cake, Check, PartyPopper } from 'lucide-react-native';
+import { requestPermissions } from '../../src/lib/notifications';
+import { Calendar, Star, Lightbulb, Heart, Cake, Check, PartyPopper, Bell } from 'lucide-react-native';
 
 // ── Types ────────────────────────────────────────────────────────────────
 type Status      = 'pregnant' | 'parenting' | null;
@@ -24,9 +25,9 @@ type ChildGender = 'boy'      | 'girl'      | 'other'    | null;
 type LangCode    = 'en'       | 'fil'       | 'zh';
 
 // ── Step layout ───────────────────────────────────────────────────────────
-// Pregnant  : 1 (status) → 3 (expecting count) → 4 (due date) → 5 (language)  = 4 visible
-// Parenting : 1 (status) → 2 (birth type) → 3 (child count) → 4 (child details) → 5 (language) = 5 visible
-const MAX_STEPS = 5;
+// Pregnant  : 1 (status) → 3 (count) → 4 (due date) → 5 (language) → 6 (notifications)  = 5 visible
+// Parenting : 1 (status) → 2 (birth type) → 3 (count) → 4 (details) → 5 (language) → 6 (notifications) = 6 visible
+const MAX_STEPS = 6;
 
 // ── Kawaii SVG Icons ──────────────────────────────────────────────────────
 
@@ -278,11 +279,11 @@ export default function OnboardingScreen() {
   // ── Step routing ────────────────────────────────────────────────────────
   // Pregnant:  1 → 3 → 4 → 5
   // Parenting: 1 → 2 → 3 → 4 → 5
-  const visibleSteps = status === 'pregnant' ? 4 : 5;
+  const visibleSteps = status === 'pregnant' ? 5 : 6;
 
   function displayStepNum(): number {
     if (status !== 'pregnant') return step;
-    const map: Record<number, number> = { 1: 1, 3: 2, 4: 3, 5: 4 };
+    const map: Record<number, number> = { 1: 1, 3: 2, 4: 3, 5: 4, 6: 5 };
     return map[step] ?? step;
   }
 
@@ -295,7 +296,7 @@ export default function OnboardingScreen() {
       // Parenting step 4: child details — name + gender + birthday required
       return childName.trim().length > 0 && !!childGender && !!dateValue;
     }
-    return true; // step 5 language always ok
+    return true; // step 5 language + step 6 notifications always ok
   }
 
   function goNext() {
@@ -572,7 +573,7 @@ export default function OnboardingScreen() {
           {/* ── STEP 5: Language ────────────────────────────────────────── */}
           {step === 5 && (
             <>
-              <Text style={s.stepLabel}>STEP {visibleSteps} OF {visibleSteps}</Text>
+              <Text style={s.stepLabel}>STEP {displayStepNum()} OF {visibleSteps}</Text>
               <Text style={s.question}>{t('onboarding.step5_title')}</Text>
               <View style={s.langOptions}>
                 {([
@@ -594,22 +595,66 @@ export default function OnboardingScreen() {
             </>
           )}
 
-          {/* Next / Finish */}
-          <TouchableOpacity
-            style={[s.nextBtn, (!canAdvance() || saving) && s.nextBtnDisabled]}
-            onPress={goNext}
-            disabled={!canAdvance() || saving}
-          >
-            {saving
-              ? <ButtonLoader />
-              : <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  {isLastStep && <PartyPopper size={16} strokeWidth={1.5} color={Colors.white} style={{ marginRight: 6 }} />}
-                  <Text style={s.nextBtnText}>
-                    {isLastStep ? t('onboarding.finish') : `${t('onboarding.next')} →`}
-                  </Text>
+          {/* ── STEP 6: Notifications permission ────────────────────────── */}
+          {step === 6 && (
+            <>
+              <Text style={s.stepLabel}>STEP {visibleSteps} OF {visibleSteps}</Text>
+              <Text style={s.question}>Never miss a vaccine! 💉</Text>
+
+              {/* Friendly explanation card — shown BEFORE triggering system prompt */}
+              <View style={s.notifCard}>
+                <View style={s.notifIconRow}>
+                  <View style={s.notifIconCircle}>
+                    <Bell size={28} strokeWidth={1.5} color={Colors.primaryPink} />
+                  </View>
                 </View>
-            }
-          </TouchableOpacity>
+                <Text style={s.notifTitle}>Vaccine & Milestone Reminders</Text>
+                <Text style={s.notifBody}>
+                  BabyBloom will send gentle reminders so you never miss a scheduled vaccine, a monthly milestone, or your weekly health check-in.{'\n\n'}
+                  We'll notify you:{'\n'}
+                  {'  '}💉 3 days before a vaccine is due{'\n'}
+                  {'  '}💉 The day before{'\n'}
+                  {'  '}🎉 On each monthly milestone{'\n'}
+                  {'  '}📋 Every Sunday for your weekly summary
+                </Text>
+                <Text style={s.notifNote}>
+                  You can adjust notification settings anytime in the app.
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={s.notifAllowBtn}
+                onPress={() => requestPermissions()}
+                activeOpacity={0.8}
+              >
+                <Bell size={16} strokeWidth={1.5} color={Colors.white} style={{ marginRight: 8 }} />
+                <Text style={s.notifAllowText}>Allow Notifications</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={s.notifSkipBtn} onPress={handleFinish}>
+                <Text style={s.notifSkipText}>Maybe later</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Next / Finish — hidden on step 6 which has its own CTA buttons */}
+          {step !== MAX_STEPS && (
+            <TouchableOpacity
+              style={[s.nextBtn, (!canAdvance() || saving) && s.nextBtnDisabled]}
+              onPress={goNext}
+              disabled={!canAdvance() || saving}
+            >
+              {saving
+                ? <ButtonLoader />
+                : <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {step === MAX_STEPS - 1 && <PartyPopper size={16} strokeWidth={1.5} color={Colors.white} style={{ marginRight: 6 }} />}
+                    <Text style={s.nextBtnText}>
+                      {step === MAX_STEPS - 1 ? t('onboarding.finish') : `${t('onboarding.next')} →`}
+                    </Text>
+                  </View>
+              }
+            </TouchableOpacity>
+          )}
 
         </View>
       </ScrollView>
@@ -795,6 +840,18 @@ const s = StyleSheet.create({
   nextBtn:        { backgroundColor: Colors.primaryPink, borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   nextBtnDisabled:{ opacity: 0.4 },
   nextBtnText:    { color: Colors.white, fontSize: 16, fontWeight: '700' },
+
+  // Step 6 — Notifications
+  notifCard:       { backgroundColor: Colors.softPink, borderRadius: 18, padding: 20, marginBottom: 20, borderWidth: 1.5, borderColor: '#FFB3C6' },
+  notifIconRow:    { alignItems: 'center', marginBottom: 14 },
+  notifIconCircle: { width: 60, height: 60, borderRadius: 30, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.primaryPink, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 3 },
+  notifTitle:      { fontSize: 16, fontWeight: '800', color: Colors.dark, textAlign: 'center', marginBottom: 10 },
+  notifBody:       { fontSize: 13, color: Colors.midGray, lineHeight: 20, marginBottom: 12 },
+  notifNote:       { fontSize: 11, color: Colors.lightGray, textAlign: 'center', fontStyle: 'italic' },
+  notifAllowBtn:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primaryPink, borderRadius: 14, height: 52, marginBottom: 12 },
+  notifAllowText:  { color: Colors.white, fontSize: 16, fontWeight: '700' },
+  notifSkipBtn:    { alignItems: 'center', paddingVertical: 10 },
+  notifSkipText:   { fontSize: 14, color: Colors.midGray, fontWeight: '500' },
 });
 
 const ds = StyleSheet.create({
