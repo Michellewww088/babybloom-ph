@@ -624,7 +624,7 @@ export default function OnboardingScreen() {
 
               <TouchableOpacity
                 style={s.notifAllowBtn}
-                onPress={() => requestPermissions()}
+                onPress={async () => { await requestPermissions(); handleFinish(); }}
                 activeOpacity={0.8}
               >
                 <Bell size={16} strokeWidth={1.5} color={Colors.white} style={{ marginRight: 8 }} />
